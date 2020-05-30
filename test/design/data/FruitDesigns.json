@@ -1,0 +1,86 @@
+{
+    "@element": "design:definitions",
+    "components": [
+        {
+            "@element": "design:definition",
+            "element": "meals",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:simple",
+                        "@arooaType": "component",
+                        "property": "fruit",
+                        "title": "Fruit",
+                        "options": [
+                            "snack"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "snack",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "description",
+                        "title": "Description"
+                    },
+                    {
+                        "@element": "design:simple",
+                        "property": "fruit",
+                        "title": "Fruit",
+                        "options": [
+                            "value",
+                            "apple",
+                            "orange"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "values": [
+        {
+            "@element": "design:definition",
+            "element": "value",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "value",
+                        "title": "Value"
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "apple",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "colour",
+                        "title": "Colour"
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "orange",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "seedless",
+                        "title": "Seedless"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "@element": "snack",
+    "id": "afternoon",
+    "fruit": {
+        "@element": "apple",
+        "colour": "Green"
+    }
+}

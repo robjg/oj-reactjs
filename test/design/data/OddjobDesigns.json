@@ -1,0 +1,119 @@
+{
+    "@element": "design:definitions",
+    "components": [
+        {
+            "@element": "design:definition",
+            "element": "oddjob",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "name",
+                        "title": "Name"
+                    },
+                    {
+                        "@element": "design:selection",
+                        "items": [
+                            {
+                                "@element": "design:file",
+                                "property": "file",
+                                "title": "Configuration File"
+                            },
+                            {
+                                "@element": "design:simple",
+                                "property": "configuration",
+                                "title": "Configuration",
+                                "options": [
+                                    "bean",
+                                    "value",
+                                    "arooa:configuration"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "@element": "design:tabs",
+                        "items": [
+                            {
+                                "@element": "design:group",
+                                "title": "Export",
+                                "items": [
+                                    {
+                                        "@element": "design:simple",
+                                        "property": "args",
+                                        "title": "Args",
+                                        "options": [
+                                            "bean",
+                                            "list",
+                                            "value"
+                                        ]
+                                    },
+                                    {
+                                        "@element": "design:simple",
+                                        "property": "properties",
+                                        "title": "Properties",
+                                        "options": [
+                                            "bean",
+                                            "properites",
+                                            "value"
+                                        ]
+                                    },
+                                    {
+                                        "@element": "design:field",
+                                        "property": "inheritence",
+                                        "title": "Inheritance"
+                                    },
+                                    {
+                                        "@element": "design:mapped",
+                                        "property": "export",
+                                        "title": "Export",
+                                        "options": [
+                                            "bean",
+                                            "value"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "@element": "design:group",
+                                "title": "Advanced",
+                                "items": [
+                                    {
+                                        "@element": "design:simple",
+                                        "property": "descriptorFactory",
+                                        "title": "Descriptor",
+                                        "options": [
+                                            "bean",
+                                            "arooa:descriptor",
+                                            "value"
+                                        ]
+                                    },
+                                    {
+                                        "@element": "design:simple",
+                                        "property": "classloader",
+                                        "title": "Class Loader",
+                                        "options": [
+                                            "bean",
+                                            "classloader",
+                                            "value"
+                                        ]
+                                    },
+                                    {
+                                        "@element": "design:simple",
+                                        "property": "persister",
+                                        "title": "Persister",
+                                        "options": [
+                                            "bean",
+                                            "file-persister",
+                                            "value"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

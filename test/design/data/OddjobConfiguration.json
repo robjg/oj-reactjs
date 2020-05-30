@@ -1,0 +1,11 @@
+{
+    "id": "this",
+    "job": {
+        "@element": "echo",
+        "@text": "Hello World",
+        "name": "Greeting",
+        "out": {
+            "@element": "buffer"
+        }
+    }
+}
