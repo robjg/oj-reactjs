@@ -60,8 +60,6 @@ export class DesignInstance extends FormItemGroup {
 
 export class SingleTypeSelection implements DesignProperty {
 
-    readonly options: string[];
-
     readonly title: string
 
     readonly designFactory: TypeDesignFactory;
@@ -69,12 +67,11 @@ export class SingleTypeSelection implements DesignProperty {
     private _instance?: DesignInstance;
 
     constructor(readonly property: string,
-        options: string[],
+        readonly options: string[],
         designFactory: TypeDesignFactory,
         title?: string,
         instance?: DesignInstance) {
 
-        this.options = options;
         this.designFactory = designFactory;
         this.title = title ? title : property;
         this._instance = instance;
@@ -101,6 +98,10 @@ export class SingleTypeSelection implements DesignProperty {
 }
 
 export class FieldGroup extends FormItemGroup implements FormItem {
+
+    constructor(readonly title?: string) {
+        super();
+    }
 
     accept<T>(formBuilder: FormBuilder<T>): T {
 
@@ -215,7 +216,6 @@ export class CachingDesignFactory implements DesignFactory {
                         return textField;
                     }
                 }
-                break;
             case 'design:simple':
                 {
                     const property: string = definition['property'];
@@ -244,8 +244,28 @@ export class CachingDesignFactory implements DesignFactory {
                         return formItem;
                     }
                 }
-                break;
-            default:
+            case 'design:group':
+                {
+                    const title = definition['title'];
+
+                    let children: FormItemFactory[] = [];
+                    if (definition['items']) {
+
+                        const items: any[] = definition['items'];
+                        children = items.map(this.formItemFactoryFrom);
+                    }
+
+
+                    return (configuration: Configuration) => {
+                        const fieldGroup = new FieldGroup(title)
+                        children.forEach(child => fieldGroup.addItem(child(configuration)));
+                        return fieldGroup;
+                    }
+                }
+            case 'design:tabs':
+            case 'design:indexed':
+            case 'design:mapped':        
+            default: 'design:variable'
                 throw new Error(`Unknown Form Item ${type}.`);
         }
     }
@@ -303,16 +323,6 @@ export class CachingDesignFactory implements DesignFactory {
     }
 }
 
-function designFactoryFromJson(json: string): DesignInstance {
-
-    const intstanceDef = JSON.parse(json);
-
-    const instance = new DesignInstance(intstanceDef['element'])
-
-
-    return instance;
-}
-
 export function configurationFromAny(obj: any): Configuration {
 
     const element: string = obj['@element'];
@@ -341,15 +351,13 @@ export function configurationFromAny(obj: any): Configuration {
             }
         }
     }
-
-
 }
 
 export function parse(instance: DesignInstance): any {
 
     const configuration: any = { '@element' : instance.element };
 
-     class FooBuilder implements FormBuilder<void> {
+    class FooBuilder implements FormBuilder<void> {
     
         renderTextField(textField: TextField): void {
             if (textField.value) {

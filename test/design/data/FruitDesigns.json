@@ -65,6 +65,22 @@
                         "@element": "design:field",
                         "property": "colour",
                         "title": "Colour"
+                    },
+                    {  
+                        "@element": "design:group",
+                        "title": "Other",
+                        "items": [
+                            {
+                                "@element": "design:field",
+                                "property": "taste",
+                                "title": "Taste"
+                            },
+                            {
+                                "@element": "design:field",
+                                "property": "size",
+                                "title": "Size"
+                            }
+                        ]
                     }
                 ]
             }

@@ -3,6 +3,7 @@
     "id": "afternoon",
     "fruit": {
         "@element": "apple",
-        "colour": "Green"
+        "colour": "Green",
+        "taste": "Crispy"
     }
 }
