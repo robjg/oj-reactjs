@@ -2,7 +2,7 @@ import React from 'react';
 import * as design from './design';
 import { render } from '@testing-library/react';
 
-function Field(props: { 
+function Field(props: {
     formItem: design.FormItem;
     formBuilder: CompFormBuilder;
 }) {
@@ -12,16 +12,16 @@ function Field(props: {
     return <TheField />
 }
 
-function FieldGroup(props: { 
+function FieldGroup(props: {
     formItems: design.FormItem[];
     formBuilder: CompFormBuilder;
- }) {
+}) {
 
     return (
         <ul className="oj-form-group">
             {
                 props.formItems.map((item, index) =>
-                    <Field key={index} formItem={item} formBuilder={props.formBuilder}/>)
+                    <Field key={index} formItem={item} formBuilder={props.formBuilder} />)
             }
         </ul>
     )
@@ -99,7 +99,7 @@ class CompFormBuilder implements design.FormBuilder<React.ComponentClass<any, an
 
                 if (singleTypeSelection.instance) {
                     childForm = <InternalForm designInstance={singleTypeSelection.instance}
-                        level={level + 1}/>
+                        level={level + 1} />
                 }
 
                 return (
@@ -113,7 +113,7 @@ class CompFormBuilder implements design.FormBuilder<React.ComponentClass<any, an
                                     e => <option key={e} value={e}>{e}</option>)
                             }
                         </select>
-                        { childForm }
+                        {childForm}
                     </li>
                 );
             }
@@ -128,23 +128,23 @@ class CompFormBuilder implements design.FormBuilder<React.ComponentClass<any, an
 
             render() {
                 return (
-                    <FieldGroup formItems={fieldGroup.items} formBuilder={formBuilder}/>
+                    <FieldGroup formItems={fieldGroup.items} formBuilder={formBuilder} />
                 );
             }
         };
     }
 }
 
-type DesignFormProps = {
+type InternalFormProps = {
     designInstance: design.DesignInstance;
     level?: number;
 }
 
-class InternalForm extends React.Component<DesignFormProps> {
+class InternalForm extends React.Component<InternalFormProps> {
 
     formBuilder: CompFormBuilder;
 
-    constructor(props: DesignFormProps) {
+    constructor(props: InternalFormProps) {
         super(props);
         this.formBuilder = new CompFormBuilder(props.level ? props.level : 0);
     }
@@ -155,12 +155,18 @@ class InternalForm extends React.Component<DesignFormProps> {
 
             <div className="oj-design-form">
                 <h4 className="oj-design-form-title">{this.props.designInstance.element}</h4>
-                <FieldGroup formItems={this.props.designInstance.items} 
-                        formBuilder={this.formBuilder}/>
+                <FieldGroup formItems={this.props.designInstance.items}
+                    formBuilder={this.formBuilder} />
             </div>
         )
     }
 
+}
+
+type DesignFormProps = {
+    designModel: design.DesignModel;
+    componentId: string;
+    hideForm: () => void;
 }
 
 export class DesignForm extends React.Component<DesignFormProps> {
@@ -171,14 +177,25 @@ export class DesignForm extends React.Component<DesignFormProps> {
 
     render(): React.ReactNode {
 
+        const formBuilder = new CompFormBuilder();
+
+        const mainForm = this.props.designModel.createForm(this.props.componentId);
+
+        const saveFn: () => void = () => { mainForm.save() }
+
         return (
             <div className="oj-design-form-main">
-                <form>
-                    <InternalForm designInstance={this.props.designInstance}/>
+                <form onReset={this.props.hideForm} onSubmit={saveFn}>
+                    <div className="oj-design-form">
+                        <h4 className="oj-design-form-title">{mainForm.instance.element}</h4>
+                        <FieldGroup formItems={mainForm.instance.items}
+                            formBuilder={formBuilder} />
+                    </div>
+                    <button type="submit">OK</button>
+                    <button type="reset">Cancel</button>
                 </form>
             </div>
         )
     }
-
 }
 

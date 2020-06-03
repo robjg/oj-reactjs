@@ -109,10 +109,26 @@ export class FieldGroup extends FormItemGroup implements FormItem {
     }
 }
 
+
+export class MainForm extends FormItemGroup {
+
+    constructor(readonly instance: DesignInstance,
+        readonly saveFn: (instance: DesignInstance) => void) {
+        super();
+    }
+
+    save(): void {
+        this.saveFn(this.instance);
+    }
+}
+
 export enum ArooaType {
     Component,
     Value
 }
+
+
+
 
 interface Configuration {
 
@@ -150,23 +166,31 @@ class TypeDesignFactoriesCache implements TypeDesignFactory {
 
     private readonly factoryByElement: Map<string, TypeDesignFactory> = new Map();
 
+    constructor(private readonly dataSource: (element: string) => any) {
+
+    }
+
     createDesign(configuration: Configuration): DesignInstance {
 
         const { element } = configuration;
 
-        const factory = this.factoryByElement.get(element)
-
-        if (factory) {
-            return factory.createDesign(configuration);
+        if (!element) {
+            throw Error(`No element in ${configuration}`)
         }
-        else {
-            throw Error(`No factory for element ${element} `)
+
+        let factory = this.factoryByElement.get(element)
+
+        if (!factory) {
+            factory = this.dataSource(element)
+            if (factory) {
+                this.factoryByElement.set(element, factory);
+            }
+            else {
+                throw Error(`No factory for element ${element} `)
+            }
         }
-    }
 
-    addFactory(element: string, factory: TypeDesignFactory): void {
-
-        this.factoryByElement.set(element, factory);
+        return factory.createDesign(configuration);
     }
 
 }
@@ -182,9 +206,19 @@ type FormItemFactory = (configuration: Configuration) => FormItem;
 
 export class CachingDesignFactory implements DesignFactory {
 
-    private readonly componentCache = new TypeDesignFactoriesCache();
+    private readonly componentCache: TypeDesignFactoriesCache;
 
-    private readonly valueCache = new TypeDesignFactoriesCache();
+    private readonly valueCache: TypeDesignFactoriesCache;
+
+    constructor(dataSource: (element: string, arooaType: ArooaType) => any) {
+
+        this.componentCache = new TypeDesignFactoriesCache(
+            (element) => this.designFactoryFrom(ArooaType.Component, element, dataSource));
+
+        this.valueCache = new TypeDesignFactoriesCache(
+            (element) => this.designFactoryFrom(ArooaType.Value, element, dataSource));
+
+    }
 
     createDesign(configuration: Configuration, arooaType: ArooaType): DesignInstance {
 
@@ -264,13 +298,24 @@ export class CachingDesignFactory implements DesignFactory {
                 }
             case 'design:tabs':
             case 'design:indexed':
-            case 'design:mapped':        
+            case 'design:mapped':
             default: 'design:variable'
                 throw new Error(`Unknown Form Item ${type}.`);
         }
     }
 
-    addDesignDefinition(arooaType: ArooaType, definition: any): void {
+    private designFactoryFrom(arooaType: ArooaType, element: string,
+        dataSource: (element: string, arooa: ArooaType) => any): TypeDesignFactory {
+        const definition = dataSource(element, arooaType);
+        if (definition) {
+            return this.createDesignFactory(arooaType, definition);
+        }
+        else {
+            throw Error(`No design for ${arooaType} ${element}`);
+        }
+    }
+
+    private createDesignFactory(arooaType: ArooaType, definition: any): TypeDesignFactory {
 
         const element: string = definition['element'];
 
@@ -281,7 +326,7 @@ export class CachingDesignFactory implements DesignFactory {
             formItemFactories = itemDefs.map(e => this.formItemFactoryFrom(e));
         }
 
-        const designFactory = {
+        return {
             createDesign(configuration: Configuration): DesignInstance {
 
                 const instance = new DesignInstance(element);
@@ -290,36 +335,7 @@ export class CachingDesignFactory implements DesignFactory {
 
                 return instance;
             }
-        } as TypeDesignFactory;
-
-        switch (arooaType) {
-            case ArooaType.Component:
-                this.componentCache.addFactory(element, designFactory);
-                break;
-            case ArooaType.Value:
-                this.valueCache.addFactory(element, designFactory);
-                break;
-            default:
-                throw new Error(`Unknown type ${arooaType}`);
-        }
-    }
-
-    addDesignDefinitions(definitions: any) {
-
-        const components: Array<any> = definitions['components'];
-        const values: Array<any> = definitions['values'];
-
-        if (components) {
-            components.forEach(def => {
-                this.addDesignDefinition(ArooaType.Component, def);
-            });
-        }
-
-        if (values) {
-            values.forEach(def => {
-                this.addDesignDefinition(ArooaType.Value, def);
-            });
-        }
+        };
     }
 }
 
@@ -355,30 +371,61 @@ export function configurationFromAny(obj: any): Configuration {
 
 export function parse(instance: DesignInstance): any {
 
-    const configuration: any = { '@element' : instance.element };
+    const configuration: any = { '@element': instance.element };
 
-    class FooBuilder implements FormBuilder<void> {
-    
+    class ParseBuilder implements FormBuilder<void> {
+
         renderTextField(textField: TextField): void {
             if (textField.value) {
                 configuration[textField.property] = textField.value;
             }
         }
-    
+
         renderSingleTypeSelection(singleTypeSelection: SingleTypeSelection): void {
             if (singleTypeSelection.instance) {
-                configuration[singleTypeSelection.property] = 
+                configuration[singleTypeSelection.property] =
                     parse(singleTypeSelection.instance);
             }
         }
-    
+
         renderFieldGroup(fieldGroup: FieldGroup): void {
             fieldGroup.items.forEach(e => e.accept(this));
         }
 
     }
 
-    instance.items.forEach(item => item.accept(new FooBuilder()));
+    instance.items.forEach(item => item.accept(new ParseBuilder()));
 
     return configuration;
+}
+
+export interface DesignDataSource {
+
+    designFor(element: string, arooaType: ArooaType): any;
+
+    configurationFor(componentId: string): any;
+
+    save(componentId: string, configuration: any): void;
+}
+
+
+export class DesignModel {
+
+    private readonly factories: DesignFactory;
+
+    constructor(readonly dataSource: DesignDataSource) {
+        this.factories = new CachingDesignFactory(
+            (element: string, arooaType: ArooaType) => dataSource.designFor(element, arooaType));
+    }
+
+    createForm(componentId: string): MainForm {
+
+        const configuration: any = this.dataSource.configurationFor(componentId);
+
+        const designInstance = this.factories.createDesign(
+            configurationFromAny(configuration), ArooaType.Component);
+
+        return new MainForm(designInstance,
+            (instance) => this.dataSource.save(componentId, parse(instance)));
+    }
 }

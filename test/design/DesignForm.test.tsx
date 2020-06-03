@@ -2,21 +2,22 @@ import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
 
 import { DesignForm } from '../../src/design/designForm'
-import { DesignInstance, TextField, SingleTypeSelection, CachingDesignFactory, configurationFromAny, ArooaType, parse } from '../../src/design/design';
+import { DesignModel, TextField, SingleTypeSelection, CachingDesignFactory, configurationFromAny, ArooaType, parse } from '../../src/design/design';
 
 const designDefinitions = require('./data/FruitDesigns.json');
 const configuration = require('./data/FruitConfiguration.json');
 
+import { LocalDataSource } from './LocalDataSource';
 
 test('Test Render Text Field', () => {
    
-    const factories: CachingDesignFactory = new CachingDesignFactory();
-    factories.addDesignDefinitions(designDefinitions);
+    const dataSource: LocalDataSource = new LocalDataSource();
+    const designModel: DesignModel = new DesignModel(dataSource);
+        
+    dataSource.addDesignDefinitions(designDefinitions);
+    dataSource.save("foo", configuration);
 
-    const designInstance = factories.createDesign(configurationFromAny(configuration),
-        ArooaType.Component);
-  
-    const result = render(<DesignForm designInstance={ designInstance} />);
+    const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
 
     expect(result).toMatchSnapshot();    
 
@@ -30,7 +31,11 @@ test('Test Render Text Field', () => {
 
     expect(result).toMatchSnapshot();    
 
-    const after: any = parse(designInstance);
+    const okButton = result.getByText("OK");
+
+    fireEvent.click(okButton);
+
+    const after: any = dataSource.configurationFor("foo");
 
     expect(after['description']).toBe('An Afternoon Snack');
     expect(after['fruit']['taste']).toBe('Tangy');
@@ -38,14 +43,13 @@ test('Test Render Text Field', () => {
 
 test('Test Render Design Instance', () => {
 
-    const factories: CachingDesignFactory = new CachingDesignFactory();
-    factories.addDesignDefinitions(designDefinitions);
+    const dataSource: LocalDataSource = new LocalDataSource();
+    const designModel: DesignModel = new DesignModel(dataSource);
 
-    const designInstance = factories.createDesign(configurationFromAny(configuration),
-        ArooaType.Component);
-    
+    dataSource.addDesignDefinitions(designDefinitions);
+    dataSource.save("foo", configuration);
 
-    const result = render(<DesignForm designInstance={ designInstance} />);
+    const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
 
     const fruitSelection = result.getByLabelText("Fruit");
 
@@ -57,7 +61,11 @@ test('Test Render Design Instance', () => {
 
     expect(result).toMatchSnapshot();    
 
-    const after: any = parse(designInstance);
+    const okButton = result.getByText("OK");
+
+    fireEvent.click(okButton);
+
+    const after: any = dataSource.configurationFor("foo");
 
     expect(after['fruit']['@element']).toBe('orange');
     expect(after['fruit']['seedless']).toBe('true');

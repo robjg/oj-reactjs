@@ -1,11 +1,25 @@
 import fs from 'fs';
 
-import { CachingDesignFactory, ArooaType, configurationFromAny, DesignInstance, FormItem } from '../../src/design/design'
+import { DesignModel, FormBuilder, MainForm, TextField, SingleTypeSelection, FieldGroup, ArooaType } from '../../src/design/design'
+import { LocalDataSource } from './LocalDataSource'
 
-
+class StubFormBuilder implements FormBuilder<void> {
+    renderForm(mainForm: MainForm): void {
+        throw new Error("Method not implemented.");
+    }
+    renderTextField(textField: TextField): void {
+        throw new Error("Method not implemented.");
+    }
+    renderSingleTypeSelection(singleTypeSelection: SingleTypeSelection): void {
+        throw new Error("Method not implemented.");
+    }
+    renderFieldGroup(fieldGroup: FieldGroup): void {
+        throw new Error("Method not implemented.");
+    }
+}
 test('Test Form Item From Field', () => {
 
-    var designFactory = new CachingDesignFactory();
+    const dataSource: LocalDataSource = new LocalDataSource();
 
     const designDefinition = {
         '@element': 'design:design',
@@ -21,17 +35,21 @@ test('Test Form Item From Field', () => {
         }
     };
     
-    designFactory.addDesignDefinition(ArooaType.Value, designDefinition)
+    dataSource.addDesignDefinition(ArooaType.Component, designDefinition)
 
     const configuration = {
         '@element': 'apple',
         'colour' : 'red'
     };
 
-    const result: DesignInstance = designFactory.createDesign(configurationFromAny(configuration),
-        ArooaType.Value);
+    dataSource.save("fruit", configuration);
 
-        
+    const designModel : DesignModel = new DesignModel(dataSource);
+
+    const form: MainForm = designModel.createForm("fruit");
+
+    const result: any = form.instance;
+
     expect(result.element).toBe('apple');
 
     const textField : any = result.items[0]; 
@@ -46,13 +64,21 @@ test('Design JSON from File', () => {
     const designDefinitions = JSON.parse(fs.readFileSync('test/design/data/FruitDesigns.json', 'utf8'));
     const configuration = JSON.parse(fs.readFileSync('test/design/data/FruitConfiguration.json', 'utf8'));
 
-    const factories: CachingDesignFactory = new CachingDesignFactory();
+    const dataSource: LocalDataSource = new LocalDataSource();
 
-    factories.addDesignDefinitions(designDefinitions);
+    dataSource.addDesignDefinitions(designDefinitions);
+    dataSource.save("foo", configuration);
 
-    const designInstance: DesignInstance = factories.createDesign(
-        configurationFromAny(configuration), ArooaType.Component);
+    const result: any = {};
 
-    expect(designInstance.element).toBe('snack');
+    class OurBuilder extends StubFormBuilder {
+
+        renderForm(mainForm: MainForm): void {
+            result.element = mainForm.instance.element;
+            result.items = mainForm.instance.items;
+        }
+    }
+
+    expect(result.element).toBe('snack');
 }) 
 
