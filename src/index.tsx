@@ -33,7 +33,10 @@ class JobMenu extends React.Component<{ jobId: string }, { show: boolean }> {
     }
     
     return <ul>
-      <li><button onClick={(e) => this.setState({ show: false })}>Foo</button></li>
+      <li><button onClick={(e) => {
+        this.setState({ show: false });
+        console.log(factories.configurationFor("foo"));
+      }}>Foo</button></li>
       <li><button onClick={(e) => {
         this.setState({ show: false });
         ReactDOM.render(

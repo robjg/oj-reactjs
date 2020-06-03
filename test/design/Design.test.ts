@@ -3,20 +3,6 @@ import fs from 'fs';
 import { DesignModel, FormBuilder, MainForm, TextField, SingleTypeSelection, FieldGroup, ArooaType } from '../../src/design/design'
 import { LocalDataSource } from './LocalDataSource'
 
-class StubFormBuilder implements FormBuilder<void> {
-    renderForm(mainForm: MainForm): void {
-        throw new Error("Method not implemented.");
-    }
-    renderTextField(textField: TextField): void {
-        throw new Error("Method not implemented.");
-    }
-    renderSingleTypeSelection(singleTypeSelection: SingleTypeSelection): void {
-        throw new Error("Method not implemented.");
-    }
-    renderFieldGroup(fieldGroup: FieldGroup): void {
-        throw new Error("Method not implemented.");
-    }
-}
 test('Test Form Item From Field', () => {
 
     const dataSource: LocalDataSource = new LocalDataSource();
@@ -69,16 +55,12 @@ test('Design JSON from File', () => {
     dataSource.addDesignDefinitions(designDefinitions);
     dataSource.save("foo", configuration);
 
-    const result: any = {};
+    const designModel : DesignModel = new DesignModel(dataSource);
 
-    class OurBuilder extends StubFormBuilder {
+    const form: MainForm = designModel.createForm("foo");
 
-        renderForm(mainForm: MainForm): void {
-            result.element = mainForm.instance.element;
-            result.items = mainForm.instance.items;
-        }
-    }
-
+    const result: any = form.instance;
+    
     expect(result.element).toBe('snack');
 }) 
 

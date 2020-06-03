@@ -185,7 +185,7 @@ export class DesignForm extends React.Component<DesignFormProps> {
 
         return (
             <div className="oj-design-form-main">
-                <form onReset={this.props.hideForm} onSubmit={saveFn}>
+                <form data-testid="design-form" onReset={this.props.hideForm} onSubmit={saveFn}>
                     <div className="oj-design-form">
                         <h4 className="oj-design-form-title">{mainForm.instance.element}</h4>
                         <FieldGroup formItems={mainForm.instance.items}

@@ -31,9 +31,9 @@ test('Test Render Text Field', () => {
 
     expect(result).toMatchSnapshot();    
 
-    const okButton = result.getByText("OK");
+    const form = result.getByTestId("design-form");
 
-    fireEvent.click(okButton);
+    fireEvent.submit(form);
 
     const after: any = dataSource.configurationFor("foo");
 
@@ -61,9 +61,9 @@ test('Test Render Design Instance', () => {
 
     expect(result).toMatchSnapshot();    
 
-    const okButton = result.getByText("OK");
+    const form = result.getByTestId("design-form");
 
-    fireEvent.click(okButton);
+    fireEvent.submit(form);
 
     const after: any = dataSource.configurationFor("foo");
 

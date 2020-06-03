@@ -8,7 +8,9 @@ Object {
       <div
         class="oj-design-form-main"
       >
-        <form>
+        <form
+          data-testid="design-form"
+        >
           <div
             class="oj-design-form"
           >
@@ -85,6 +87,16 @@ Object {
               </li>
             </ul>
           </div>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
         </form>
       </div>
     </div>
@@ -93,7 +105,9 @@ Object {
     <div
       class="oj-design-form-main"
     >
-      <form>
+      <form
+        data-testid="design-form"
+      >
         <div
           class="oj-design-form"
         >
@@ -170,6 +184,16 @@ Object {
             </li>
           </ul>
         </div>
+        <button
+          type="submit"
+        >
+          OK
+        </button>
+        <button
+          type="reset"
+        >
+          Cancel
+        </button>
       </form>
     </div>
   </div>,
@@ -235,7 +259,9 @@ Object {
       <div
         class="oj-design-form-main"
       >
-        <form>
+        <form
+          data-testid="design-form"
+        >
           <div
             class="oj-design-form"
           >
@@ -340,6 +366,16 @@ Object {
               </li>
             </ul>
           </div>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
         </form>
       </div>
     </div>
@@ -348,7 +384,9 @@ Object {
     <div
       class="oj-design-form-main"
     >
-      <form>
+      <form
+        data-testid="design-form"
+      >
         <div
           class="oj-design-form"
         >
@@ -453,6 +491,16 @@ Object {
             </li>
           </ul>
         </div>
+        <button
+          type="submit"
+        >
+          OK
+        </button>
+        <button
+          type="reset"
+        >
+          Cancel
+        </button>
       </form>
     </div>
   </div>,
@@ -518,7 +566,9 @@ Object {
       <div
         class="oj-design-form-main"
       >
-        <form>
+        <form
+          data-testid="design-form"
+        >
           <div
             class="oj-design-form"
           >
@@ -623,6 +673,16 @@ Object {
               </li>
             </ul>
           </div>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
         </form>
       </div>
     </div>
@@ -631,7 +691,9 @@ Object {
     <div
       class="oj-design-form-main"
     >
-      <form>
+      <form
+        data-testid="design-form"
+      >
         <div
           class="oj-design-form"
         >
@@ -736,6 +798,16 @@ Object {
             </li>
           </ul>
         </div>
+        <button
+          type="submit"
+        >
+          OK
+        </button>
+        <button
+          type="reset"
+        >
+          Cancel
+        </button>
       </form>
     </div>
   </div>,
