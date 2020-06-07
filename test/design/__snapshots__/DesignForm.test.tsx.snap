@@ -23,67 +23,81 @@ Object {
               class="oj-form-group"
             >
               <li>
-                <label
-                  for="df_description_0"
-                >
+                <label>
                   Description
+                  <input
+                    data-testid="df_description"
+                    type="text"
+                    value=""
+                  />
                 </label>
-                <input
-                  id="df_description_0"
-                  type="text"
-                  value=""
-                />
               </li>
               <li>
-                <label
-                  for="df_fruit_0"
-                >
+                <label>
                   Fruit
-                </label>
-                <select
-                  id="df_fruit_0"
-                >
-                  <option
-                    value="value"
+                  <div
+                    class="oj-design-row"
                   >
-                    value
-                  </option>
-                  <option
-                    value="apple"
-                  >
-                    apple
-                  </option>
-                  <option
-                    value="orange"
-                  >
-                    orange
-                  </option>
-                </select>
-                <div
-                  class="oj-design-form"
-                >
-                  <h4
-                    class="oj-design-form-title"
-                  >
-                    orange
-                  </h4>
-                  <ul
-                    class="oj-form-group"
-                  >
-                    <li>
-                      <label
-                        for="df_seedless_1"
+                    <span
+                      class="oj-design-select"
+                    >
+                      <select
+                        data-testid="df_fruit_select"
                       >
-                        Seedless
-                      </label>
-                      <input
-                        id="df_seedless_1"
-                        type="text"
-                        value="true"
-                      />
-                    </li>
-                  </ul>
-                </div>
+                        <option
+                          value=""
+                        />
+                        <option
+                          value="value"
+                        >
+                          value
+                        </option>
+                        <option
+                          value="apple"
+                        >
+                          apple
+                        </option>
+                        <option
+                          value="orange"
+                        >
+                          orange
+                        </option>
+                      </select>
+                    </span>
+                    <span
+                      class="oj-design-expand"
+                    >
+                      <button
+                        data-testid="df_fruit_expand"
+                        type="button"
+                      >
+                        -
+                      </button>
+                    </span>
+                  </div>
+                  <div
+                    class="oj-design-detail"
+                  >
+                    <div
+                      class="oj-design-internal-form"
+                    >
+                      <ul
+                        class="oj-form-group"
+                      >
+                        <li>
+                          <label>
+                            Seedless
+                            <input
+                              data-testid="df_fruit_detail_seedless"
+                              type="text"
+                              value="true"
+                            />
+                          </label>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </label>
               </li>
             </ul>
           </div>
@@ -120,63 +134,909 @@ Object {
             class="oj-form-group"
           >
             <li>
-              <label
-                for="df_description_0"
-              >
+              <label>
                 Description
+                <input
+                  data-testid="df_description"
+                  type="text"
+                  value=""
+                />
               </label>
-              <input
-                id="df_description_0"
-                type="text"
-                value=""
-              />
             </li>
             <li>
-              <label
-                for="df_fruit_0"
-              >
+              <label>
                 Fruit
-              </label>
-              <select
-                id="df_fruit_0"
-              >
-                <option
-                  value="value"
+                <div
+                  class="oj-design-row"
                 >
-                  value
-                </option>
-                <option
-                  value="apple"
-                >
-                  apple
-                </option>
-                <option
-                  value="orange"
-                >
-                  orange
-                </option>
-              </select>
-              <div
-                class="oj-design-form"
-              >
-                <h4
-                  class="oj-design-form-title"
-                >
-                  orange
-                </h4>
-                <ul
-                  class="oj-form-group"
-                >
-                  <li>
-                    <label
-                      for="df_seedless_1"
+                  <span
+                    class="oj-design-select"
+                  >
+                    <select
+                      data-testid="df_fruit_select"
                     >
-                      Seedless
-                    </label>
-                    <input
-                      id="df_seedless_1"
-                      type="text"
-                      value="true"
+                      <option
+                        value=""
+                      />
+                      <option
+                        value="value"
+                      >
+                        value
+                      </option>
+                      <option
+                        value="apple"
+                      >
+                        apple
+                      </option>
+                      <option
+                        value="orange"
+                      >
+                        orange
+                      </option>
+                    </select>
+                  </span>
+                  <span
+                    class="oj-design-expand"
+                  >
+                    <button
+                      data-testid="df_fruit_expand"
+                      type="button"
+                    >
+                      -
+                    </button>
+                  </span>
+                </div>
+                <div
+                  class="oj-design-detail"
+                >
+                  <div
+                    class="oj-design-internal-form"
+                  >
+                    <ul
+                      class="oj-form-group"
+                    >
+                      <li>
+                        <label>
+                          Seedless
+                          <input
+                            data-testid="df_fruit_detail_seedless"
+                            type="text"
+                            value="true"
+                          />
+                        </label>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </label>
+            </li>
+          </ul>
+        </div>
+        <button
+          type="submit"
+        >
+          OK
+        </button>
+        <button
+          type="reset"
+        >
+          Cancel
+        </button>
+      </form>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Test Render Indexed 1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="oj-design-form-main"
+      >
+        <form
+          data-testid="design-form"
+        >
+          <div
+            class="oj-design-form"
+          >
+            <h4
+              class="oj-design-form-title"
+            >
+              notes
+            </h4>
+            <ul
+              class="oj-form-group"
+            >
+              <li>
+                <label>
+                  Description
+                  <input
+                    data-testid="df_description"
+                    type="text"
+                    value="Some Meal Notes"
+                  />
+                </label>
+              </li>
+              <li>
+                <div
+                  class="oj-design-form-table"
+                >
+                  <div
+                    class="oj-design-form-table-title"
+                  >
+                    notes
+                  </div>
+                  <ul>
+                    <li>
+                      <div
+                        class="oj-design-row"
+                      >
+                        <span
+                          class="oj-design-select"
+                        >
+                          <select
+                            data-testid="df_notes_row0_select"
+                          >
+                            <option
+                              value=""
+                            />
+                            <option
+                              value="value"
+                            >
+                              value
+                            </option>
+                            <option
+                              value="note"
+                            >
+                              note
+                            </option>
+                          </select>
+                        </span>
+                        <span
+                          class="oj-design-expand"
+                        >
+                          <button
+                            data-testid="df_notes_row0_expand"
+                            type="button"
+                          >
+                            +
+                          </button>
+                        </span>
+                      </div>
+                      <div
+                        class="oj-design-detail"
+                      />
+                    </li>
+                    <li>
+                      <div
+                        class="oj-design-row"
+                      >
+                        <span
+                          class="oj-design-select"
+                        >
+                          <select
+                            data-testid="df_notes_row1_select"
+                          >
+                            <option
+                              value=""
+                            />
+                            <option
+                              value="value"
+                            >
+                              value
+                            </option>
+                            <option
+                              value="note"
+                            >
+                              note
+                            </option>
+                          </select>
+                        </span>
+                        <span
+                          class="oj-design-expand"
+                        >
+                          <button
+                            data-testid="df_notes_row1_expand"
+                            type="button"
+                          >
+                            +
+                          </button>
+                        </span>
+                      </div>
+                      <div
+                        class="oj-design-detail"
+                      />
+                    </li>
+                    <li>
+                      <div
+                        class="oj-design-row"
+                      >
+                        <span
+                          class="oj-design-select"
+                        >
+                          <select
+                            data-testid="df_notes_xRow_select"
+                          >
+                            <option
+                              value=""
+                            />
+                            <option
+                              value="value"
+                            >
+                              value
+                            </option>
+                            <option
+                              value="note"
+                            >
+                              note
+                            </option>
+                          </select>
+                        </span>
+                        <span
+                          class="oj-design-expand"
+                        />
+                      </div>
+                      <div
+                        class="oj-design-detail"
+                      />
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="oj-design-form-main"
+    >
+      <form
+        data-testid="design-form"
+      >
+        <div
+          class="oj-design-form"
+        >
+          <h4
+            class="oj-design-form-title"
+          >
+            notes
+          </h4>
+          <ul
+            class="oj-form-group"
+          >
+            <li>
+              <label>
+                Description
+                <input
+                  data-testid="df_description"
+                  type="text"
+                  value="Some Meal Notes"
+                />
+              </label>
+            </li>
+            <li>
+              <div
+                class="oj-design-form-table"
+              >
+                <div
+                  class="oj-design-form-table-title"
+                >
+                  notes
+                </div>
+                <ul>
+                  <li>
+                    <div
+                      class="oj-design-row"
+                    >
+                      <span
+                        class="oj-design-select"
+                      >
+                        <select
+                          data-testid="df_notes_row0_select"
+                        >
+                          <option
+                            value=""
+                          />
+                          <option
+                            value="value"
+                          >
+                            value
+                          </option>
+                          <option
+                            value="note"
+                          >
+                            note
+                          </option>
+                        </select>
+                      </span>
+                      <span
+                        class="oj-design-expand"
+                      >
+                        <button
+                          data-testid="df_notes_row0_expand"
+                          type="button"
+                        >
+                          +
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      class="oj-design-detail"
+                    />
+                  </li>
+                  <li>
+                    <div
+                      class="oj-design-row"
+                    >
+                      <span
+                        class="oj-design-select"
+                      >
+                        <select
+                          data-testid="df_notes_row1_select"
+                        >
+                          <option
+                            value=""
+                          />
+                          <option
+                            value="value"
+                          >
+                            value
+                          </option>
+                          <option
+                            value="note"
+                          >
+                            note
+                          </option>
+                        </select>
+                      </span>
+                      <span
+                        class="oj-design-expand"
+                      >
+                        <button
+                          data-testid="df_notes_row1_expand"
+                          type="button"
+                        >
+                          +
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      class="oj-design-detail"
+                    />
+                  </li>
+                  <li>
+                    <div
+                      class="oj-design-row"
+                    >
+                      <span
+                        class="oj-design-select"
+                      >
+                        <select
+                          data-testid="df_notes_xRow_select"
+                        >
+                          <option
+                            value=""
+                          />
+                          <option
+                            value="value"
+                          >
+                            value
+                          </option>
+                          <option
+                            value="note"
+                          >
+                            note
+                          </option>
+                        </select>
+                      </span>
+                      <span
+                        class="oj-design-expand"
+                      />
+                    </div>
+                    <div
+                      class="oj-design-detail"
+                    />
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <button
+          type="submit"
+        >
+          OK
+        </button>
+        <button
+          type="reset"
+        >
+          Cancel
+        </button>
+      </form>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Test Render Indexed 2`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="oj-design-form-main"
+      >
+        <form
+          data-testid="design-form"
+        >
+          <div
+            class="oj-design-form"
+          >
+            <h4
+              class="oj-design-form-title"
+            >
+              notes
+            </h4>
+            <ul
+              class="oj-form-group"
+            >
+              <li>
+                <label>
+                  Description
+                  <input
+                    data-testid="df_description"
+                    type="text"
+                    value="Some Meal Notes"
+                  />
+                </label>
+              </li>
+              <li>
+                <div
+                  class="oj-design-form-table"
+                >
+                  <div
+                    class="oj-design-form-table-title"
+                  >
+                    notes
+                  </div>
+                  <ul>
+                    <li>
+                      <div
+                        class="oj-design-row"
+                      >
+                        <span
+                          class="oj-design-select"
+                        >
+                          <select
+                            data-testid="df_notes_row0_select"
+                          >
+                            <option
+                              value=""
+                            />
+                            <option
+                              value="value"
+                            >
+                              value
+                            </option>
+                            <option
+                              value="note"
+                            >
+                              note
+                            </option>
+                          </select>
+                        </span>
+                        <span
+                          class="oj-design-expand"
+                        >
+                          <button
+                            data-testid="df_notes_row0_expand"
+                            type="button"
+                          >
+                            -
+                          </button>
+                        </span>
+                      </div>
+                      <div
+                        class="oj-design-detail"
+                      >
+                        <div
+                          class="oj-design-internal-form"
+                        >
+                          <ul
+                            class="oj-form-group"
+                          >
+                            <li>
+                              <label>
+                                value
+                                <input
+                                  data-testid="df_notes_row0_detail_value"
+                                  type="text"
+                                  value="Some Foo"
+                                />
+                              </label>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div
+                        class="oj-design-row"
+                      >
+                        <span
+                          class="oj-design-select"
+                        >
+                          <select
+                            data-testid="df_notes_row1_select"
+                          >
+                            <option
+                              value=""
+                            />
+                            <option
+                              value="value"
+                            >
+                              value
+                            </option>
+                            <option
+                              value="note"
+                            >
+                              note
+                            </option>
+                          </select>
+                        </span>
+                        <span
+                          class="oj-design-expand"
+                        >
+                          <button
+                            data-testid="df_notes_row1_expand"
+                            type="button"
+                          >
+                            +
+                          </button>
+                        </span>
+                      </div>
+                      <div
+                        class="oj-design-detail"
+                      />
+                    </li>
+                    <li>
+                      <div
+                        class="oj-design-row"
+                      >
+                        <span
+                          class="oj-design-select"
+                        >
+                          <select
+                            data-testid="df_notes_xRow_select"
+                          >
+                            <option
+                              value=""
+                            />
+                            <option
+                              value="value"
+                            >
+                              value
+                            </option>
+                            <option
+                              value="note"
+                            >
+                              note
+                            </option>
+                          </select>
+                        </span>
+                        <span
+                          class="oj-design-expand"
+                        />
+                      </div>
+                      <div
+                        class="oj-design-detail"
+                      />
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="oj-design-form-main"
+    >
+      <form
+        data-testid="design-form"
+      >
+        <div
+          class="oj-design-form"
+        >
+          <h4
+            class="oj-design-form-title"
+          >
+            notes
+          </h4>
+          <ul
+            class="oj-form-group"
+          >
+            <li>
+              <label>
+                Description
+                <input
+                  data-testid="df_description"
+                  type="text"
+                  value="Some Meal Notes"
+                />
+              </label>
+            </li>
+            <li>
+              <div
+                class="oj-design-form-table"
+              >
+                <div
+                  class="oj-design-form-table-title"
+                >
+                  notes
+                </div>
+                <ul>
+                  <li>
+                    <div
+                      class="oj-design-row"
+                    >
+                      <span
+                        class="oj-design-select"
+                      >
+                        <select
+                          data-testid="df_notes_row0_select"
+                        >
+                          <option
+                            value=""
+                          />
+                          <option
+                            value="value"
+                          >
+                            value
+                          </option>
+                          <option
+                            value="note"
+                          >
+                            note
+                          </option>
+                        </select>
+                      </span>
+                      <span
+                        class="oj-design-expand"
+                      >
+                        <button
+                          data-testid="df_notes_row0_expand"
+                          type="button"
+                        >
+                          -
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      class="oj-design-detail"
+                    >
+                      <div
+                        class="oj-design-internal-form"
+                      >
+                        <ul
+                          class="oj-form-group"
+                        >
+                          <li>
+                            <label>
+                              value
+                              <input
+                                data-testid="df_notes_row0_detail_value"
+                                type="text"
+                                value="Some Foo"
+                              />
+                            </label>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <div
+                      class="oj-design-row"
+                    >
+                      <span
+                        class="oj-design-select"
+                      >
+                        <select
+                          data-testid="df_notes_row1_select"
+                        >
+                          <option
+                            value=""
+                          />
+                          <option
+                            value="value"
+                          >
+                            value
+                          </option>
+                          <option
+                            value="note"
+                          >
+                            note
+                          </option>
+                        </select>
+                      </span>
+                      <span
+                        class="oj-design-expand"
+                      >
+                        <button
+                          data-testid="df_notes_row1_expand"
+                          type="button"
+                        >
+                          +
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      class="oj-design-detail"
+                    />
+                  </li>
+                  <li>
+                    <div
+                      class="oj-design-row"
+                    >
+                      <span
+                        class="oj-design-select"
+                      >
+                        <select
+                          data-testid="df_notes_xRow_select"
+                        >
+                          <option
+                            value=""
+                          />
+                          <option
+                            value="value"
+                          >
+                            value
+                          </option>
+                          <option
+                            value="note"
+                          >
+                            note
+                          </option>
+                        </select>
+                      </span>
+                      <span
+                        class="oj-design-expand"
+                      />
+                    </div>
+                    <div
+                      class="oj-design-detail"
                     />
                   </li>
                 </ul>
@@ -274,95 +1134,62 @@ Object {
               class="oj-form-group"
             >
               <li>
-                <label
-                  for="df_description_0"
-                >
+                <label>
                   Description
+                  <input
+                    data-testid="df_description"
+                    type="text"
+                    value=""
+                  />
                 </label>
-                <input
-                  id="df_description_0"
-                  type="text"
-                  value=""
-                />
               </li>
               <li>
-                <label
-                  for="df_fruit_0"
-                >
+                <label>
                   Fruit
-                </label>
-                <select
-                  id="df_fruit_0"
-                >
-                  <option
-                    value="value"
+                  <div
+                    class="oj-design-row"
                   >
-                    value
-                  </option>
-                  <option
-                    value="apple"
-                  >
-                    apple
-                  </option>
-                  <option
-                    value="orange"
-                  >
-                    orange
-                  </option>
-                </select>
-                <div
-                  class="oj-design-form"
-                >
-                  <h4
-                    class="oj-design-form-title"
-                  >
-                    apple
-                  </h4>
-                  <ul
-                    class="oj-form-group"
-                  >
-                    <li>
-                      <label
-                        for="df_colour_1"
-                      >
-                        Colour
-                      </label>
-                      <input
-                        id="df_colour_1"
-                        type="text"
-                        value="Green"
-                      />
-                    </li>
-                    <ul
-                      class="oj-form-group"
+                    <span
+                      class="oj-design-select"
                     >
-                      <li>
-                        <label
-                          for="df_taste_2"
-                        >
-                          Taste
-                        </label>
-                        <input
-                          id="df_taste_2"
-                          type="text"
-                          value="Crispy"
-                        />
-                      </li>
-                      <li>
-                        <label
-                          for="df_size_2"
-                        >
-                          Size
-                        </label>
-                        <input
-                          id="df_size_2"
-                          type="text"
+                      <select
+                        data-testid="df_fruit_select"
+                      >
+                        <option
                           value=""
                         />
-                      </li>
-                    </ul>
-                  </ul>
-                </div>
+                        <option
+                          value="value"
+                        >
+                          value
+                        </option>
+                        <option
+                          value="apple"
+                        >
+                          apple
+                        </option>
+                        <option
+                          value="orange"
+                        >
+                          orange
+                        </option>
+                      </select>
+                    </span>
+                    <span
+                      class="oj-design-expand"
+                    >
+                      <button
+                        data-testid="df_fruit_expand"
+                        type="button"
+                      >
+                        +
+                      </button>
+                    </span>
+                  </div>
+                  <div
+                    class="oj-design-detail"
+                  />
+                </label>
               </li>
             </ul>
           </div>
@@ -399,95 +1226,62 @@ Object {
             class="oj-form-group"
           >
             <li>
-              <label
-                for="df_description_0"
-              >
+              <label>
                 Description
+                <input
+                  data-testid="df_description"
+                  type="text"
+                  value=""
+                />
               </label>
-              <input
-                id="df_description_0"
-                type="text"
-                value=""
-              />
             </li>
             <li>
-              <label
-                for="df_fruit_0"
-              >
+              <label>
                 Fruit
-              </label>
-              <select
-                id="df_fruit_0"
-              >
-                <option
-                  value="value"
+                <div
+                  class="oj-design-row"
                 >
-                  value
-                </option>
-                <option
-                  value="apple"
-                >
-                  apple
-                </option>
-                <option
-                  value="orange"
-                >
-                  orange
-                </option>
-              </select>
-              <div
-                class="oj-design-form"
-              >
-                <h4
-                  class="oj-design-form-title"
-                >
-                  apple
-                </h4>
-                <ul
-                  class="oj-form-group"
-                >
-                  <li>
-                    <label
-                      for="df_colour_1"
-                    >
-                      Colour
-                    </label>
-                    <input
-                      id="df_colour_1"
-                      type="text"
-                      value="Green"
-                    />
-                  </li>
-                  <ul
-                    class="oj-form-group"
+                  <span
+                    class="oj-design-select"
                   >
-                    <li>
-                      <label
-                        for="df_taste_2"
-                      >
-                        Taste
-                      </label>
-                      <input
-                        id="df_taste_2"
-                        type="text"
-                        value="Crispy"
-                      />
-                    </li>
-                    <li>
-                      <label
-                        for="df_size_2"
-                      >
-                        Size
-                      </label>
-                      <input
-                        id="df_size_2"
-                        type="text"
+                    <select
+                      data-testid="df_fruit_select"
+                    >
+                      <option
                         value=""
                       />
-                    </li>
-                  </ul>
-                </ul>
-              </div>
+                      <option
+                        value="value"
+                      >
+                        value
+                      </option>
+                      <option
+                        value="apple"
+                      >
+                        apple
+                      </option>
+                      <option
+                        value="orange"
+                      >
+                        orange
+                      </option>
+                    </select>
+                  </span>
+                  <span
+                    class="oj-design-expand"
+                  >
+                    <button
+                      data-testid="df_fruit_expand"
+                      type="button"
+                    >
+                      +
+                    </button>
+                  </span>
+                </div>
+                <div
+                  class="oj-design-detail"
+                />
+              </label>
             </li>
           </ul>
         </div>
@@ -581,95 +1375,107 @@ Object {
               class="oj-form-group"
             >
               <li>
-                <label
-                  for="df_description_0"
-                >
+                <label>
                   Description
+                  <input
+                    data-testid="df_description"
+                    type="text"
+                    value="An Afternoon Snack"
+                  />
                 </label>
-                <input
-                  id="df_description_0"
-                  type="text"
-                  value="An Afternoon Snack"
-                />
               </li>
               <li>
-                <label
-                  for="df_fruit_0"
-                >
+                <label>
                   Fruit
-                </label>
-                <select
-                  id="df_fruit_0"
-                >
-                  <option
-                    value="value"
+                  <div
+                    class="oj-design-row"
                   >
-                    value
-                  </option>
-                  <option
-                    value="apple"
-                  >
-                    apple
-                  </option>
-                  <option
-                    value="orange"
-                  >
-                    orange
-                  </option>
-                </select>
-                <div
-                  class="oj-design-form"
-                >
-                  <h4
-                    class="oj-design-form-title"
-                  >
-                    apple
-                  </h4>
-                  <ul
-                    class="oj-form-group"
-                  >
-                    <li>
-                      <label
-                        for="df_colour_1"
-                      >
-                        Colour
-                      </label>
-                      <input
-                        id="df_colour_1"
-                        type="text"
-                        value="Green"
-                      />
-                    </li>
-                    <ul
-                      class="oj-form-group"
+                    <span
+                      class="oj-design-select"
                     >
-                      <li>
-                        <label
-                          for="df_taste_2"
-                        >
-                          Taste
-                        </label>
-                        <input
-                          id="df_taste_2"
-                          type="text"
-                          value="Tangy"
-                        />
-                      </li>
-                      <li>
-                        <label
-                          for="df_size_2"
-                        >
-                          Size
-                        </label>
-                        <input
-                          id="df_size_2"
-                          type="text"
+                      <select
+                        data-testid="df_fruit_select"
+                      >
+                        <option
                           value=""
                         />
-                      </li>
-                    </ul>
-                  </ul>
-                </div>
+                        <option
+                          value="value"
+                        >
+                          value
+                        </option>
+                        <option
+                          value="apple"
+                        >
+                          apple
+                        </option>
+                        <option
+                          value="orange"
+                        >
+                          orange
+                        </option>
+                      </select>
+                    </span>
+                    <span
+                      class="oj-design-expand"
+                    >
+                      <button
+                        data-testid="df_fruit_expand"
+                        type="button"
+                      >
+                        -
+                      </button>
+                    </span>
+                  </div>
+                  <div
+                    class="oj-design-detail"
+                  >
+                    <div
+                      class="oj-design-internal-form"
+                    >
+                      <ul
+                        class="oj-form-group"
+                      >
+                        <li>
+                          <label>
+                            Colour
+                            <input
+                              data-testid="df_fruit_detail_colour"
+                              type="text"
+                              value="Green"
+                            />
+                          </label>
+                        </li>
+                        <li>
+                          <ul
+                            class="oj-form-group"
+                          >
+                            <li>
+                              <label>
+                                Taste
+                                <input
+                                  data-testid="df_fruit_detail1_taste"
+                                  type="text"
+                                  value="Tangy"
+                                />
+                              </label>
+                            </li>
+                            <li>
+                              <label>
+                                Size
+                                <input
+                                  data-testid="df_fruit_detail1_size"
+                                  type="text"
+                                  value=""
+                                />
+                              </label>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </label>
               </li>
             </ul>
           </div>
@@ -706,95 +1512,107 @@ Object {
             class="oj-form-group"
           >
             <li>
-              <label
-                for="df_description_0"
-              >
+              <label>
                 Description
+                <input
+                  data-testid="df_description"
+                  type="text"
+                  value="An Afternoon Snack"
+                />
               </label>
-              <input
-                id="df_description_0"
-                type="text"
-                value="An Afternoon Snack"
-              />
             </li>
             <li>
-              <label
-                for="df_fruit_0"
-              >
+              <label>
                 Fruit
-              </label>
-              <select
-                id="df_fruit_0"
-              >
-                <option
-                  value="value"
+                <div
+                  class="oj-design-row"
                 >
-                  value
-                </option>
-                <option
-                  value="apple"
-                >
-                  apple
-                </option>
-                <option
-                  value="orange"
-                >
-                  orange
-                </option>
-              </select>
-              <div
-                class="oj-design-form"
-              >
-                <h4
-                  class="oj-design-form-title"
-                >
-                  apple
-                </h4>
-                <ul
-                  class="oj-form-group"
-                >
-                  <li>
-                    <label
-                      for="df_colour_1"
-                    >
-                      Colour
-                    </label>
-                    <input
-                      id="df_colour_1"
-                      type="text"
-                      value="Green"
-                    />
-                  </li>
-                  <ul
-                    class="oj-form-group"
+                  <span
+                    class="oj-design-select"
                   >
-                    <li>
-                      <label
-                        for="df_taste_2"
-                      >
-                        Taste
-                      </label>
-                      <input
-                        id="df_taste_2"
-                        type="text"
-                        value="Tangy"
-                      />
-                    </li>
-                    <li>
-                      <label
-                        for="df_size_2"
-                      >
-                        Size
-                      </label>
-                      <input
-                        id="df_size_2"
-                        type="text"
+                    <select
+                      data-testid="df_fruit_select"
+                    >
+                      <option
                         value=""
                       />
-                    </li>
-                  </ul>
-                </ul>
-              </div>
+                      <option
+                        value="value"
+                      >
+                        value
+                      </option>
+                      <option
+                        value="apple"
+                      >
+                        apple
+                      </option>
+                      <option
+                        value="orange"
+                      >
+                        orange
+                      </option>
+                    </select>
+                  </span>
+                  <span
+                    class="oj-design-expand"
+                  >
+                    <button
+                      data-testid="df_fruit_expand"
+                      type="button"
+                    >
+                      -
+                    </button>
+                  </span>
+                </div>
+                <div
+                  class="oj-design-detail"
+                >
+                  <div
+                    class="oj-design-internal-form"
+                  >
+                    <ul
+                      class="oj-form-group"
+                    >
+                      <li>
+                        <label>
+                          Colour
+                          <input
+                            data-testid="df_fruit_detail_colour"
+                            type="text"
+                            value="Green"
+                          />
+                        </label>
+                      </li>
+                      <li>
+                        <ul
+                          class="oj-form-group"
+                        >
+                          <li>
+                            <label>
+                              Taste
+                              <input
+                                data-testid="df_fruit_detail1_taste"
+                                type="text"
+                                value="Tangy"
+                              />
+                            </label>
+                          </li>
+                          <li>
+                            <label>
+                              Size
+                              <input
+                                data-testid="df_fruit_detail1_size"
+                                type="text"
+                                value=""
+                              />
+                            </label>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </label>
             </li>
           </ul>
         </div>

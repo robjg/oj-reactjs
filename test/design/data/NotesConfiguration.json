@@ -1,0 +1,15 @@
+{
+    "@element": "notes",
+    "id": "tuesday",
+    "description": "Some Meal Notes",
+    "notes": [
+        {
+            "@element": "note",
+            "text": "A healthy day"
+        },
+        {
+            "@element": "note",
+            "text": "Mainly fruit"
+        }
+    ]
+}

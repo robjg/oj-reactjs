@@ -6,6 +6,10 @@ export interface FormBuilder<T> {
     renderSingleTypeSelection(singleTypeSelection: SingleTypeSelection): T;
 
     renderFieldGroup(fieldGroup: FieldGroup): T;
+
+    renderIndexedMultiType(indexedMultiType: IndexedMultiTypeTable): T;
+
+    renderMappedMultiType(mappedMultiType: MappedMultiTypeTable): T;
 }
 
 export interface FormItem {
@@ -47,33 +51,26 @@ export class TextField implements DesignProperty {
 
 }
 
+
 export class DesignInstance extends FormItemGroup {
 
-    readonly element: string;
-
-    constructor(element: string) {
+    constructor(readonly element: string,
+        readonly inlineable?: boolean) {
         super();
-        this.element = element;
     }
 
 }
 
 export class SingleTypeSelection implements DesignProperty {
 
-    readonly title: string
-
-    readonly designFactory: TypeDesignFactory;
-
     private _instance?: DesignInstance;
 
     constructor(readonly property: string,
         readonly options: string[],
-        designFactory: TypeDesignFactory,
-        title?: string,
+        readonly designFactory: TypeDesignFactory,
+        readonly title?: string,
         instance?: DesignInstance) {
 
-        this.designFactory = designFactory;
-        this.title = title ? title : property;
         this._instance = instance;
     }
 
@@ -109,6 +106,109 @@ export class FieldGroup extends FormItemGroup implements FormItem {
     }
 }
 
+export class IndexedMultiTypeTable implements DesignProperty {
+
+    private _instances: DesignInstance[] = []
+
+    onChange?: (instaces: DesignInstance[]) => void;
+
+    constructor(readonly property: string,
+        readonly options: string[],
+        readonly designFactory: TypeDesignFactory,
+        readonly title?: string) {
+
+    }
+
+    get instances() {
+        return this._instances;
+    }
+
+    add(instance: DesignInstance) {
+        this._instances.push(instance);
+    }
+
+    change(index: number, element: string) {
+
+        if (element) {
+            const instance: DesignInstance = this.designFactory.createDesign(new ElementOnly(element));
+            if (index > this._instances.length) {
+                this._instances.push(instance);
+            }
+            else {
+                this._instances[index] = instance;
+            }
+        }
+        else {
+            this._instances.splice(index, 1);
+        }
+        this.onChange && this.onChange(this._instances);
+    }
+
+    accept<T>(formBuilder: FormBuilder<T>): T {
+
+        return formBuilder.renderIndexedMultiType(this);
+    }
+
+}
+
+export class MappedMultiTypeTable implements DesignProperty {
+
+    private _instances: { key: string | undefined, instance: DesignInstance | undefined }[] = [];
+
+    onChange?: (instances: { key: string | undefined, instance: DesignInstance | undefined }[]) => void;
+
+    pendingKey?: string;
+
+    constructor(readonly property: string,
+        readonly options: string[],
+        readonly designFactory: TypeDesignFactory,
+        readonly title?: string) {
+    }
+
+    get instances() {
+        return this._instances;
+    }
+
+    add(key: string, instance: DesignInstance) {
+        this._instances.push({ key: key, instance: instance });
+    }
+
+    changeTheKey(index: number, key: string) {
+
+        if (index == this._instances.length) {
+            this.pendingKey = key;
+            console.log(key);
+        }
+        else {
+            this._instances[index] = { key: key, instance: this._instances[index].instance };
+            this.onChange && this.onChange(this._instances);
+        }
+    }
+
+    changeTheInstance(index: number, element: string) {
+
+        if (element) {
+            const instance: DesignInstance = this.designFactory.createDesign(new ElementOnly(element));
+            if (index == this._instances.length) {
+                this._instances.push({ key: this.pendingKey, instance: instance });
+                this.pendingKey = undefined;
+            }
+            else {
+                this._instances[index] = { key: this._instances[index].key, instance: instance };
+            }
+        }
+        else {
+            this._instances.splice(index, 1);
+            this.pendingKey = undefined;
+        }
+        this.onChange && this.onChange(this._instances);
+    }
+
+    accept<T>(formBuilder: FormBuilder<T>): T {
+
+        return formBuilder.renderMappedMultiType(this);
+    }
+}
 
 export class MainForm extends FormItemGroup {
 
@@ -128,8 +228,6 @@ export enum ArooaType {
 }
 
 
-
-
 interface Configuration {
 
     readonly element: string;
@@ -137,6 +235,8 @@ interface Configuration {
     getTextValue(property: string): string | undefined;
 
     getChild(property: string): Configuration | undefined;
+
+    getChildArray(property: string): Configuration[] | undefined;
 }
 
 class ElementOnly implements Configuration {
@@ -155,6 +255,9 @@ class ElementOnly implements Configuration {
         return undefined;
     }
 
+    getChildArray(property: string): Configuration[] | undefined {
+        return undefined;
+    }
 }
 
 interface TypeDesignFactory {
@@ -186,13 +289,41 @@ class TypeDesignFactoriesCache implements TypeDesignFactory {
                 this.factoryByElement.set(element, factory);
             }
             else {
-                throw Error(`No factory for element ${element} `)
+                throw Error(`No factory for element ${element}`)
             }
         }
 
         return factory.createDesign(configuration);
     }
 
+}
+
+function elementDefinitionFrom(definition: any): {
+    property: string;
+    options: string[];
+    title?: string;
+    arooaType?: ArooaType;
+} {
+
+    const property: string = definition['property'];
+    if (!property) {
+        throw new Error(`No property in design definition ${JSON.stringify(definition)}`)
+    }
+
+    const options: string[] = definition['options'];
+    if (!options) {
+        throw new Error(`No options in design definition ${JSON.stringify(definition)}`)
+    }
+    const title: string = definition['title'];
+
+    const arooaType: ArooaType | undefined = (<any>ArooaType)[definition['arooaType']];
+
+    return {
+        property: property,
+        options: options,
+        title: title,
+        arooaType: arooaType
+    }
 }
 
 
@@ -220,7 +351,7 @@ export class CachingDesignFactory implements DesignFactory {
 
     }
 
-    createDesign(configuration: Configuration, arooaType: ArooaType): DesignInstance {
+    createDesign(configuration: Configuration, arooaType?: ArooaType): DesignInstance {
 
         switch (arooaType) {
             case ArooaType.Component:
@@ -239,6 +370,7 @@ export class CachingDesignFactory implements DesignFactory {
 
         switch (type) {
 
+            case 'design:text':
             case 'design:field':
                 {
                     const property: string = definition['property'];
@@ -252,10 +384,7 @@ export class CachingDesignFactory implements DesignFactory {
                 }
             case 'design:simple':
                 {
-                    const property: string = definition['property'];
-                    const options: string[] = definition['options'];
-                    const title: string = definition['title'];
-                    const arooaType: ArooaType = definition['arooaType'];
+                    const { property, options, title, arooaType } = elementDefinitionFrom(definition);
 
                     const childFactory = arooaType === ArooaType.Component ?
                         this.componentCache : this.valueCache;
@@ -279,6 +408,7 @@ export class CachingDesignFactory implements DesignFactory {
                     }
                 }
             case 'design:group':
+            case 'design:tabs':
                 {
                     const title = definition['title'];
 
@@ -296,10 +426,64 @@ export class CachingDesignFactory implements DesignFactory {
                         return fieldGroup;
                     }
                 }
-            case 'design:tabs':
             case 'design:indexed':
+                {
+                    const { property, options, title, arooaType } = elementDefinitionFrom(definition);
+
+                    const childFactory = arooaType === ArooaType.Component ?
+                        this.componentCache : this.valueCache;
+
+                    return (configuration: Configuration) => {
+
+                        const formItem = new IndexedMultiTypeTable(property,
+                            options,
+                            childFactory,
+                            title ? title : property);
+
+                        const childInstanceConf = configuration.getChildArray(property);
+
+                        if (childInstanceConf) {
+                            childInstanceConf.forEach(e => {
+                                const instance: DesignInstance = this.createDesign(e, arooaType);
+                                formItem.add(instance);
+                            })
+                        }
+
+                        return formItem;
+                    }
+                }
             case 'design:mapped':
-            default: 'design:variable'
+                {
+                    const { property, options, title, arooaType } = elementDefinitionFrom(definition);
+
+                    const childFactory = arooaType === ArooaType.Component ?
+                        this.componentCache : this.valueCache;
+
+                    return (configuration: Configuration) => {
+
+                        const formItem = new MappedMultiTypeTable(property,
+                            options,
+                            childFactory,
+                            title ? title : property);
+
+                        const childInstanceConf = configuration.getChildArray(property);
+
+                        if (childInstanceConf) {
+                            childInstanceConf.forEach(e => {
+                                const instance: DesignInstance = this.createDesign(e, arooaType);
+                                const key = e.getTextValue('@key');
+                                if (!key) {
+                                    throw new Error("No key");
+                                }
+                                formItem.add(key, instance);
+                            })
+                        }
+
+                        return formItem;
+                    }
+                }
+            case 'design:variable':
+            default:
                 throw new Error(`Unknown Form Item ${type}.`);
         }
     }
@@ -343,7 +527,7 @@ export function configurationFromAny(obj: any): Configuration {
 
     const element: string = obj['@element'];
     if (!element) {
-        throw new Error("No element in " + obj);
+        throw new Error(`No @element in ${JSON.stringify(obj)}`);
     }
 
     return {
@@ -365,7 +549,23 @@ export function configurationFromAny(obj: any): Configuration {
             else {
                 return undefined;
             }
+        },
+
+        getChildArray: (property: string): Configuration[] | undefined => {
+
+            const child = obj[property];
+
+            if (!child) {
+                return undefined;
+            }
+
+            if (!Array.isArray) {
+                throw new Error(`${property} of ${JSON.stringify(obj)} is not an array`);
+            }
+
+            return child.map(configurationFromAny);
         }
+
     }
 }
 
@@ -374,7 +574,6 @@ export function parse(instance: DesignInstance): any {
     const configuration: any = { '@element': instance.element };
 
     class ParseBuilder implements FormBuilder<void> {
-
         renderTextField(textField: TextField): void {
             if (textField.value) {
                 configuration[textField.property] = textField.value;
@@ -392,6 +591,31 @@ export function parse(instance: DesignInstance): any {
             fieldGroup.items.forEach(e => e.accept(this));
         }
 
+        renderIndexedMultiType(indexedMultiType: IndexedMultiTypeTable): void {
+            const list: any[] = indexedMultiType.instances.map(parse);
+            if (list.length > 0) {
+                configuration[indexedMultiType.property] = list;
+            }
+        }
+
+        renderMappedMultiType(mappedMultiType: MappedMultiTypeTable): void {
+            const list: any[] = mappedMultiType.instances.map(
+                (e: { key: string | undefined, instance: DesignInstance | undefined }) => {
+                    if (e.key && e.instance) {
+                        const obj: any = parse(e.instance);
+                        obj['@key'] = e.key;
+                        return obj;
+                    }
+                    else {
+                        return undefined;
+                    }
+                })
+                .filter(e => e);
+
+            if (list.length > 0) {
+                configuration[mappedMultiType.property] = list;
+            }
+        }
     }
 
     instance.items.forEach(item => item.accept(new ParseBuilder()));

@@ -7,12 +7,20 @@
             "form": {
                 "items": [
                     {
-                        "@element": "design:simple",
-                        "@arooaType": "component",
-                        "property": "fruit",
-                        "title": "Fruit",
+                        "@element": "design:mapped",
+                        "arooaType": "Component",
+                        "property": "snacks",
+                        "title": "Snacks",
                         "options": [
                             "snack"
+                        ]
+                    },
+                    {
+                        "@element": "design:indexed",
+                        "property": "notes",
+                        "options": [
+                            "value",
+                            "note"
                         ]
                     }
                 ]
@@ -46,12 +54,12 @@
         {
             "@element": "design:definition",
             "element": "value",
+            "inlineable": "true",
             "form": {
                 "items": [
                     {
                         "@element": "design:field",
-                        "property": "value",
-                        "title": "Value"
+                        "property": "value"
                     }
                 ]
             }
@@ -97,6 +105,24 @@
                     }
                 ]
             }
-        }
+        },
+        {
+            "@element": "design:definition",
+            "element": "note",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "title",
+                        "title": "Title"
+                    },
+                    {
+                        "@element": "design:field",
+                        "property": "text",
+                        "title": "Text"
+                    }
+                ]
+            }
+        }    
     ]
 }

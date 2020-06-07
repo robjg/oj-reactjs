@@ -1,0 +1,1125 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test Render Some Key Property 1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div>
+        <p>
+          Key is 
+          fruit
+           and the instance is 
+          apple
+        </p>
+        <div
+          class="oj-design-row"
+        >
+          <span
+            class="oj-design-key"
+          >
+            <input
+              data-testid="foo_key"
+              type="text"
+              value="fruit"
+            />
+          </span>
+          <span
+            class="oj-design-select"
+          >
+            <select
+              data-testid="foo_select"
+            >
+              <option
+                value=""
+              />
+              <option
+                value="apple"
+              >
+                apple
+              </option>
+              <option
+                value="orange"
+              >
+                orange
+              </option>
+            </select>
+          </span>
+          <span
+            class="oj-design-expand"
+          >
+            <button
+              data-testid="foo_expand"
+              type="button"
+            >
+              +
+            </button>
+          </span>
+        </div>
+        <div
+          class="oj-design-detail"
+        />
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div>
+      <p>
+        Key is 
+        fruit
+         and the instance is 
+        apple
+      </p>
+      <div
+        class="oj-design-row"
+      >
+        <span
+          class="oj-design-key"
+        >
+          <input
+            data-testid="foo_key"
+            type="text"
+            value="fruit"
+          />
+        </span>
+        <span
+          class="oj-design-select"
+        >
+          <select
+            data-testid="foo_select"
+          >
+            <option
+              value=""
+            />
+            <option
+              value="apple"
+            >
+              apple
+            </option>
+            <option
+              value="orange"
+            >
+              orange
+            </option>
+          </select>
+        </span>
+        <span
+          class="oj-design-expand"
+        >
+          <button
+            data-testid="foo_expand"
+            type="button"
+          >
+            +
+          </button>
+        </span>
+      </div>
+      <div
+        class="oj-design-detail"
+      />
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Test Render Some Key Property 2`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div>
+        <p>
+          Key is 
+          fruit
+           and the instance is 
+          apple
+        </p>
+        <div
+          class="oj-design-row"
+        >
+          <span
+            class="oj-design-key"
+          >
+            <input
+              data-testid="foo_key"
+              type="text"
+              value="fruit"
+            />
+          </span>
+          <span
+            class="oj-design-select"
+          >
+            <select
+              data-testid="foo_select"
+            >
+              <option
+                value=""
+              />
+              <option
+                value="apple"
+              >
+                apple
+              </option>
+              <option
+                value="orange"
+              >
+                orange
+              </option>
+            </select>
+          </span>
+          <span
+            class="oj-design-expand"
+          >
+            <button
+              data-testid="foo_expand"
+              type="button"
+            >
+              -
+            </button>
+          </span>
+        </div>
+        <div
+          class="oj-design-detail"
+        >
+          <div
+            class="oj-design-internal-form"
+          >
+            <ul
+              class="oj-form-group"
+            >
+              <li>
+                <label>
+                  colour
+                  <input
+                    data-testid="foo_detail_colour"
+                    type="text"
+                    value=""
+                  />
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div>
+      <p>
+        Key is 
+        fruit
+         and the instance is 
+        apple
+      </p>
+      <div
+        class="oj-design-row"
+      >
+        <span
+          class="oj-design-key"
+        >
+          <input
+            data-testid="foo_key"
+            type="text"
+            value="fruit"
+          />
+        </span>
+        <span
+          class="oj-design-select"
+        >
+          <select
+            data-testid="foo_select"
+          >
+            <option
+              value=""
+            />
+            <option
+              value="apple"
+            >
+              apple
+            </option>
+            <option
+              value="orange"
+            >
+              orange
+            </option>
+          </select>
+        </span>
+        <span
+          class="oj-design-expand"
+        >
+          <button
+            data-testid="foo_expand"
+            type="button"
+          >
+            -
+          </button>
+        </span>
+      </div>
+      <div
+        class="oj-design-detail"
+      >
+        <div
+          class="oj-design-internal-form"
+        >
+          <ul
+            class="oj-form-group"
+          >
+            <li>
+              <label>
+                colour
+                <input
+                  data-testid="foo_detail_colour"
+                  type="text"
+                  value=""
+                />
+              </label>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Test Render Some Key Property 3`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div>
+        <p>
+          Key is 
+          snack
+           and the instance is 
+          orange
+        </p>
+        <div
+          class="oj-design-row"
+        >
+          <span
+            class="oj-design-key"
+          >
+            <input
+              data-testid="foo_key"
+              type="text"
+              value="snack"
+            />
+          </span>
+          <span
+            class="oj-design-select"
+          >
+            <select
+              data-testid="foo_select"
+            >
+              <option
+                value=""
+              />
+              <option
+                value="apple"
+              >
+                apple
+              </option>
+              <option
+                value="orange"
+              >
+                orange
+              </option>
+            </select>
+          </span>
+          <span
+            class="oj-design-expand"
+          >
+            <button
+              data-testid="foo_expand"
+              type="button"
+            >
+              -
+            </button>
+          </span>
+        </div>
+        <div
+          class="oj-design-detail"
+        >
+          <div
+            class="oj-design-internal-form"
+          >
+            <ul
+              class="oj-form-group"
+            >
+              <li>
+                <label>
+                  seedless
+                  <input
+                    data-testid="foo_detail_seedless"
+                    type="text"
+                    value=""
+                  />
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div>
+      <p>
+        Key is 
+        snack
+         and the instance is 
+        orange
+      </p>
+      <div
+        class="oj-design-row"
+      >
+        <span
+          class="oj-design-key"
+        >
+          <input
+            data-testid="foo_key"
+            type="text"
+            value="snack"
+          />
+        </span>
+        <span
+          class="oj-design-select"
+        >
+          <select
+            data-testid="foo_select"
+          >
+            <option
+              value=""
+            />
+            <option
+              value="apple"
+            >
+              apple
+            </option>
+            <option
+              value="orange"
+            >
+              orange
+            </option>
+          </select>
+        </span>
+        <span
+          class="oj-design-expand"
+        >
+          <button
+            data-testid="foo_expand"
+            type="button"
+          >
+            -
+          </button>
+        </span>
+      </div>
+      <div
+        class="oj-design-detail"
+      >
+        <div
+          class="oj-design-internal-form"
+        >
+          <ul
+            class="oj-form-group"
+          >
+            <li>
+              <label>
+                seedless
+                <input
+                  data-testid="foo_detail_seedless"
+                  type="text"
+                  value=""
+                />
+              </label>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Test Render Some Property 1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div>
+        <p>
+          The instance is 
+          apple
+        </p>
+        <div
+          class="oj-design-row"
+        >
+          <span
+            class="oj-design-select"
+          >
+            <select
+              data-testid="foo_select"
+            >
+              <option
+                value=""
+              />
+              <option
+                value="apple"
+              >
+                apple
+              </option>
+              <option
+                value="orange"
+              >
+                orange
+              </option>
+            </select>
+          </span>
+          <span
+            class="oj-design-expand"
+          >
+            <button
+              data-testid="foo_expand"
+              type="button"
+            >
+              +
+            </button>
+          </span>
+        </div>
+        <div
+          class="oj-design-detail"
+        />
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div>
+      <p>
+        The instance is 
+        apple
+      </p>
+      <div
+        class="oj-design-row"
+      >
+        <span
+          class="oj-design-select"
+        >
+          <select
+            data-testid="foo_select"
+          >
+            <option
+              value=""
+            />
+            <option
+              value="apple"
+            >
+              apple
+            </option>
+            <option
+              value="orange"
+            >
+              orange
+            </option>
+          </select>
+        </span>
+        <span
+          class="oj-design-expand"
+        >
+          <button
+            data-testid="foo_expand"
+            type="button"
+          >
+            +
+          </button>
+        </span>
+      </div>
+      <div
+        class="oj-design-detail"
+      />
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Test Render Some Property 2`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div>
+        <p>
+          The instance is 
+          apple
+        </p>
+        <div
+          class="oj-design-row"
+        >
+          <span
+            class="oj-design-select"
+          >
+            <select
+              data-testid="foo_select"
+            >
+              <option
+                value=""
+              />
+              <option
+                value="apple"
+              >
+                apple
+              </option>
+              <option
+                value="orange"
+              >
+                orange
+              </option>
+            </select>
+          </span>
+          <span
+            class="oj-design-expand"
+          >
+            <button
+              data-testid="foo_expand"
+              type="button"
+            >
+              -
+            </button>
+          </span>
+        </div>
+        <div
+          class="oj-design-detail"
+        >
+          <div
+            class="oj-design-internal-form"
+          >
+            <ul
+              class="oj-form-group"
+            >
+              <li>
+                <label>
+                  colour
+                  <input
+                    data-testid="foo_detail_colour"
+                    type="text"
+                    value=""
+                  />
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div>
+      <p>
+        The instance is 
+        apple
+      </p>
+      <div
+        class="oj-design-row"
+      >
+        <span
+          class="oj-design-select"
+        >
+          <select
+            data-testid="foo_select"
+          >
+            <option
+              value=""
+            />
+            <option
+              value="apple"
+            >
+              apple
+            </option>
+            <option
+              value="orange"
+            >
+              orange
+            </option>
+          </select>
+        </span>
+        <span
+          class="oj-design-expand"
+        >
+          <button
+            data-testid="foo_expand"
+            type="button"
+          >
+            -
+          </button>
+        </span>
+      </div>
+      <div
+        class="oj-design-detail"
+      >
+        <div
+          class="oj-design-internal-form"
+        >
+          <ul
+            class="oj-form-group"
+          >
+            <li>
+              <label>
+                colour
+                <input
+                  data-testid="foo_detail_colour"
+                  type="text"
+                  value=""
+                />
+              </label>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`Test Render Some Property 3`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div>
+        <p>
+          The instance is 
+          orange
+        </p>
+        <div
+          class="oj-design-row"
+        >
+          <span
+            class="oj-design-select"
+          >
+            <select
+              data-testid="foo_select"
+            >
+              <option
+                value=""
+              />
+              <option
+                value="apple"
+              >
+                apple
+              </option>
+              <option
+                value="orange"
+              >
+                orange
+              </option>
+            </select>
+          </span>
+          <span
+            class="oj-design-expand"
+          >
+            <button
+              data-testid="foo_expand"
+              type="button"
+            >
+              -
+            </button>
+          </span>
+        </div>
+        <div
+          class="oj-design-detail"
+        >
+          <div
+            class="oj-design-internal-form"
+          >
+            <ul
+              class="oj-form-group"
+            >
+              <li>
+                <label>
+                  seedless
+                  <input
+                    data-testid="foo_detail_seedless"
+                    type="text"
+                    value=""
+                  />
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div>
+      <p>
+        The instance is 
+        orange
+      </p>
+      <div
+        class="oj-design-row"
+      >
+        <span
+          class="oj-design-select"
+        >
+          <select
+            data-testid="foo_select"
+          >
+            <option
+              value=""
+            />
+            <option
+              value="apple"
+            >
+              apple
+            </option>
+            <option
+              value="orange"
+            >
+              orange
+            </option>
+          </select>
+        </span>
+        <span
+          class="oj-design-expand"
+        >
+          <button
+            data-testid="foo_expand"
+            type="button"
+          >
+            -
+          </button>
+        </span>
+      </div>
+      <div
+        class="oj-design-detail"
+      >
+        <div
+          class="oj-design-internal-form"
+        >
+          <ul
+            class="oj-form-group"
+          >
+            <li>
+              <label>
+                seedless
+                <input
+                  data-testid="foo_detail_seedless"
+                  type="text"
+                  value=""
+                />
+              </label>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

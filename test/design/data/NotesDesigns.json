@@ -1,0 +1,59 @@
+{
+    "@element": "design:definitions",
+    "components": [
+        {
+            "@element": "design:definition",
+            "element": "notes",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:text",
+                        "property": "description",
+                        "title": "Description"
+                    },
+                    {
+                        "@element": "design:indexed",
+                        "property": "notes",
+                        "options": [
+                            "value",
+                            "note"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "values": [
+        {
+            "@element": "design:definition",
+            "element": "value",
+            "inlineable": "true",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:text",
+                        "property": "value"
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "note",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:text",
+                        "property": "title",
+                        "title": "Title"
+                    },
+                    {
+                        "@element": "design:text",
+                        "property": "text",
+                        "title": "Text"
+                    }
+                ]
+            }
+        }    
+    ]
+}

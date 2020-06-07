@@ -8,6 +8,8 @@ export class LocalDataSource implements DesignDataSource {
 
     private readonly configurations: Map<string, any> = new Map();
 
+    onSave?: (componentId: string, configuration: any) => void;
+
     designFor(element: string, arooaType: ArooaType): any {
         switch(arooaType) {
             case ArooaType.Component:
@@ -60,6 +62,9 @@ export class LocalDataSource implements DesignDataSource {
     save(componentId: string, configuration: any) {
 
         this.configurations.set(componentId, configuration);
+        if (this.onSave) {
+            this.onSave(componentId, configuration);
+        }
     }
 }
 

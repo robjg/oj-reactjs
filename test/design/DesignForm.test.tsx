@@ -1,11 +1,15 @@
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, Matcher } from '@testing-library/react'
 
 import { DesignForm } from '../../src/design/designForm'
 import { DesignModel, TextField, SingleTypeSelection, CachingDesignFactory, configurationFromAny, ArooaType, parse } from '../../src/design/design';
 
 const designDefinitions = require('./data/FruitDesigns.json');
-const configuration = require('./data/FruitConfiguration.json');
+const snackConfiguration = require('./data/FruitConfiguration.json');
+const mealsConfiguration = require('./data/MealConfiguration.json');
+
+const notesDesigns = require('./data/NotesDesigns.json');
+const notesConfiguration = require('./data/NotesConfiguration.json');
 
 import { LocalDataSource } from './LocalDataSource';
 
@@ -15,7 +19,7 @@ test('Test Render Text Field', () => {
     const designModel: DesignModel = new DesignModel(dataSource);
         
     dataSource.addDesignDefinitions(designDefinitions);
-    dataSource.save("foo", configuration);
+    dataSource.save("foo", snackConfiguration);
 
     const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
 
@@ -24,6 +28,10 @@ test('Test Render Text Field', () => {
     const descriptionInput = result.getByLabelText("Description");
 
     fireEvent.change(descriptionInput, { target: { value: "An Afternoon Snack"} });
+
+    const expand = result.getByTestId("df_fruit_expand");
+
+    fireEvent.click(expand);
 
     const tasteInput = result.getByLabelText("Taste");
 
@@ -47,13 +55,17 @@ test('Test Render Design Instance', () => {
     const designModel: DesignModel = new DesignModel(dataSource);
 
     dataSource.addDesignDefinitions(designDefinitions);
-    dataSource.save("foo", configuration);
+    dataSource.save("foo", snackConfiguration);
 
     const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
 
-    const fruitSelection = result.getByLabelText("Fruit");
+    const fruitSelection = result.getByTestId("df_fruit_select");
 
     fireEvent.change(fruitSelection, { target: { value: "orange"} });
+
+    const expand = result.getByTestId("df_fruit_expand");
+
+    fireEvent.click(expand);
 
     const seedlessInput = result.getByLabelText("Seedless");
 
@@ -69,4 +81,43 @@ test('Test Render Design Instance', () => {
 
     expect(after['fruit']['@element']).toBe('orange');
     expect(after['fruit']['seedless']).toBe('true');
+})
+
+test('Test Render Indexed', () => {
+
+    const dataSource: LocalDataSource = new LocalDataSource();
+    const designModel: DesignModel = new DesignModel(dataSource);
+
+    dataSource.addDesignDefinitions(notesDesigns);
+    dataSource.save("foo", notesConfiguration);
+
+    const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
+
+    expect(result).toMatchSnapshot();    
+
+    const row1Selection = result.getByTestId("df_notes_row0_select");
+
+    fireEvent.change(row1Selection, { target: { value: "value"} });
+
+    const row1Expand = result.getByTestId("df_notes_row0_expand");
+
+    fireEvent.click(row1Expand)
+
+    const valueInput = result.getByTestId("df_notes_row0_detail_value");
+  
+    fireEvent.change(valueInput, { target: { value: "Some Foo"} });
+
+    expect(result).toMatchSnapshot();    
+
+    const form = result.getByTestId("design-form");
+
+    fireEvent.submit(form);
+
+    const after: any = dataSource.configurationFor("foo");
+
+    expect(after['@element']).toBe('notes');
+    expect(after['notes'][0]['@element']).toBe('value');
+    expect(after['notes'][0]['value']).toBe('Some Foo');
+    expect(after['notes'][1]['@element']).toBe('note');
+    expect(after['notes'][1]['text']).toBe('Mainly fruit');
 })
