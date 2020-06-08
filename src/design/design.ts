@@ -506,8 +506,19 @@ export class CachingDesignFactory implements DesignFactory {
         const itemDefs = definition['form']['items'] as Array<any>;
 
         var formItemFactories: Array<FormItemFactory> = [];
+
         if (itemDefs) {
             formItemFactories = itemDefs.map(e => this.formItemFactoryFrom(e));
+        }
+
+        if (arooaType == ArooaType.Component) {
+            const idFactory: FormItemFactory =
+                (configuration: Configuration) => {
+                    const textField = new TextField("id", "Id");
+                    textField.value = configuration.getTextValue("id");
+                    return textField;
+                };
+            formItemFactories = [idFactory, ...formItemFactories];
         }
 
         return {

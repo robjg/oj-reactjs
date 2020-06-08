@@ -38,11 +38,14 @@ test('Test Form Item From Field', () => {
 
     expect(result.element).toBe('apple');
 
-    const textField : any = result.items[0]; 
+    const idField : any = result.items[0]; 
+
+    expect(idField['title']).toBe('Id');
+
+    const textField : any = result.items[1]; 
 
     expect(textField['title']).toBe('Colour');
     expect(textField['value']).toBe('red');
-
 })
 
 test('Design JSON from File', () => {
