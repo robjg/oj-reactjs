@@ -1,0 +1,112 @@
+
+.nodetail {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: #EEE;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.control {
+	float: right;
+}
+
+.tabbed-pane {
+	position: absolute;
+	left: 0;
+	top: 25px;
+	bottom: 0;
+	right: 0;	
+}
+
+
+.tab-content {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 28px;
+	bottom: 0;
+	overflow: auto;
+}
+
+.tabs ul {
+	list-style-type: none;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	overflow: hidden;
+}
+
+.tabs li {
+	float: left;
+	width: 8em;
+	height: 28px;
+	overflow: hidden;
+	display: block;	
+	padding: 4px 4px 4px 4px;
+	margin: 0 0 0 2px;
+	border-top-left-radius: 7px;
+	border-top-right-radius: 7px;
+	text-align: center;
+}
+
+
+.tabs a {
+	text-decoration: none; 
+	color: black;
+}
+
+.tabs .selected {
+	background-color: #A5DF00;
+	color: #FF4000; 
+}
+	
+.tabs .notSelected {
+	background: green;
+	color: #FF4000; 
+}
+
+.tabs a:hover {
+	color: #FF4000
+}
+
+/* main */
+
+.tab-content {
+	border: 4px solid #A5DF00;
+ 	padding: 0.7em; 
+ 	margin: 0;
+	background: white;
+	border-radius: 7px;
+	-moz-border-radius: 7px;
+}
+
+.tab-content .notSelected {
+	display: none;
+}
+
+.tab-content table {
+	border-collapse: collapse;
+	width: 100%
+}
+
+.tab-content td {
+	border: 1px solid #A5DF00;
+	overflow: auto;
+ 	padding: 0.3em; 
+}
+
+.tab-content table .title-col {
+	width: 30%;
+	background-color: #DDD;
+    font-weight: bold;
+}
+
+.text-area {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	font-size: 0.75em;
+	font-family: 'Courier New', Courier, monospace;
+}

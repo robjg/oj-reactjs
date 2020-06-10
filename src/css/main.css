@@ -1,0 +1,34 @@
+/*
+    Styles for the main Oddjob UI used by index.html
+*/
+
+html, body {
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.split-pane-divider {
+    background: #aaa;
+}
+
+#left-component {
+    right: 50%;
+    margin-right: 5px;
+}
+
+#my-divider {
+    right: 50%;
+    width: 5px;
+}
+
+#right-component {
+    width: 50%;
+}
+
+#ojNodeRoot {
+    position: absolute;
+    top: 25px;
+    margin: 2px 2px 2px 2px;
+}

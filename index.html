@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="ISO-8859-1">
+
+	<style type="text/css">
+        @import url(css/main.css?v=1.1.0);
+        @import url(css/global.css?v=1.1.0);
+        @import url(css/tree.css?v=1.1.0);
+        @import url(css/detail.css?v=1.1.0);
+        @import url(css/control.css?v=1.1.0);
+        @import url(css/form.css?v=1.1.0);
+        @import url(css/split-pane.css?v=1.1.0);
+    </style>
+	<title>Oddjob</title>
+</head>
+<body>
+
+<div id="ojForm" class="form-box">
+</div>
+
+<div class="split-pane vertical-percent">
+    <div class="split-pane-component" id="left-component">
+        <div class="control">
+            <div class="action-set" id="ojJobActions">
+            </div>
+        </div>
+        <div id='ojNodeRoot' class='tree global-font'>
+            <ul>
+            </ul>
+        </div>
+    </div>
+    <div class="split-pane-divider" id="my-divider"></div>
+    <div class="split-pane-component" id="right-component">
+        <div class="control">
+            <div class="refresh-set">
+                <label for="refresh">Refresh Interval</label>
+                <input id="refresh" type="text"/>
+                <button id="refreshSubmit">Change</button>
+            </div>
+        </div>
+        <div id="oj-detail-tabs" class="tabbed-pane">
+
+            <div class="tabs global-font">
+                <ul>
+                    <li class="state selected"><a href="#">State</a></li>
+                    <li class="console notSelected"><a href="#">Console</a></li>
+                    <li class="log notSelected"><a href="#">Log</a></li>
+                    <li class="properties notSelected"><a href="#">Properties</a></li>
+                </ul>
+            </div>
+
+            <div class="tab-content">
+                <div class="state selected">
+                    <table class="state-content global-font">
+                        <colgroup>
+                            <col class="title-col">
+                            <col class="value-col">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td>State</td>
+                            <td class="state-state-cell">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td>Time</td>
+                            <td class="state-time-cell">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td>Exception</td>
+                            <td ><pre class="state-exception-cell"></pre></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="console notSelected">
+                <pre class="console-content text-area">
+                </pre>
+                </div>
+
+                <div class="log notSelected">
+                <pre class="log-content text-area">
+                </pre>
+                </div>
+
+                <div class="properties notSelected">
+                    <table class="global-font">
+                        <colgroup>
+                            <col class="title-col">
+                            <col class="value-col">
+                        </colgroup>
+                        <tbody class="properties-content">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<script src="./scripts/jquery-1.11.2.js"></script>
+<script src="./scripts/split-pane.js"></script>
+
+<script>
+
+$(function() {
+    $('div.split-pane').splitPane();
+});
+
+</script>
+
+<script src="./dist/main.js"></script>
+
+</body>
+</html>
