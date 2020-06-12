@@ -1,5 +1,17 @@
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
 module.exports = {
     mode: "production",
+
+    entry: './src/index.tsx',
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
 
     // Enable sourcemaps for debugging webpack's output.
     devtool: "source-map",
@@ -25,9 +37,36 @@ module.exports = {
                 enforce: "pre",
                 test: /\.js$/,
                 loader: "source-map-loader"
-            }
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    'css-loader'
+                ]
+            },
+            {
+                test: /\.(png|svg|jpg)$/,
+                use: [
+                    'url-loader',
+                ]
+            },
         ]
     },
+
+    plugins: [
+        new MiniCssExtractPlugin(),
+        new CopyWebpackPlugin({
+            patterns: [
+                { from: 'src/scripts', to: 'scripts'}
+            ]
+        }),
+        new HtmlWebpackPlugin({
+            template: 'src/index.html',
+            favicon: 'src/favicon.ico'
+        }),
+        new CleanWebpackPlugin()
+    ],
 
     // When importing a module whose path matches one of the following, just
     // assume a corresponding global variable exists and use that instead.

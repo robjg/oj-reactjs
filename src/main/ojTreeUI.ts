@@ -2,6 +2,10 @@ import { IconProvider, NodeInfo } from "./ojDao";
 import { TreeChangeListener, TreeSelectionListener, TreeSelectionEvent } from "./ojTreeModel";
 import { TreeController } from "./ojTreeController";
 
+import PlusImg from '../gfx/plus.png';
+import MinusImg from '../gfx/minus.png';
+
+
 /**
  * Creates The Oddjob Tree UI Component. This component is a Selection Listener and a
  * Tree Change Listener and must be added as a listener to a Model to receive the
@@ -48,7 +52,7 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
 	private expandImage(nodeId: number): JQuery {
 		return $('<img>').attr(
 				{ class: 'toggle',
-				  src: 'gfx/plus.png',
+				  src: PlusImg,
 				  alt: 'expand'
 				}
 			).click((): void => {
@@ -60,7 +64,7 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
 	private collapseImage(nodeId: number): JQuery {
 		return $('<img>').attr(
 				{ class: 'toggle',
-				  src: 'gfx/minus.png', 
+				  src: MinusImg, 
 				  alt: 'collapse' 
 				}
 			).click((): void => {
@@ -247,7 +251,7 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
 		
     selectionChanged = (event: TreeSelectionEvent): void => {
 
-        let fromNodeId: number = event.fromNodeId;
+        let fromNodeId: number | undefined = event.fromNodeId;
         let toNodeId: number = event.toNodeId;
 
         if (fromNodeId !== undefined) {

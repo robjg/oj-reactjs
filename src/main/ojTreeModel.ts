@@ -30,7 +30,7 @@ export interface TreeChangeListener {
 
 export interface TreeSelectionEvent {
 
-    fromNodeId: number;
+    fromNodeId?: number;
 
     toNodeId: number;
 }
@@ -93,7 +93,7 @@ export class OjTreeModel implements TreeModel {
         this.ojTreeDao = ojTreeDao;
     }
 	
-	private fireSelectionChanged(fromNodeId: number, toNodeId: number): void {
+	private fireSelectionChanged(fromNodeId: number | undefined, toNodeId: number): void {
 		let event: TreeSelectionEvent = {
 			fromNodeId: fromNodeId,
 			toNodeId: toNodeId
@@ -514,7 +514,7 @@ export class OjTreeModel implements TreeModel {
 
     select(nodeId: number): void {
 
-        if (this.selectedNodeId && nodeId !== this.selectedNodeId) {
+        if (nodeId != this.selectedNodeId) {
             this.fireSelectionChanged(this.selectedNodeId, nodeId)
             this.selectedNodeId = nodeId;
         }
