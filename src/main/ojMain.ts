@@ -11,7 +11,7 @@ import { OjState } from "./ojState";
 import { TreeModel, OjTreeModel } from "./ojTreeModel";
 import { TreeController, OjTreeController } from "./ojTreeController";
 import { OjTabsModel } from "./ojTabsModel";
-import { OjTreeUI } from "./ojTreeUI";
+import { OjTreeUI, ContextMenuProvider } from "./ojTreeUI";
 import { RefreshModel, OjRefreshModel, OjRefreshUI } from "./refresh";
 import { Pollable, PollController, PollResume } from "./PollController";
 import { OjDetailTabsUI } from "./ojTabsUI";
@@ -51,7 +51,10 @@ export class OjMain {
         }
     };
 
-    constructor(idPrefix?: string) {
+    constructor(options?: { 
+            idPrefix?: string;
+            contextMenuProvider?: ContextMenuProvider
+    }) {
 
         let ojDao = new OjDaoImpl();
 
@@ -59,7 +62,7 @@ export class OjMain {
 
         let ojTreeController: TreeController = new OjTreeController(this.ojTreeModel, this.pollController);
 
-        let ojTreeUI = new OjTreeUI(ojTreeController, ojDao, idPrefix);
+        let ojTreeUI = new OjTreeUI(ojTreeController, ojDao, options);
 
         this.ojTreeModel.addTreeChangeListener(ojTreeUI);
         this.ojTreeModel.addSelectionListener(ojTreeUI);

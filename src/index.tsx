@@ -9,6 +9,12 @@ import './css/control.css';
 import './css/form.css';
 import './css/split-pane.css';
 
-var main = new OjMain();
+function foo(nodeId: number) {
+    return function() {
+        alert(`Yow ${nodeId}!`);
+    }
+}
+
+var main = new OjMain({ contextMenuProvider: foo});
 
 main.start();

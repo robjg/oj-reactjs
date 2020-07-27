@@ -5,6 +5,7 @@ import { TreeController } from "./ojTreeController";
 import PlusImg from '../gfx/plus.png';
 import MinusImg from '../gfx/minus.png';
 
+export type ContextMenuProvider = (nodeId: number) => () => void;
 
 /**
  * Creates The Oddjob Tree UI Component. This component is a Selection Listener and a
@@ -14,13 +15,11 @@ import MinusImg from '../gfx/minus.png';
  */
 export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
 
-	private ojTreeController: TreeController;
+	private readonly idPrefix: string;
 
-	private iconProvider: IconProvider;
+	private readonly label: (node: NodeInfo) => JQuery<any>;
 
-	private idPrefix: string;
-
-	private label: (node: NodeInfo) => JQuery<any>;
+    private readonly contextMenuProvider?: ContextMenuProvider;
 
     /**
      * Constructor.
@@ -29,12 +28,18 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
      * @param iconProvider
      * @param idPrefix
      */
-	constructor(ojTreeController: TreeController, iconProvider: IconProvider, idPrefix: string = 'ojNode') {
+    constructor(private readonly ojTreeController: TreeController, 
+        private readonly iconProvider: IconProvider, 
+        options ?: {
+            idPrefix?: string;
+            contextMenuProvider?: ContextMenuProvider
+        }) {
 
         if (ojTreeController.isSelectEnabled()) {
             this.label = function(node: NodeInfo): JQuery<any> {
-                return $('<a>' + node.name + '</a>').click(function() {
-                    ojTreeController.select(node.nodeId);
+                return $('<span class="nodeLabel"><a>' + node.name + '</a></span>')
+                    .click(function() {
+                        ojTreeController.select(node.nodeId);
                 });
             }
         }
@@ -46,10 +51,11 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
 
         this.ojTreeController = ojTreeController;
         this.iconProvider = iconProvider;
-        this.idPrefix = idPrefix;
+        this.idPrefix = options?.idPrefix ?? 'ojNode';
+        this.contextMenuProvider = options?.contextMenuProvider;
     }
 
-	private expandImage(nodeId: number): JQuery {
+    private expandImage(nodeId: number): JQuery {
 		return $('<img>').attr(
 				{ class: 'toggle',
 				  src: PlusImg,
@@ -119,7 +125,7 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
 	
 	private htmlForNode(node: NodeInfo): JQuery {
 		
-		let li$: JQuery = $('<li>').attr('id', 'ojNode' + node.nodeId);
+		let li$: JQuery = $('<li>').attr('id', this.idPrefix + node.nodeId);
 		
 		if (node.children !== undefined && node.children.length > 0) {
 			li$.append(this.expandImage(node.nodeId));
@@ -255,13 +261,22 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
         let toNodeId: number = event.toNodeId;
 
         if (fromNodeId !== undefined) {
-            $(this.nodeIdSelector(fromNodeId.toString()) + ">a").removeAttr(
-            'class');
+            $(this.nodeIdSelector(fromNodeId.toString()) + " .nodeLabel")
+                .removeClass('selected');
+            $("#contextMenu").remove();
         }
 
         if (toNodeId !== undefined) {
-            $(this.nodeIdSelector(toNodeId.toString()) + ">a").attr(
-                    'class', 'selected');
+            $(this.nodeIdSelector(toNodeId.toString()) + " .nodeLabel")
+                .addClass('selected');
+            const onClick = this.contextMenuProvider && this.contextMenuProvider(toNodeId);
+            if (onClick) {
+                $(this.nodeIdSelector(toNodeId.toString() + " .nodeLabel"))
+                    .append($("<button>...</button>")
+                    .attr({type: "button",
+                        id: "contextMenu" })
+                    .click(onClick));
+            }
         }
     };
 

@@ -636,9 +636,9 @@ export function parse(instance: DesignInstance): any {
 
 export interface DesignDataSource {
 
-    designFor(element: string, arooaType: ArooaType): any;
+    designFor(element: string, arooaType: ArooaType): Promise<any>;
 
-    configurationFor(componentId: string): any;
+    configurationFor(componentId: string): Promise<any>;
 
     save(componentId: string, configuration: any): void;
 }
