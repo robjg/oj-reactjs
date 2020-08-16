@@ -1,0 +1,128 @@
+export var designDefinitions: any = {
+    "@element": "design:definitions",
+    "components": [
+        {
+            "@element": "design:definition",
+            "element": "meals",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:mapped",
+                        "arooaType": "Component",
+                        "property": "snacks",
+                        "title": "Snacks",
+                        "options": [
+                            "snack"
+                        ]
+                    },
+                    {
+                        "@element": "design:indexed",
+                        "property": "notes",
+                        "options": [
+                            "value",
+                            "note"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "snack",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "description",
+                        "title": "Description"
+                    },
+                    {
+                        "@element": "design:simple",
+                        "property": "fruit",
+                        "title": "Fruit",
+                        "options": [
+                            "value",
+                            "apple",
+                            "orange"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "values": [
+        {
+            "@element": "design:definition",
+            "element": "value",
+            "inlineable": "true",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "value"
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "apple",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "colour",
+                        "title": "Colour"
+                    },
+                    {  
+                        "@element": "design:group",
+                        "title": "Other",
+                        "items": [
+                            {
+                                "@element": "design:field",
+                                "property": "taste",
+                                "title": "Taste"
+                            },
+                            {
+                                "@element": "design:field",
+                                "property": "size",
+                                "title": "Size"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "orange",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "seedless",
+                        "title": "Seedless"
+                    }
+                ]
+            }
+        },
+        {
+            "@element": "design:definition",
+            "element": "note",
+            "form": {
+                "items": [
+                    {
+                        "@element": "design:field",
+                        "property": "title",
+                        "title": "Title"
+                    },
+                    {
+                        "@element": "design:field",
+                        "property": "text",
+                        "title": "Text"
+                    }
+                ]
+            }
+        }    
+    ]
+}

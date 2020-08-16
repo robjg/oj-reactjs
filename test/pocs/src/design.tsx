@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { DesignForm } from './design/designForm'
-import * as design from './design/design';
+import { DesignForm } from '../../../src/design/designForm'
+import * as design from '../../../src/design/design';
 
-import { LocalDataSource } from '../test/design/LocalDataSource';
+import { LocalDataSource } from '../../design/LocalDataSource';
 
-const designDefinitions = require('../test/design/data/FruitDesigns.json');
-const configuration = require('../test/design/data/MealConfiguration.json');
+import { designDefinitions } from './data/FruitDesigns';
+import { configuration } from './data/MealConfiguration';
 
 const dataSource: LocalDataSource = new LocalDataSource();
 const designModel: design.DesignModel = new design.DesignModel(dataSource);

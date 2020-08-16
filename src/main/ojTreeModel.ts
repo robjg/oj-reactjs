@@ -73,6 +73,8 @@ interface NodeData {
 
 export class OjTreeModel implements TreeModel {
 
+	readonly startingNodeId: string = '1';
+
 	private nodeDataById: {
         [nodeId: number] : NodeData;
 	} = {};
@@ -475,7 +477,7 @@ export class OjTreeModel implements TreeModel {
 
     init(): void {
 
-        this.ojTreeDao.makeNodeInfoRequest('0', this.rootNodeCallback, -1);
+        this.ojTreeDao.makeNodeInfoRequest(this.startingNodeId, this.rootNodeCallback, -1);
     }
 		
     expandNode(nodeId: number): void {

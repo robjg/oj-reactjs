@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "outFile": "main.js",
+        "target": "ES5",
+        "jsx": "react",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "module": "amd",
+        "lib": [
+            "ES2016",
+            "DOM"
+        ]
+    },
+    "include": [
+        "src/**/*", 
+        "../../src/**/*",
+        "../test/design/LocalDataSource.ts"
+    ]
+}
