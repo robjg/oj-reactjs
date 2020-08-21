@@ -3,3 +3,4 @@ package-lock.json
 /dist
 /.vscode
 test/pocs/main.js
+test/pocs/main.js.map

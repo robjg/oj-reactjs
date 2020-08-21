@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <div id="response"></div>
+    <div id="form"></div>
 
     <script src="../../node_modules/requirejs/require.js"></script>
     <script>
@@ -15,47 +15,24 @@
             paths: {
                 'react': "../../node_modules/react/umd/react.development",
                 'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
-                'src/remote/invoke': "./main"
+                'src/remote/invoke': "./main",
+                'test/pocs/src/invokeform': "./main"
             }
         });
 
-        requirejs(['react', 'react-dom', 'src/remote/invoke'], function (React, ReactDOM, invoke) {
+        requirejs(['react', 'react-dom', 'src/remote/invoke', 'test/pocs/src/invokeform'],
+            function (React, ReactDOM, invoke, invokeForm) {
 
-            var request = new invoke.InvokeRequest(1, 
-                    new invoke.OperationType('run', 'void', []),
-                    []);
 
-                    console.log(JSON.stringify(request));
+                var invoker = new invoke.RemoteInvoker('http://localhost:8080/invoke')
 
-            // Example POST method implementation:
-            async function postData(url = '', data = {}) {
-                // Default options are marked with *
-                const response = await fetch(url, {
-                    method: 'POST', // *GET, POST, PUT, DELETE, etc.
-                    mode: 'cors', // no-cors, *cors, same-origin
-                    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-                    credentials: 'include', // include, *same-origin, omit
-                    headers: {
-                        'Content-Type': 'application/json'
-                        // 'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    redirect: 'follow', // manual, *follow, error
-                    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-                    body: JSON.stringify(data) // body data type must match "Content-Type" header
-                });
-
-                const json = await response.json(); // parses JSON response into native JavaScript objects
-
-                // now you can render your React elements
                 ReactDOM.render(
-                    React.createElement('p', {}, JSON.stringify(json)),
-                    document.getElementById('response')
+                    React.createElement(invokeForm.InvokeForm,
+                        { invoker: invoker }, null),
+                    document.getElementById('form')
                 );
 
-            };
-
-            postData('http://localhost:8080/invoke', request);
-        });
+            });
 
     </script>
 
