@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Remote Form Demo</title>
+</head>
+
+<body>
+    <div id="form"></div>
+
+    <script src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        requirejs.config({
+            paths: {
+                'react': "../../node_modules/react/umd/react.development",
+                'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
+                'src/remote/invoke': "./main",
+                'test/pocs/src/remotedesign': "./main"
+            }
+        });
+
+        requirejs(['react', 'react-dom', 'src/remote/invoke', 'test/pocs/src/remotedesign'],
+            function (React, ReactDOM, invoke, remotedesign) {
+
+
+                var invoker = new invoke.RemoteInvoker('http://localhost:8080/invoke')
+
+                ReactDOM.render(
+                    React.createElement(remotedesign.RemoteDesignForm,
+                        { invoker: invoker }, null),
+                    document.getElementById('form')
+                );
+
+            });
+    </script>
+</body>
+
+</html>

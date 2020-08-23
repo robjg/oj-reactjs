@@ -1,5 +1,4 @@
-
-export class OperationType {
+export class OperationType<T> {
 
     constructor(readonly name: string,
         readonly type: string,
@@ -8,35 +7,27 @@ export class OperationType {
     }
 }
 
-export class InvokeRequest {
+export class InvokeRequest<T> {
 
     argTypes?: string[];
 
     constructor(readonly remoteId: number,
-        readonly operationType: OperationType,
+        readonly operationType: OperationType<T>,
         readonly args: any[]) {
 
     }
 }
 
-export class InvokeResponse {
+export class InvokeResponse<T> {
 
     constructor(readonly type: string,
-        value?: any) {
+        readonly value?: any) {
 
         }
 }
 
-const operationTypes: Map<String, OperationType> = new Map();
-
-
-export function invokeRequest() {
-
-
-}
-
-function isInvokeResponse(maybe: InvokeResponse | any): maybe is InvokeResponse{
-    return (maybe as InvokeResponse).type != undefined
+function isInvokeResponse<T>(maybe: InvokeResponse<T> | any): maybe is InvokeResponse<T>{
+    return (maybe as InvokeResponse<T>).type != undefined
 }
 
 export class RemoteInvoker {
@@ -45,7 +36,7 @@ export class RemoteInvoker {
 
     }    
 
-    async invoke(invokeRequest: InvokeRequest) : Promise<InvokeResponse> {
+    async invoke<T>(invokeRequest: InvokeRequest<T>) : Promise<InvokeResponse<T>> {
         
         const jsonBody = JSON.stringify(invokeRequest);
 
