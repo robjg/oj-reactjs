@@ -65,5 +65,6 @@ test('Design JSON from File', () => {
     const result: any = form.instance;
     
     expect(result.element).toBe('snack');
+    expect(result.items.length).toBe(3);
 }) 
 
