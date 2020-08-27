@@ -10,7 +10,7 @@ const designDefinitions = require('../test/design/data/FruitDesigns.json');
 const configuration = require('../test/design/data/FruitConfiguration.json');
 
 const factories: LocalDataSource = new LocalDataSource();
-const designModel: design.DesignModel = new design.DesignModel(factories);
+const designModel: design.DesignModel = new design.FactoryDesignModel("foo", factories);
 factories.addDesignDefinitions(designDefinitions);
 factories.save("foo", configuration);
 
@@ -40,7 +40,7 @@ class JobMenu extends React.Component<{ jobId: string }, { show: boolean }> {
       <li><button onClick={(e) => {
         this.setState({ show: false });
         ReactDOM.render(
-          <DesignForm designModel={designModel} componentId="foo" 
+          <DesignForm designModel={designModel} 
               hideForm={()=> ReactDOM.unmountComponentAtNode(formDiv)}/>,
           formDiv
         );

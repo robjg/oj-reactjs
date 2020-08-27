@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { DesignModel, FormBuilder, MainForm, TextField, SingleTypeSelection, FieldGroup, ArooaType } from '../../src/design/design'
+import { DesignModel, FactoryDesignModel,  MainForm, ArooaType } from '../../src/design/design'
 import { LocalDataSource } from './LocalDataSource'
 
 test('Test Form Item From Field', () => {
@@ -30,9 +30,9 @@ test('Test Form Item From Field', () => {
 
     dataSource.save("fruit", configuration);
 
-    const designModel : DesignModel = new DesignModel(dataSource);
+    const designModel : DesignModel = new FactoryDesignModel("fruit", dataSource);
 
-    const form: MainForm = designModel.createForm("fruit");
+    const form: MainForm = designModel.createForm();
 
     const result: any = form.instance;
 
@@ -58,9 +58,9 @@ test('Design JSON from File', () => {
     dataSource.addDesignDefinitions(designDefinitions);
     dataSource.save("foo", configuration);
 
-    const designModel : DesignModel = new DesignModel(dataSource);
+    const designModel : DesignModel = new FactoryDesignModel("foo", dataSource);
 
-    const form: MainForm = designModel.createForm("foo");
+    const form: MainForm = designModel.createForm();
 
     const result: any = form.instance;
     

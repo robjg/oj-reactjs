@@ -492,7 +492,6 @@ class InternalForm extends React.Component<InternalFormProps> {
 
 type DesignFormProps = {
     designModel: DesignModel;
-    componentId: string;
     hideForm: () => void;
 }
 
@@ -506,7 +505,7 @@ export class DesignForm extends React.Component<DesignFormProps> {
 
         const formBuilder = new CompFormBuilder("df");
 
-        const mainForm = this.props.designModel.createForm(this.props.componentId);
+        const mainForm = this.props.designModel.createForm();
 
         function saveFn(e: React.FormEvent<HTMLFormElement>): void {
             e.preventDefault();

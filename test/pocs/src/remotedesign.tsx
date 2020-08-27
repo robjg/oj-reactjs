@@ -1,11 +1,14 @@
 import React from 'react';
 import { RemoteInvoker } from '../../../src/remote/invoke';
-import { RemoteSession, RemoteSessionFactory, ConfigurationOwner } from '../../../src/remote/remote';
+import { RemoteSessionFactory, ConfigurationOwner } from '../../../src/remote/remote';
+import { DesignModel, ParserDesignModel } from '../../../src/design/design';
+import { DesignForm } from '../../../src/design/designForm';
 
 type RemoteDesignState = {
 
     remoteId: string;
     result: string;
+    designModel?: DesignModel;
 }
 
 type RemoteDesignProps = {
@@ -19,7 +22,7 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
         super(props);
         this.state = {
             remoteId: '',
-            result: ''
+            result: '',
         };
 
         this.handleChangeRemoteId = this.handleChangeRemoteId.bind(this);
@@ -45,22 +48,42 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
             .createRemoteSession();
 
         remoteSession.getOrCreate(1)
-           .then(proxy1 => {
+            .then(proxy1 => {
                 remoteSession.getOrCreate(remoteId)
-                   .then(proxy2 => {
+                    .then(proxy2 => {
 
-                    if (proxy1.isA(ConfigurationOwner)) {
-                        proxy1.as(ConfigurationOwner).formFor(proxy2)
-                            .then(formText => this.setState({ result: formText}));
-                    }
-                    else {
-                        this.setState({ result: `Not an ${typeof ConfigurationOwner}` });
-                    }
-                })
-        });
+                        if (proxy1.isA(ConfigurationOwner)) {
+                            proxy1.as(ConfigurationOwner).formFor(proxy2)
+                                .then(formText => {
+                                    const designModel = new ParserDesignModel(
+                                        {
+                                            formConfiguration: JSON.parse(formText),
+                                            saveAction: (config: any) => ({}),
+                                            newForm: (element: string, isComponent: boolean) =>
+                                                ({
+                                                    "@element": "forms:mainForm"
+                                                })
+                                        });
+
+                                    this.setState({
+                                        designModel: designModel,
+                                        result: formText
+                                    });
+                                });
+                        }
+                        else {
+                            this.setState({ result: `Not an ${typeof ConfigurationOwner}` });
+                        }
+                    })
+            });
     }
 
+
     render() {
+        const noDisplay = {
+            display: "none"
+        }
+
         return (
             <>
                 <form onSubmit={this.handleSubmit}>
@@ -77,7 +100,16 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
                 <div>
                     {this.state.result}
                 </div>
+                <div>
+                    {
+                        this.state.designModel ?
+                            <DesignForm designModel={this.state.designModel}
+                                hideForm={() => this.setState({ designModel: undefined })} />
+                            : <div style={noDisplay} />
+                    }
+                </div>
             </>);
     }
 
 }
+

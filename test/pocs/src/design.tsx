@@ -10,7 +10,7 @@ import { designDefinitions } from './data/FruitDesigns';
 import { configuration } from './data/MealConfiguration';
 
 const dataSource: LocalDataSource = new LocalDataSource();
-const designModel: design.DesignModel = new design.DesignModel(dataSource);
+const designModel: design.DesignModel = new design.FactoryDesignModel("foo", dataSource);
 dataSource.addDesignDefinitions(designDefinitions);
 dataSource.save("foo", configuration);
 
@@ -25,7 +25,7 @@ if (!formDiv) {
 }
 
 ReactDOM.render(
-  <DesignForm designModel={designModel} componentId="foo" 
+  <DesignForm designModel={designModel} 
       hideForm={()=> ReactDOM.unmountComponentAtNode(formDiv)}/>,
   formDiv
 );

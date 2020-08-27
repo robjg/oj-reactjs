@@ -67,7 +67,7 @@ export class SingleTypeSelection implements DesignProperty {
 
     constructor(readonly property: string,
         readonly options: string[],
-        readonly designFactory: NewTypeDesignFactory,
+        readonly newDesign: NewTypeDesignFactory,
         readonly title?: string,
         instance?: DesignInstance) {
 
@@ -80,7 +80,7 @@ export class SingleTypeSelection implements DesignProperty {
 
     change(element: string): void {
         if (element) {
-            this._instance = this.designFactory.newDesign(element);
+            this._instance = this.newDesign(element);
         }
         else {
             this._instance = undefined;
@@ -114,7 +114,7 @@ export class IndexedMultiTypeTable implements DesignProperty {
 
     constructor(readonly property: string,
         readonly options: string[],
-        readonly designFactory: NewTypeDesignFactory,
+        readonly newDesign: NewTypeDesignFactory,
         readonly title?: string) {
 
     }
@@ -130,7 +130,7 @@ export class IndexedMultiTypeTable implements DesignProperty {
     change(index: number, element: string) {
 
         if (element) {
-            const instance: DesignInstance = this.designFactory.newDesign(element);
+            const instance: DesignInstance = this.newDesign(element);
             if (index > this._instances.length) {
                 this._instances.push(instance);
             }
@@ -161,7 +161,7 @@ export class MappedMultiTypeTable implements DesignProperty {
 
     constructor(readonly property: string,
         readonly options: string[],
-        readonly designFactory: NewTypeDesignFactory,
+        readonly newDesign: NewTypeDesignFactory,
         readonly title?: string) {
     }
 
@@ -188,7 +188,7 @@ export class MappedMultiTypeTable implements DesignProperty {
     changeTheInstance(index: number, element: string) {
 
         if (element) {
-            const instance: DesignInstance = this.designFactory.newDesign(element);
+            const instance: DesignInstance = this.newDesign(element);
             if (index == this._instances.length) {
                 this._instances.push({ key: this.pendingKey, instance: instance });
                 this.pendingKey = undefined;
@@ -265,10 +265,7 @@ class ElementOnly implements Configuration {
     }
 }
 
-export interface NewTypeDesignFactory {
-
-    newDesign(element: string): DesignInstance
-}
+export type NewTypeDesignFactory = (element: string) => DesignInstance;
 
 interface TypeDesignFactory {
 
@@ -336,10 +333,8 @@ function elementDefinitionFrom(definition: any): {
     }
 }
 
-export interface NewDesignFactory {
-
-    newDesign(element: string, arooaType: ArooaType): DesignInstance;
-}
+export type NewDesignFactory = 
+    (element: string, arooaType: ArooaType) => DesignInstance;
 
 export interface DesignFactory {
 
@@ -377,11 +372,9 @@ export class CachingDesignFactory implements DesignFactory {
 
     private newDesignFactory(arooaType: ArooaType | undefined): NewTypeDesignFactory {
 
-        return {
-            newDesign: (element: string) => {
+        return (element: string) => {
                 return (arooaType === ArooaType.Component ?
                     this.componentCache : this.valueCache).createDesign(new ElementOnly(element));
-            }
         };
     }
 
@@ -667,30 +660,43 @@ export interface DesignDataSource {
 }
 
 
-export class DesignModel {
+export interface DesignModel {
+
+    createForm(): MainForm;
+}
+
+/**
+ * Version that uses a Design Factory.
+ */
+export class FactoryDesignModel implements DesignModel {
 
     private readonly factories: DesignFactory;
 
-    constructor(readonly dataSource: DesignDataSource) {
+    constructor(readonly componentId: string, readonly dataSource: DesignDataSource) {
         this.factories = new CachingDesignFactory(
             (element: string, arooaType: ArooaType) => dataSource.designFor(element, arooaType));
     }
 
-    createForm(componentId: string): MainForm {
+    createForm(): MainForm {
 
-        const configuration: any = this.dataSource.configurationFor(componentId);
+        const configuration: any = this.dataSource.configurationFor(this.componentId);
 
         const designInstance = this.factories.createDesign(
             configurationFromAny(configuration), ArooaType.Component);
 
         return new MainForm(designInstance,
-            (instance) => this.dataSource.save(componentId, parse(instance)));
+            (instance) => this.dataSource.save(this.componentId, parse(instance)));
     }
 }
 
+export type NewFormLookup = (element: string, isComponent: boolean) => any;
+
+/**
+ * 
+ */
 export class FormParser {
 
-    constructor(readonly designFactory: NewDesignFactory) {
+    constructor(readonly designFactory: NewFormLookup) {
     }
 
     parseFormDefinition(definition: any): DesignInstance {
@@ -723,10 +729,14 @@ export class FormParser {
     }
 
     typeDesignFactory(arooaType: ArooaType): NewTypeDesignFactory {
-        return {
-            newDesign: (element: string) =>
-                this.designFactory.newDesign(element, arooaType)
-        };
+        return (element: string) => {
+            const definition = this.designFactory(element, arooaType == ArooaType.Component)
+
+            const configuration = parse(definition);
+
+            return this.createDesign(configuration);
+        }
+                
     }
 
     formItemFrom(configuration: Configuration): FormItem {
@@ -810,7 +820,7 @@ export class FormParser {
                     const property: string = configuration.getTextOr('property',
                         () => { throw new Error("Property is missing.") });
 
-                    const options: string[] = configuration.getTextOr('property',
+                    const options: string[] = configuration.getTextOr('options',
                         () => { throw new Error("Options are missing.") })
                         .split(',');
 
@@ -839,7 +849,7 @@ export class FormParser {
                     const property: string = configuration.getTextOr('property',
                         () => { throw new Error("Property is missing.") });
 
-                    const options: string[] = configuration.getTextOr('property',
+                    const options: string[] = configuration.getTextOr('options',
                         () => { throw new Error("Options are missing.") })
                         .split(',');
 
@@ -871,5 +881,31 @@ export class FormParser {
             default:
                 throw new Error(`Unknown Form Item ${type}.`);
         }
+    }
+}
+
+
+/**
+ * Version that uses a Design Factory.
+ */
+export class ParserDesignModel implements DesignModel {
+
+    constructor(readonly model: {
+        formConfiguration: any,
+        saveAction: (configuration: any) => void
+        newForm: (element: string, isComponent: boolean) => any;
+    }) {
+    }
+
+    createForm(): MainForm {
+
+        const formParser: FormParser = new FormParser(
+            this.model.newForm);
+
+        const designInstance = formParser.parseFormDefinition(
+            this.model.formConfiguration);
+
+        return new MainForm(designInstance,
+            instance => this.model.saveAction(parse(instance)));
     }
 }

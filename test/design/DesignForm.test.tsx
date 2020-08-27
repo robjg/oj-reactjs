@@ -2,7 +2,7 @@ import React from 'react'
 import { render, fireEvent, Matcher } from '@testing-library/react'
 
 import { DesignForm } from '../../src/design/designForm'
-import { DesignModel, TextField, SingleTypeSelection, CachingDesignFactory, configurationFromAny, ArooaType, parse } from '../../src/design/design';
+import { DesignModel, FactoryDesignModel, ArooaType, parse } from '../../src/design/design';
 
 const designDefinitions = require('./data/FruitDesigns.json');
 const snackConfiguration = require('./data/FruitConfiguration.json');
@@ -16,12 +16,12 @@ import { LocalDataSource } from './LocalDataSource';
 test('Test Render Text Field', () => {
    
     const dataSource: LocalDataSource = new LocalDataSource();
-    const designModel: DesignModel = new DesignModel(dataSource);
+    const designModel: DesignModel = new FactoryDesignModel("foo", dataSource);
         
     dataSource.addDesignDefinitions(designDefinitions);
     dataSource.save("foo", snackConfiguration);
 
-    const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
+    const result = render(<DesignForm designModel={designModel} hideForm={()=>{}} />);
 
     expect(result).toMatchSnapshot();    
 
@@ -52,12 +52,12 @@ test('Test Render Text Field', () => {
 test('Test Render Design Instance', () => {
 
     const dataSource: LocalDataSource = new LocalDataSource();
-    const designModel: DesignModel = new DesignModel(dataSource);
+    const designModel: DesignModel = new FactoryDesignModel("foo", dataSource);
 
     dataSource.addDesignDefinitions(designDefinitions);
     dataSource.save("foo", snackConfiguration);
 
-    const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
+    const result = render(<DesignForm designModel={designModel} hideForm={()=>{}} />);
 
     const fruitSelection = result.getByTestId("df_fruit_select");
 
@@ -86,12 +86,12 @@ test('Test Render Design Instance', () => {
 test('Test Render Indexed', () => {
 
     const dataSource: LocalDataSource = new LocalDataSource();
-    const designModel: DesignModel = new DesignModel(dataSource);
+    const designModel: DesignModel = new FactoryDesignModel("foo", dataSource);
 
     dataSource.addDesignDefinitions(notesDesigns);
     dataSource.save("foo", notesConfiguration);
 
-    const result = render(<DesignForm designModel={designModel} componentId="foo" hideForm={()=>{}} />);
+    const result = render(<DesignForm designModel={designModel} hideForm={()=>{}} />);
 
     expect(result).toMatchSnapshot();    
 
