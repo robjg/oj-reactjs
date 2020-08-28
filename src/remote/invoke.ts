@@ -30,7 +30,12 @@ function isInvokeResponse<T>(maybe: InvokeResponse<T> | any): maybe is InvokeRes
     return (maybe as InvokeResponse<T>).type != undefined
 }
 
-export class RemoteInvoker {
+export interface Invoker {
+
+    invoke<T>(invokeRequest: InvokeRequest<T>) : Promise<InvokeResponse<T>>;
+}
+
+export class RemoteInvoker implements Invoker {
 
     constructor(readonly url: string) {
 

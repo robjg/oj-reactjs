@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, Matcher } from '@testing-library/react'
+import { render, fireEvent, waitFor, Matcher } from '@testing-library/react'
 
 import { DesignForm } from '../../src/design/designForm'
 import { DesignModel, FactoryDesignModel, ArooaType, parse } from '../../src/design/design';
@@ -49,7 +49,7 @@ test('Test Render Text Field', () => {
     expect(after['fruit']['taste']).toBe('Tangy');
 });
 
-test('Test Render Design Instance', () => {
+test('Test Render Design Instance', async () => {
 
     const dataSource: LocalDataSource = new LocalDataSource();
     const designModel: DesignModel = new FactoryDesignModel("foo", dataSource);
@@ -67,6 +67,8 @@ test('Test Render Design Instance', () => {
 
     fireEvent.click(expand);
 
+    await waitFor( () => result.getByLabelText("Seedless"));
+
     const seedlessInput = result.getByLabelText("Seedless");
 
     fireEvent.change(seedlessInput, { target: { value: "true"} });
@@ -83,7 +85,7 @@ test('Test Render Design Instance', () => {
     expect(after['fruit']['seedless']).toBe('true');
 })
 
-test('Test Render Indexed', () => {
+test('Test Render Indexed', async () => {
 
     const dataSource: LocalDataSource = new LocalDataSource();
     const designModel: DesignModel = new FactoryDesignModel("foo", dataSource);
@@ -99,6 +101,8 @@ test('Test Render Indexed', () => {
 
     fireEvent.change(row1Selection, { target: { value: "value"} });
 
+    await waitFor(() => result.getByTestId("df_notes_row0_expand"));
+    
     const row1Expand = result.getByTestId("df_notes_row0_expand");
 
     fireEvent.click(row1Expand)

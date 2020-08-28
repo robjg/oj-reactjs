@@ -78,13 +78,15 @@ export class SingleTypeSelection implements DesignProperty {
         return this._instance;
     }
 
-    change(element: string): void {
-        if (element) {
-            this._instance = this.newDesign(element);
-        }
-        else {
-            this._instance = undefined;
-        }
+    async change(element: string): Promise<DesignInstance | undefined> {
+
+        const promise: Promise<DesignInstance | undefined> = 
+            element ? 
+            this.newDesign(element) : 
+            Promise.resolve(undefined);
+
+        const instance = await promise;
+        return this._instance = instance;
     }
 
     accept<T>(formBuilder: FormBuilder<T>): T {
@@ -129,19 +131,26 @@ export class IndexedMultiTypeTable implements DesignProperty {
 
     change(index: number, element: string) {
 
-        if (element) {
-            const instance: DesignInstance = this.newDesign(element);
-            if (index > this._instances.length) {
-                this._instances.push(instance);
+        let promise: Promise<DesignInstance | undefined> = 
+            element ?
+            this.newDesign(element) : 
+            Promise.resolve(undefined);
+
+        promise.then(instance => {
+            if (instance) {
+                if (index > this._instances.length) {
+                    this._instances.push(instance);
+                }
+                else {
+                    this._instances[index] = instance;
+                }
             }
             else {
-                this._instances[index] = instance;
+                this._instances.splice(index, 1);
             }
-        }
-        else {
-            this._instances.splice(index, 1);
-        }
-        this.onChange && this.onChange(this._instances);
+
+            this.onChange && this.onChange(this._instances);    
+        })            
     }
 
     accept<T>(formBuilder: FormBuilder<T>): T {
@@ -187,21 +196,28 @@ export class MappedMultiTypeTable implements DesignProperty {
 
     changeTheInstance(index: number, element: string) {
 
-        if (element) {
-            const instance: DesignInstance = this.newDesign(element);
-            if (index == this._instances.length) {
-                this._instances.push({ key: this.pendingKey, instance: instance });
-                this.pendingKey = undefined;
+        let promise: Promise<DesignInstance | undefined > = 
+            element ?
+            this.newDesign(element) :
+            Promise.resolve(undefined);
+
+        promise.then( instance => {
+            if (instance) {
+                if (index == this._instances.length) {
+                    this._instances.push({ key: this.pendingKey, instance: instance });
+                    this.pendingKey = undefined;
+                }
+                else {
+                    this._instances[index] = { key: this._instances[index].key, instance: instance };
+                }
             }
             else {
-                this._instances[index] = { key: this._instances[index].key, instance: instance };
+                this._instances.splice(index, 1);
+                this.pendingKey = undefined;
             }
-        }
-        else {
-            this._instances.splice(index, 1);
-            this.pendingKey = undefined;
-        }
-        this.onChange && this.onChange(this._instances);
+            this.onChange && this.onChange(this._instances);
+    
+        });
     }
 
     accept<T>(formBuilder: FormBuilder<T>): T {
@@ -265,7 +281,7 @@ class ElementOnly implements Configuration {
     }
 }
 
-export type NewTypeDesignFactory = (element: string) => DesignInstance;
+export type NewTypeDesignFactory = (element: string) => Promise<DesignInstance>;
 
 interface TypeDesignFactory {
 
@@ -333,7 +349,7 @@ function elementDefinitionFrom(definition: any): {
     }
 }
 
-export type NewDesignFactory = 
+export type NewDesignFactory =
     (element: string, arooaType: ArooaType) => DesignInstance;
 
 export interface DesignFactory {
@@ -373,8 +389,10 @@ export class CachingDesignFactory implements DesignFactory {
     private newDesignFactory(arooaType: ArooaType | undefined): NewTypeDesignFactory {
 
         return (element: string) => {
-                return (arooaType === ArooaType.Component ?
+            const instance: DesignInstance =
+                (arooaType === ArooaType.Component ?
                     this.componentCache : this.valueCache).createDesign(new ElementOnly(element));
+            return Promise.resolve(instance);
         };
     }
 
@@ -689,7 +707,7 @@ export class FactoryDesignModel implements DesignModel {
     }
 }
 
-export type NewFormLookup = (element: string, isComponent: boolean) => any;
+export type NewFormLookup = (element: string, isComponent: boolean) => Promise<any>;
 
 /**
  * 
@@ -730,13 +748,13 @@ export class FormParser {
 
     typeDesignFactory(arooaType: ArooaType): NewTypeDesignFactory {
         return (element: string) => {
-            const definition = this.designFactory(element, arooaType == ArooaType.Component)
+            return this.designFactory(element, arooaType == ArooaType.Component)
+            .then(definition => {
+                const configuration = parse(definition);
 
-            const configuration = parse(definition);
-
-            return this.createDesign(configuration);
+                return this.createDesign(configuration);
+            })
         }
-                
     }
 
     formItemFrom(configuration: Configuration): FormItem {

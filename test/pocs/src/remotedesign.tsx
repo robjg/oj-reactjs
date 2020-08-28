@@ -53,16 +53,18 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
                     .then(proxy2 => {
 
                         if (proxy1.isA(ConfigurationOwner)) {
-                            proxy1.as(ConfigurationOwner).formFor(proxy2)
+
+                            const configOwner: ConfigurationOwner = 
+                                proxy1.as(ConfigurationOwner);
+
+                            configOwner.formFor(proxy2)
                                 .then(formText => {
                                     const designModel = new ParserDesignModel(
                                         {
                                             formConfiguration: JSON.parse(formText),
                                             saveAction: (config: any) => ({}),
                                             newForm: (element: string, isComponent: boolean) =>
-                                                ({
-                                                    "@element": "forms:mainForm"
-                                                })
+                                                configOwner.blankForm(isComponent, element, "")
                                         });
 
                                     this.setState({

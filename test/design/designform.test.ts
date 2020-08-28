@@ -8,9 +8,10 @@ test("Sequential Form Example", () => {
     const formConfiguration = JSON.parse(fs.readFileSync('test/design/data/SequentialForm.json', 'utf8'));
 
     const newForm = (element: string, isComponent: boolean) =>
-    ({
-        "@element": "forms:mainForm"
-    })
+    Promise.resolve({
+        "@element": "forms:mainForm",
+        formItems: []
+    });
 
     const formParser = new FormParser(newForm); 
 

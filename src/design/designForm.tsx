@@ -329,8 +329,9 @@ class CompFormBuilder implements FormBuilder<React.ComponentClass<any, any>> {
             }
 
             handleChange(value: string): void {
-                singleTypeSelection.change(value);
-                this.setState({ selection: singleTypeSelection.instance?.element })
+                singleTypeSelection.change(value)
+                    .then(instance => this.setState({ selection: instance?.element }));
+
             }
 
             render() {

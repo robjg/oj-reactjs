@@ -1,4 +1,4 @@
-import { RemoteInvoker, OperationType, InvokeRequest, InvokeResponse } from './invoke';
+import { Invoker, OperationType, InvokeRequest, InvokeResponse } from './invoke';
 
 export interface JavaClass<T> {
 
@@ -15,7 +15,7 @@ export class JavaClassImpl<T> implements JavaClass<T> {
     }
 
     is(arg: RemoteObject<any> | string): boolean {
-        if ( typeof arg == 'string') {
+        if (typeof arg == 'string') {
             return arg as string === this.name;
         }
         else {
@@ -37,18 +37,18 @@ export const JAVA_VOID = new JavaClassImpl("void");
 
 class JavaClasses {
 
-    readonly registry = new Map<new(...args: any[]) => any, JavaClass<any>>();
+    readonly registry = new Map<new (...args: any[]) => any, JavaClass<any>>();
 
     readonly byName = new Map<string, JavaClass<any>>();
 
-    register<T>(cntor: { new(...args: any[]) : T }, className: string): JavaClass<T> {
+    register<T>(cntor: { new(...args: any[]): T }, className: string): JavaClass<T> {
         const javaClass = new JavaClassImpl(className)
         this.registry.set(cntor, javaClass);
         this.byName.set(className, javaClass);
         return javaClass;
     }
 
-    forType<T>(cntor: { new(...args: any[]) : T }): JavaClass<T> {
+    forType<T>(cntor: { new(...args: any[]): T }): JavaClass<T> {
         let maybe = this.registry.get(cntor);
         if (maybe) {
             return maybe
@@ -68,11 +68,11 @@ class JavaClasses {
         }
     }
 
-    isKnown(className: string) : boolean {
+    isKnown(className: string): boolean {
         return this.byName.get(className) != undefined;
     }
 
-    is<T>(className: string, cntor: { new(...args: any[]) : T }): boolean {
+    is<T>(className: string, cntor: { new(...args: any[]): T }): boolean {
         return className === this.registry.get(cntor)?.name;
     }
 }
@@ -87,14 +87,14 @@ export interface RemoteObject<T extends RemoteObject<T>> {
 
 export interface RemoteProxy {
 
-    isA(cntor: { new(...args: any[]) : any }): boolean;
+    isA(cntor: { new(...args: any[]): any }): boolean;
 
-    as<T>(cntor: { new(...args: any[]) : T }): T;
+    as<T>(cntor: { new(...args: any[]): T }): T;
 }
 
 export interface RemoteIdMappings {
 
-    idFor( proxy: RemoteProxy ) : number | undefined;
+    idFor(proxy: RemoteProxy): number | undefined;
 
     objectFor(remoteId: number): RemoteProxy | undefined;
 }
@@ -116,7 +116,7 @@ export interface RemoteSession {
 
 }
 
-class ComponentTransportable implements Transportable, RemoteObject<ComponentTransportable> {
+export class ComponentTransportable implements Transportable, RemoteObject<ComponentTransportable> {
     static readonly javaClass = javaClasses.register(
         ComponentTransportable, "org.oddjob.jmx.client.ComponentTransportable");
 
@@ -165,7 +165,7 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
     readonly managerFactory = new HandlerManagerFactory();
 
-    constructor(readonly invoker: RemoteInvoker) {
+    constructor(readonly invoker: Invoker) {
 
     }
 
@@ -208,7 +208,7 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
 export class RemoteSessionFactory {
 
-    constructor(readonly invoker: RemoteInvoker) {
+    constructor(readonly invoker: Invoker) {
 
     }
 
@@ -229,7 +229,7 @@ class ClientToolkitImpl implements ClientToolkit {
 
     constructor(private readonly remoteId: number,
         private readonly remoteIdMappings: RemoteIdMappings,
-        private readonly invoker: RemoteInvoker) {
+        private readonly invoker: Invoker) {
 
     }
 
@@ -281,12 +281,12 @@ class ClientToolkitImpl implements ClientToolkit {
     }
 }
 
-interface ServerInfo {
+export interface ServerInfo {
     interfaces: string[];
     noop(): void;
 }
 
-class ServerInfo implements RemoteObject<ServerInfo> {
+export class ServerInfo implements RemoteObject<ServerInfo> {
     static readonly javaClass = javaClasses.register(
         ServerInfo, "org.oddjob.jmx.server.ServerInfo");
 
@@ -338,6 +338,10 @@ class RemoteOddjobBeanHandler implements RemoteHandlerFactory<RemoteOddjobBean> 
 export interface ConfigurationOwner {
 
     formFor(proxy: RemoteProxy): Promise<string>;
+
+    blankForm(isComponent: boolean,
+        element: string,
+        propertyClass: string): Promise<string>;
 }
 
 export class ConfigurationOwner implements RemoteObject<ConfigurationOwner> {
@@ -352,8 +356,11 @@ export class ConfigurationOwner implements RemoteObject<ConfigurationOwner> {
 class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwner> {
 
     static formFor: OperationType<string> =
-        new OperationType("formFor", JAVA_STRING.name, [ JAVA_OBJECT.name ]);
+        new OperationType("formFor", JAVA_STRING.name, [JAVA_OBJECT.name]);
 
+    static blankForm: OperationType<string> =
+        new OperationType("blankForm", JAVA_STRING.name,
+            [JAVA_BOOLEAN.name, JAVA_STRING.name, JAVA_STRING.name]);
 
     createHandler(toolkit: ClientToolkit): ConfigurationOwner {
 
@@ -362,6 +369,14 @@ class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwn
             formFor(proxy: RemoteProxy): Promise<string> {
 
                 return toolkit.invoke(ConfigurationOwnerHandler.formFor, proxy);
+            }
+
+            blankForm(isComponent: boolean,
+                element: string,
+                propertyClass: string): Promise<string> {
+
+                    return toolkit.invoke(ConfigurationOwnerHandler.blankForm,
+                        isComponent, element, propertyClass)
             }
         }
 
