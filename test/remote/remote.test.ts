@@ -1,4 +1,4 @@
-import { javaClasses, RemoteSessionFactory, ServerInfo, ComponentTransportable, JAVA_STRING, ConfigurationOwner } from '../../src/remote/remote';
+import { javaClasses, RemoteProxy, RemoteSessionFactory, ServerInfo, ComponentTransportable, JAVA_STRING, ConfigurationOwner } from '../../src/remote/remote';
 import { Invoker, InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
 
 
@@ -26,9 +26,9 @@ test('Test JavaClasses', () => {
 
 });
 
-test('Session', () => {
+test('Session', async () => {
 
-    const args: Array<Array<any>> = new Array();
+    const requests: Array<InvokeRequest<any>> = new Array();
 
     const responses = new Array<InvokeResponse<any>>();
 
@@ -46,7 +46,7 @@ test('Session', () => {
     const invoker: Invoker = {
         invoke<T>(invokeRequest: InvokeRequest<T>) : Promise<InvokeResponse<T>> {
 
-            args.push(invokeRequest.args);
+            requests.push(invokeRequest);
 
             return Promise.resolve(responses[invokeIndex++]);
         }
@@ -55,4 +55,20 @@ test('Session', () => {
     const sessionFactory = new RemoteSessionFactory(invoker);
 
     const session = sessionFactory.createRemoteSession();
+    
+    const proxy: RemoteProxy = await session.getOrCreate(1);
+
+    expect(proxy.isA(ConfigurationOwner)).toBe(true);
+
+    const configurationOwner: ConfigurationOwner = proxy.as(ConfigurationOwner);
+
+    const form:string = await configurationOwner.blankForm(true, "some:foo", "foo.bar.foo");
+
+    expect(form).toBe("Foo"); 
+
+    const formRequest = requests[1];
+
+    expect(formRequest.args).toStrictEqual([true, "some:foo", "foo.bar.foo"]);
+    expect(formRequest.remoteId).toStrictEqual(1);
+    expect(formRequest.argTypes).toBeUndefined();
 })

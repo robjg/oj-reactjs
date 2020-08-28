@@ -67,6 +67,7 @@ export class SingleTypeSelection implements DesignProperty {
 
     constructor(readonly property: string,
         readonly options: string[],
+        readonly propertyClass: string,
         readonly newDesign: NewTypeDesignFactory,
         readonly title?: string,
         instance?: DesignInstance) {
@@ -80,10 +81,10 @@ export class SingleTypeSelection implements DesignProperty {
 
     async change(element: string): Promise<DesignInstance | undefined> {
 
-        const promise: Promise<DesignInstance | undefined> = 
-            element ? 
-            this.newDesign(element) : 
-            Promise.resolve(undefined);
+        const promise: Promise<DesignInstance | undefined> =
+            element ?
+                this.newDesign(element, this.propertyClass) :
+                Promise.resolve(undefined);
 
         const instance = await promise;
         return this._instance = instance;
@@ -116,6 +117,7 @@ export class IndexedMultiTypeTable implements DesignProperty {
 
     constructor(readonly property: string,
         readonly options: string[],
+        readonly propertyClass: string,
         readonly newDesign: NewTypeDesignFactory,
         readonly title?: string) {
 
@@ -131,10 +133,10 @@ export class IndexedMultiTypeTable implements DesignProperty {
 
     change(index: number, element: string) {
 
-        let promise: Promise<DesignInstance | undefined> = 
+        let promise: Promise<DesignInstance | undefined> =
             element ?
-            this.newDesign(element) : 
-            Promise.resolve(undefined);
+                this.newDesign(element, this.propertyClass) :
+                Promise.resolve(undefined);
 
         promise.then(instance => {
             if (instance) {
@@ -149,8 +151,8 @@ export class IndexedMultiTypeTable implements DesignProperty {
                 this._instances.splice(index, 1);
             }
 
-            this.onChange && this.onChange(this._instances);    
-        })            
+            this.onChange && this.onChange(this._instances);
+        })
     }
 
     accept<T>(formBuilder: FormBuilder<T>): T {
@@ -170,6 +172,7 @@ export class MappedMultiTypeTable implements DesignProperty {
 
     constructor(readonly property: string,
         readonly options: string[],
+        readonly propertyClass: string,
         readonly newDesign: NewTypeDesignFactory,
         readonly title?: string) {
     }
@@ -196,12 +199,12 @@ export class MappedMultiTypeTable implements DesignProperty {
 
     changeTheInstance(index: number, element: string) {
 
-        let promise: Promise<DesignInstance | undefined > = 
+        let promise: Promise<DesignInstance | undefined> =
             element ?
-            this.newDesign(element) :
-            Promise.resolve(undefined);
+                this.newDesign(element, this.propertyClass) :
+                Promise.resolve(undefined);
 
-        promise.then( instance => {
+        promise.then(instance => {
             if (instance) {
                 if (index == this._instances.length) {
                     this._instances.push({ key: this.pendingKey, instance: instance });
@@ -216,7 +219,7 @@ export class MappedMultiTypeTable implements DesignProperty {
                 this.pendingKey = undefined;
             }
             this.onChange && this.onChange(this._instances);
-    
+
         });
     }
 
@@ -281,7 +284,7 @@ class ElementOnly implements Configuration {
     }
 }
 
-export type NewTypeDesignFactory = (element: string) => Promise<DesignInstance>;
+export type NewTypeDesignFactory = (element: string, propertyClass: string) => Promise<DesignInstance>;
 
 interface TypeDesignFactory {
 
@@ -431,6 +434,7 @@ export class CachingDesignFactory implements DesignFactory {
 
                         const formItem = new SingleTypeSelection(property,
                             options,
+                            "java.lang.Object",
                             this.newDesignFactory(arooaType),
                             title ? title : property,
                             childInstance
@@ -466,6 +470,7 @@ export class CachingDesignFactory implements DesignFactory {
 
                         const formItem = new IndexedMultiTypeTable(property,
                             options,
+                            "java.lang.Object",
                             this.newDesignFactory(arooaType),
                             title ? title : property);
 
@@ -492,6 +497,7 @@ export class CachingDesignFactory implements DesignFactory {
 
                         const formItem = new MappedMultiTypeTable(property,
                             options,
+                            "java.lang.Object",
                             this.newDesignFactory(arooaType),
                             title ? title : property);
 
@@ -707,7 +713,7 @@ export class FactoryDesignModel implements DesignModel {
     }
 }
 
-export type NewFormLookup = (element: string, isComponent: boolean) => Promise<any>;
+export type NewFormLookup = (element: string, isComponent: boolean, propertyClass: string) => Promise<any>;
 
 /**
  * 
@@ -717,43 +723,65 @@ export class FormParser {
     constructor(readonly designFactory: NewFormLookup) {
     }
 
-    parseFormDefinition(definition: any): DesignInstance {
+    parseFormDefinition(definition: unknown): DesignInstance {
         return this.createDesign(configurationFromAny(definition));
     }
 
     createDesign(configuration: Configuration): DesignInstance {
 
-        if (configuration.element != 'forms:form') {
-            throw new Error(`forms:form expected not ${configuration.element}`);
+        const element = configuration.getTextOr('element',
+            () => { throw new Error(`Element is missing`) });
+
+
+        switch (configuration.element) {
+            case 'forms:form':
+                {
+                    const instance = new DesignInstance(element);
+
+                    const formItems = configuration.getChildArray('formItems');
+
+                    if (formItems) {
+                        formItems.forEach(itemConfig => {
+                            const formItem: FormItem = this.formItemFrom(itemConfig);
+                            instance.addItem(formItem);
+                        })
+                    }
+                    return instance;
+                }
+            case 'forms:inline-text':
+                {
+                    const instance = new DesignInstance(element, true);
+
+                    const textField = new TextField('value', 'Value');
+                    textField.value = configuration.getTextValue('value');
+
+                    instance.addItem(textField);
+
+                    return instance;
+                }
+            case 'forms:bean-form':
+                {
+                    const instance = new DesignInstance(element);
+
+                    // Need to implememnt!
+
+                    return instance;
+                }
+            default:
+                {
+                    throw new Error(`forms:form expected not ${configuration.element}`);
+                }
         }
-
-        const element = configuration.getTextValue('element');
-        if (!element) {
-            throw new Error(`Element is missing`);
-        }
-
-        const instance = new DesignInstance(element);
-
-        const formItems = configuration.getChildArray('formItems');
-
-        if (formItems) {
-            formItems.forEach(itemConfig => {
-                const formItem: FormItem = this.formItemFrom(itemConfig);
-                instance.addItem(formItem);
-            })
-        }
-
-        return instance;
     }
 
     typeDesignFactory(arooaType: ArooaType): NewTypeDesignFactory {
-        return (element: string) => {
-            return this.designFactory(element, arooaType == ArooaType.Component)
-            .then(definition => {
-                const configuration = parse(definition);
+        return (element: string, propertyClass: string) => {
+            return this.designFactory(element, arooaType == ArooaType.Component, propertyClass)
+                .then(definition => {
+                    const configuration: Configuration = configurationFromAny(JSON.parse(definition));
 
-                return this.createDesign(configuration);
-            })
+                    return this.createDesign(configuration);
+                })
         }
     }
 
@@ -786,9 +814,12 @@ export class FormParser {
                     const property: string = configuration.getTextOr('property',
                         () => { throw new Error("Property is missing.") });
 
-                    const options: string[] = configuration.getTextOr('property',
+                    const options: string[] = configuration.getTextOr('options',
                         () => { throw new Error("Options are missing.") })
                         .split(',');
+
+                    const propertyClass: string = configuration.getTextOr('propertyClass',
+                        () => { throw new Error("Property Class is missing.") });
 
                     const title: string | undefined = configuration.getTextValue('title');
 
@@ -805,6 +836,7 @@ export class FormParser {
 
                     const formItem = new SingleTypeSelection(property,
                         options,
+                        propertyClass,
                         this.typeDesignFactory(arooaType),
                         title ? title : property,
                         childInstance
@@ -842,12 +874,16 @@ export class FormParser {
                         () => { throw new Error("Options are missing.") })
                         .split(',');
 
+                    const propertyClass: string = configuration.getTextOr('propertyClass',
+                        () => { throw new Error("Property Class is missing.") });
+
                     const title: string | undefined = configuration.getTextValue('title');
 
                     const arooaType = configuration.getTextValue('component') ? ArooaType.Component : ArooaType.Value;
 
                     const formItem = new IndexedMultiTypeTable(property,
                         options,
+                        propertyClass,
                         this.typeDesignFactory(arooaType),
                         title ? title : property);
 
@@ -871,12 +907,16 @@ export class FormParser {
                         () => { throw new Error("Options are missing.") })
                         .split(',');
 
+                    const propertyClass: string = configuration.getTextOr('propertyClass',
+                        () => { throw new Error("Property Class is missing.") });
+
                     const title: string | undefined = configuration.getTextValue('title');
 
                     const arooaType = configuration.getTextValue('component') ? ArooaType.Component : ArooaType.Value;
 
                     const formItem = new MappedMultiTypeTable(property,
                         options,
+                        propertyClass,
                         this.typeDesignFactory(arooaType),
                         title ? title : property);
 
@@ -911,7 +951,7 @@ export class ParserDesignModel implements DesignModel {
     constructor(readonly model: {
         formConfiguration: any,
         saveAction: (configuration: any) => void
-        newForm: (element: string, isComponent: boolean) => any;
+        newForm: (element: string, isComponent: boolean, propertyClass: string) => any;
     }) {
     }
 

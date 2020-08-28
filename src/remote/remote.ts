@@ -251,7 +251,7 @@ class ClientToolkitImpl implements ClientToolkit {
                 argChange = true;
             }
             else {
-                actualArgs.push([i]);
+                actualArgs.push(args[i]);
                 actualTypes.push(operationType.signature[i]);
             }
         }

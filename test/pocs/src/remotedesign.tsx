@@ -63,8 +63,8 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
                                         {
                                             formConfiguration: JSON.parse(formText),
                                             saveAction: (config: any) => ({}),
-                                            newForm: (element: string, isComponent: boolean) =>
-                                                configOwner.blankForm(isComponent, element, "")
+                                            newForm: (element: string, isComponent: boolean, propertyClass: string) =>
+                                                configOwner.blankForm(isComponent, element, propertyClass)
                                         });
 
                                     this.setState({
