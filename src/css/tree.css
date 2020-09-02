@@ -29,6 +29,6 @@
 	background-color: #FF4000;
 }
 
-.tree a.selected {
+.tree .selected a {
 	background-color: #A5DF00;
 }

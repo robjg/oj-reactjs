@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Context Menu Demo</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="form"></div>
+
+    <script src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        requirejs.config({
+            paths: {
+                'react': "../../node_modules/react/umd/react.development",
+                'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
+                'test/pocs/src/menu': "./main"
+            }
+        });
+
+        require(["test/pocs/src/menu"], 
+        function(app) {
+            console.log("App loaded")
+        }, 
+        function(err) {
+            console.log("Error: " + err);
+        });
+
+    </script>
+
+</body>
+</html>

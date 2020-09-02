@@ -261,21 +261,24 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
         let toNodeId: number = event.toNodeId;
 
         if (fromNodeId !== undefined) {
-            $(this.nodeIdSelector(fromNodeId.toString()) + " .nodeLabel")
+            $(this.nodeIdSelector(fromNodeId.toString()) + ">span.nodeLabel")
                 .removeClass('selected');
             $("#contextMenu").remove();
         }
 
         if (toNodeId !== undefined) {
-            $(this.nodeIdSelector(toNodeId.toString()) + " .nodeLabel")
+            $(this.nodeIdSelector(toNodeId.toString()) + ">span.nodeLabel")
                 .addClass('selected');
             const onClick = this.contextMenuProvider && this.contextMenuProvider(toNodeId);
             if (onClick) {
-                $(this.nodeIdSelector(toNodeId.toString() + " .nodeLabel"))
-                    .append($("<button>...</button>")
-                    .attr({type: "button",
-                        id: "contextMenu" })
-                    .click(onClick));
+                $(this.nodeIdSelector(toNodeId.toString() + ">span.nodeLabel"))
+                    .append($("<div/>")
+                        .attr({ id: "contextMenu" })
+                        .append($("<button>...</button>")
+                            .attr({ type: "button" })
+                            .click(onClick))
+                        .append($("<div/>")
+                            .attr({ id: "contextMenuMount" })))
             }
         }
     };
