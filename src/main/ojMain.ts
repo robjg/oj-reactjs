@@ -24,7 +24,7 @@ export class OjMain {
 	
 	private refreshModel: RefreshModel;
 
-    private ojTreeModel: TreeModel;
+    readonly ojTreeModel: TreeModel;
 
     private ojLog: Pollable;
 

@@ -5,7 +5,7 @@ import { TreeController } from "./ojTreeController";
 import PlusImg from '../gfx/plus.png';
 import MinusImg from '../gfx/minus.png';
 
-export type ContextMenuProvider = (nodeId: number) => () => void;
+export type ContextMenuProvider = (nodeId: number) => void;
 
 /**
  * Creates The Oddjob Tree UI Component. This component is a Selection Listener and a
@@ -269,7 +269,12 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
         if (toNodeId !== undefined) {
             $(this.nodeIdSelector(toNodeId.toString()) + ">span.nodeLabel")
                 .addClass('selected');
-            const onClick = this.contextMenuProvider && this.contextMenuProvider(toNodeId);
+
+            const onClick: () => void = () => {
+                this.contextMenuProvider && 
+                    this.contextMenuProvider(toNodeId); 
+                };
+                
             if (onClick) {
                 $(this.nodeIdSelector(toNodeId.toString() + ">span.nodeLabel"))
                     .append($("<div/>")

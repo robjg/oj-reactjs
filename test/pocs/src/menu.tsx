@@ -38,19 +38,19 @@ class ExampleMenu extends React.Component< ExampleMenuProps> {
 
 class OurActions implements AvailableActions {
 
-  actionsFor(nodeId: number) : Action[] {
+  actionsFor(nodeId: number) : Promise<Action[]> {
 
-    return [
+    return Promise.resolve([
       { name: "Log Config",
         isEnabled: true,
-        action: () => {
+        perform: () => {
           console.log(factories.configurationFor("foo"));
         }
       },
       {
         name: "Design",
         isEnabled: true,
-        action: () => {
+        perform: () => {
           const formDiv = document.getElementById('form');
           if (!formDiv) {
             throw new Error("No form div.");
@@ -61,12 +61,15 @@ class OurActions implements AvailableActions {
               formDiv);
         }
       }
-    ]
+    ]);
   }
 }
 
+const menuProvider = new MenuProvider();
+menuProvider.availableActions = new OurActions();
+
 ReactDOM.render(
-  <ExampleMenu jobId={1} menuProvider={new MenuProvider(new OurActions())}/>,
+  <ExampleMenu jobId={1} menuProvider={menuProvider}/>,
   document.getElementById('root')
 );
 

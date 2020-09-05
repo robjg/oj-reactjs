@@ -17,7 +17,7 @@ class MenuItem extends React.Component<MenuItemProps, {}> {
 
     doAction(event: React.FormEvent<HTMLButtonElement>) {
         this.props.onMenuSelected();
-        this.props.action.action();
+        this.props.action.perform();
     }
 
     render() {
@@ -30,7 +30,7 @@ type JobMenuProps = {
     onMenuSelected: () => void
 };
 
-class JobMenu extends React.Component<JobMenuProps, { }> {
+class JobMenu extends React.Component<JobMenuProps, {}> {
 
     render() {
         return <ul>
@@ -43,40 +43,54 @@ class JobMenu extends React.Component<JobMenuProps, { }> {
     }
 }
 
+class NoopAction implements Action {
+
+    name: string = "No Options"
+
+    isEnabled: boolean = false;
+
+    perform() { }
+}
+
 export class MenuProvider {
 
     private lastId: number = -1;
 
-    constructor(readonly availableActions: AvailableActions) {
+    availableActions?: AvailableActions;
 
-    }
+    menuClick(nodeId: number): void {
 
-    menuClick(nodeId: number) {
+        const self: MenuProvider = this;
 
         const menuMount: HTMLElement | null = document.getElementById('contextMenuMount');
         if (!menuMount) {
             throw Error("No #contextMenuMount element")
         }
 
-        const self : MenuProvider = this;
-
         function unmount() {
             ReactDOM.unmountComponentAtNode(menuMount as HTMLElement)
             self.lastId = -1;
         }
 
-        if (this.lastId == nodeId) {
+        if (self.lastId == nodeId) {
             unmount();
         }
         else {
-            this.lastId = nodeId;
+            self.lastId = nodeId;
 
-            const actions : Action[] = this.availableActions.actionsFor(nodeId);
+            let actions: Promise<Action[]> = self.availableActions ?
+                self.availableActions.actionsFor(nodeId) :
+                Promise.resolve([]);
 
-            ReactDOM.render(
-                <JobMenu actions={actions} onMenuSelected={unmount}/>,
-                menuMount
-            );
+            actions.then(acts => {
+                if (acts.length == 0) {
+                    acts = [new NoopAction()];
+                }
+                ReactDOM.render(
+                    <JobMenu actions={acts} onMenuSelected={unmount} />,
+                    menuMount
+                );        
+            })
         }
     }
 }
