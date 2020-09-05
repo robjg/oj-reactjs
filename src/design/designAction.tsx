@@ -39,7 +39,7 @@ export class DesignActionFactory implements ActionFactory {
 
                         const formDiv = definedOrError(document.getElementById('ojForm'), "No form div.");
                         function hide() {
-                            formDiv.style.display = 'block';
+                            formDiv.style.display = 'none';
                             ReactDOM.unmountComponentAtNode(formDiv);
                         }
 
