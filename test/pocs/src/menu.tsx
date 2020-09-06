@@ -11,6 +11,11 @@ import { configuration } from './data/MealConfiguration';
 import { AvailableActions, Action } from '../../../src/menu/actions';
 import { MenuProvider } from '../../../src/menu/menuProvider';
 
+/** 
+ * Context Menu using old style DesignFactory Design Form. 
+ * Main for menu.html.
+*/
+
 const factories: LocalDataSource = new LocalDataSource();
 const designModel: design.DesignModel = new design.FactoryDesignModel("foo", factories);
 factories.addDesignDefinitions(designDefinitions);

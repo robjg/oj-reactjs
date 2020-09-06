@@ -342,6 +342,8 @@ export interface ConfigurationOwner {
     blankForm(isComponent: boolean,
         element: string,
         propertyClass: string): Promise<string>;
+
+    replaceJson(proxy: RemoteProxy, json: string): void;
 }
 
 export class ConfigurationOwner implements RemoteObject<ConfigurationOwner> {
@@ -362,7 +364,11 @@ class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwn
         new OperationType("blankForm", JAVA_STRING.name,
             [JAVA_BOOLEAN.name, JAVA_STRING.name, JAVA_STRING.name]);
 
-    createHandler(toolkit: ClientToolkit): ConfigurationOwner {
+            static replaceJson: OperationType<void> =
+            new OperationType("configReplaceJson", JAVA_VOID.name,
+                [JAVA_OBJECT.name, JAVA_STRING.name]);
+    
+        createHandler(toolkit: ClientToolkit): ConfigurationOwner {
 
         class Impl extends ConfigurationOwner {
 
@@ -375,8 +381,14 @@ class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwn
                 element: string,
                 propertyClass: string): Promise<string> {
 
-                    return toolkit.invoke(ConfigurationOwnerHandler.blankForm,
-                        isComponent, element, propertyClass)
+                return toolkit.invoke(ConfigurationOwnerHandler.blankForm,
+                    isComponent, element, propertyClass);
+            }
+
+            replaceJson(proxy: RemoteProxy, json: string): void {
+
+                toolkit.invoke(ConfigurationOwnerHandler.replaceJson,
+                    proxy, json);
             }
         }
 

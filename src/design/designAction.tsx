@@ -27,21 +27,24 @@ export class DesignActionFactory implements ActionFactory {
 
                 configOwner.formFor(actionContext.proxy)
                     .then(formText => {
+                        function hide() {
+                            formDiv.style.display = 'none';
+                            ReactDOM.unmountComponentAtNode(formDiv);
+                        }
+
                         const designModel = new ParserDesignModel(
                             {
                                 formConfiguration: JSON.parse(formText),
                                 saveAction: (config: any) => { 
-                                    console.log("Save TBD."); 
+                                    hide();
+                                    configOwner.replaceJson(actionContext.proxy,
+                                        JSON.stringify(config)); 
                                 },
                                 newForm: (element: string, isComponent: boolean, propertyClass: string) =>
                                     configOwner.blankForm(isComponent, element, propertyClass)
                             });
 
                         const formDiv = definedOrError(document.getElementById('ojForm'), "No form div.");
-                        function hide() {
-                            formDiv.style.display = 'none';
-                            ReactDOM.unmountComponentAtNode(formDiv);
-                        }
 
                         ReactDOM.render(
                             <DesignForm designModel={designModel}

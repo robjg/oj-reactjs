@@ -106,15 +106,12 @@ export class OjTreeModel implements TreeModel {
 		};
 
 		for (var i = 0; i < this.selectionListeners.length; ++i) {
-			var callback = this.selectionListeners[i].selectionChanged;
-			if (callback !== undefined) {
-				callback(event);
-			}
+			this.selectionListeners[i].selectionChanged(event);
 		}
 	}
 
 	private fireTreeInitialised(node: NodeInfo): void {
-		
+
 		const event = {
 			rootNode: node
 		};
@@ -125,7 +122,7 @@ export class OjTreeModel implements TreeModel {
 	}
 
 	private fireNodeInserted(parentId: number, index: number, node: NodeInfo): void {
-		
+
 		const event = {
 			parentId: parentId,
 			index: index,
@@ -133,10 +130,7 @@ export class OjTreeModel implements TreeModel {
 		};
 
 		for (var i = 0; i < this.changeListeners.length; ++i) {
-			var callback = this.changeListeners[i].nodeInserted;
-			if (callback !== undefined) {
-				callback(event);
-			}
+			var callback = this.changeListeners[i].nodeInserted(event);
 		}
 	}
 
@@ -147,10 +141,7 @@ export class OjTreeModel implements TreeModel {
 		};
 
 		for (var i = 0; i < this.changeListeners.length; ++i) {
-			var callback = this.changeListeners[i].nodeRemoved;
-			if (callback !== undefined) {
-				callback(event);
-			}
+			var callback = this.changeListeners[i].nodeRemoved(event);
 		}
 	}
 
@@ -173,10 +164,7 @@ export class OjTreeModel implements TreeModel {
 		};
 
 		for (var i = 0; i < this.changeListeners.length; ++i) {
-			var callback = this.changeListeners[i].nodeCollapsed;
-			if (callback !== undefined) {
-				callback(event);
-			}
+			var callback = this.changeListeners[i].nodeCollapsed(event);
 		}
 	}
 
@@ -186,10 +174,7 @@ export class OjTreeModel implements TreeModel {
 		};
 
 		for (var i = 0; i < this.changeListeners.length; ++i) {
-			var callback = this.changeListeners[i].nodeUpdated;
-			if (callback !== undefined) {
-				callback(event);
-			}
+			var callback = this.changeListeners[i].nodeUpdated(event)
 		}
 	}
 

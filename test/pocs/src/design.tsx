@@ -9,6 +9,10 @@ import { LocalDataSource } from '../../design/LocalDataSource';
 import { designDefinitions } from './data/FruitDesigns';
 import { configuration } from './data/MealConfiguration';
 
+/**
+ * Old style design form from DesignFactory. 
+ * Main for design.html.
+ */
 const dataSource: LocalDataSource = new LocalDataSource();
 const designModel: design.DesignModel = new design.FactoryDesignModel("foo", dataSource);
 dataSource.addDesignDefinitions(designDefinitions);
