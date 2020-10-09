@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Server Notifier Demo</title>
+</head>
+
+<body>
+    <div id="form"></div>
+
+    <script src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        requirejs.config({
+            paths: {
+                'react': "../../node_modules/react/umd/react.development",
+                'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
+                'src/remote/notify': "./main",
+                'test/pocs/src/notifyform': "./main"
+            }
+        });
+
+        requirejs(['react', 'react-dom', 'src/remote/notify', 'test/pocs/src/notifyform'],
+            function (React, ReactDOM, notify, notifyForm) {
+
+
+                var notifier = new notify.RemoteNotifier('ws://localhost:8080/notifier')
+
+                ReactDOM.render(
+                    React.createElement(notifyForm.NotifierForm,
+                        { notifier: notifier }, null),
+                    document.getElementById('form')
+                );
+
+            });
+
+    </script>
+
+</body>
+
+</html>

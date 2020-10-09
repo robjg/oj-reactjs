@@ -42,7 +42,7 @@ class JavaClasses {
     readonly byName = new Map<string, JavaClass<any>>();
 
     register<T>(cntor: { new(...args: any[]): T }, className: string): JavaClass<T> {
-        const javaClass = new JavaClassImpl(className)
+        const javaClass = new JavaClassImpl<T>(className)
         this.registry.set(cntor, javaClass);
         this.byName.set(className, javaClass);
         return javaClass;
