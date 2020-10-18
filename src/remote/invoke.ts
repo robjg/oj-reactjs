@@ -1,9 +1,19 @@
+import { JavaClass, javaClasses } from "./remote";
+
 export class OperationType<T> {
 
     constructor(readonly name: string,
         readonly type: string,
         readonly signature: string[]) {
 
+    }
+
+    static ofName<T>(name: string) {
+        return { andDataType: (dataType: JavaClass<T>) => {
+            return { withSignature: ( ...signature: JavaClass<any>[]) => {
+                return new OperationType<T>(name, dataType.name, signature.map( e => e.name))
+            } }
+        }}
     }
 }
 
@@ -24,6 +34,10 @@ export class InvokeResponse<T> {
         readonly value?: any) {
 
         }
+
+    getJavaType(): JavaClass<T> | undefined {
+        return javaClasses.forName(this.type);
+    }    
 }
 
 function isInvokeResponse<T>(maybe: InvokeResponse<T> | any): maybe is InvokeResponse<T>{

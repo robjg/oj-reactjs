@@ -4,7 +4,7 @@ export interface JavaClass<T> {
 
     name: string;
 
-    is(arg: RemoteObject<any> | string): boolean;
+    arrayOf(): JavaClass<T[]>;
 
 }
 
@@ -14,25 +14,33 @@ export class JavaClassImpl<T> implements JavaClass<T> {
 
     }
 
-    is(arg: RemoteObject<any> | string): boolean {
-        if (typeof arg == 'string') {
-            return arg as string === this.name;
-        }
-        else {
-            return arg.getJavaClass().name == this.name;
-        }
+    arrayOf(): JavaClass<T[]> {
+        return new JavaClassArray<T>("[L" + name + ";");
     }
 }
 
-export const JAVA_OBJECT = new JavaClassImpl<any>("java.lang.Object");
-export const JAVA_STRING = new JavaClassImpl<string>("java.lang.String");
-export const JAVA_INT = new JavaClassImpl<number>("int");
-export const JAVA_LONG = new JavaClassImpl<number>("long");
-export const JAVA_DOUBLE = new JavaClassImpl("double");
-export const JAVA_FLOAT = new JavaClassImpl("float");
-export const JAVA_BOOLEAN = new JavaClassImpl("boolean");
-export const JAVA_SHORT = new JavaClassImpl("short");
-export const JAVA_VOID = new JavaClassImpl("void");
+class JavaPrimativeClass<P> implements JavaClass<P> {
+
+    constructor(readonly name: string, readonly symbol: string) {
+
+    }
+
+    arrayOf(): JavaClass<P[]> {
+        return new JavaClassArray<P>("[" + this.symbol);
+    }
+}
+
+class JavaClassArray<A> implements JavaClass<A[]> {
+
+    constructor(readonly name: string) {
+
+    }
+
+    arrayOf(): JavaClass<A[]> {
+        return new JavaClassArray<A>("[" + this.name);
+    }
+}
+
 
 
 class JavaClasses {
@@ -45,6 +53,11 @@ class JavaClasses {
         const javaClass = new JavaClassImpl<T>(className)
         this.registry.set(cntor, javaClass);
         this.byName.set(className, javaClass);
+        return javaClass;
+    }
+
+    registerClass<T>(javaClass: JavaClass<T>) {
+        this.byName.set(javaClass.name, javaClass);
         return javaClass;
     }
 
@@ -79,6 +92,20 @@ class JavaClasses {
 
 export const javaClasses = new JavaClasses();
 
+
+export const JAVA_OBJECT = javaClasses.registerClass(new JavaClassImpl<any>("java.lang.Object"));
+export const JAVA_STRING = javaClasses.registerClass(new JavaClassImpl<string>("java.lang.String"));
+
+export const JAVA_BYTE = javaClasses.registerClass(new JavaPrimativeClass<number>("byte", "B"));
+export const JAVA_CHAR = javaClasses.registerClass(new JavaPrimativeClass<number>("char", "C")); 
+export const JAVA_INT = javaClasses.registerClass(new JavaPrimativeClass<number>("int", "I"));
+export const JAVA_DOUBLE = javaClasses.registerClass(new JavaPrimativeClass<number>("double", "D"));
+export const JAVA_FLOAT = javaClasses.registerClass(new JavaPrimativeClass<number>("float", "F"));
+export const JAVA_LONG = javaClasses.registerClass(new JavaPrimativeClass<number>("long", "J"));
+export const JAVA_BOOLEAN = javaClasses.registerClass(new JavaPrimativeClass<boolean>("boolean", "Z"));
+export const JAVA_SHORT = javaClasses.registerClass(new JavaPrimativeClass<boolean>("short", "S"));
+
+export const JAVA_VOID = javaClasses.registerClass(new JavaClassImpl("void"));
 
 export interface RemoteObject<T extends RemoteObject<T>> {
 
@@ -163,10 +190,10 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
     readonly ids = new Map<RemoteProxy, number>();
 
-    readonly managerFactory = new HandlerManagerFactory();
+    readonly managerFactory: HandlerManagerFactory;
 
-    constructor(readonly invoker: Invoker) {
-
+    constructor(readonly invoker: Invoker, factories: Map<JavaClass<any>, RemoteHandlerFactory<any>>) {
+        this.managerFactory = new HandlerManagerFactory(factories);
     }
 
     idFor(proxy: RemoteProxy): number | undefined {
@@ -208,18 +235,23 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
 export class RemoteSessionFactory {
 
+    readonly factories = new Map<JavaClass<any>, RemoteHandlerFactory<any>>(); 
+
     constructor(readonly invoker: Invoker) {
 
     }
 
-    createRemoteSession(): RemoteSession {
-
-        return new RemoteSessionImpl(this.invoker);
+    register<T extends RemoteObject<T>>(javaClass: JavaClass<T>, handlerFactory: RemoteHandlerFactory<T>) {
+        this.factories.set(javaClass, handlerFactory);
     }
 
+    createRemoteSession(): RemoteSession {
+
+        return new RemoteSessionImpl(this.invoker, this.factories);
+    }
 }
 
-interface ClientToolkit {
+export interface ClientToolkit {
 
     invoke<T>(operationType: OperationType<T>, ...args: any): Promise<T>;
 }
@@ -267,10 +299,10 @@ class ClientToolkitImpl implements ClientToolkit {
             invokeRequest.argTypes = actualTypes;
         }
 
-        const invokeResponse = await this.invoker.invoke(invokeRequest)
+        const invokeResponse : InvokeResponse<T> = await this.invoker.invoke(invokeRequest)
 
         if (invokeResponse.value &&
-            ComponentTransportable.javaClass.is(invokeResponse.type)) {
+            ComponentTransportable.javaClass.name == invokeResponse.type) {
             let componentTransportable = invokeResponse.value as ComponentTransportable;
             let remoteProxy: unknown = componentTransportable.importResolve(this.remoteIdMappings);
             return remoteProxy as T;
@@ -295,7 +327,7 @@ export class ServerInfo implements RemoteObject<ServerInfo> {
     }
 }
 
-interface RemoteHandlerFactory<T extends RemoteObject<T>> {
+export interface RemoteHandlerFactory<T extends RemoteObject<T>> {
 
     createHandler(toolkit: ClientToolkit): T;
 
@@ -318,8 +350,9 @@ class RemoteOddjobBean implements RemoteObject<RemoteOddjobBean> {
 class RemoteOddjobBeanHandler implements RemoteHandlerFactory<RemoteOddjobBean> {
 
     static serverInfoOp: OperationType<ServerInfo> =
-        new OperationType("serverInfo", ServerInfo.javaClass.name, []);
-
+        OperationType.ofName("serverInfo")
+        .andDataType(ServerInfo.javaClass)
+        .withSignature();
 
     createHandler(toolkit: ClientToolkit): RemoteOddjobBean {
 
@@ -409,9 +442,7 @@ class HandlerManager {
 
 class HandlerManagerFactory {
 
-    readonly factories = new Map<JavaClass<any>, RemoteHandlerFactory<any>>();
-
-    constructor() {
+    constructor(readonly factories: Map<JavaClass<any>, RemoteHandlerFactory<any>>) {
         this.factories.set(RemoteOddjobBean.javaClass, new RemoteOddjobBeanHandler());
         this.factories.set(ConfigurationOwner.javaClass, new ConfigurationOwnerHandler())
     }

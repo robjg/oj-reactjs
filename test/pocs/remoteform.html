@@ -16,12 +16,13 @@
                 'react': "../../node_modules/react/umd/react.development",
                 'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
                 'src/remote/invoke': "./main",
+                'src/remote/remote': "./main",
                 'test/pocs/src/remotedesign': "./main"
             }
         });
 
-        requirejs(['react', 'react-dom', 'src/remote/invoke', 'test/pocs/src/remotedesign'],
-            function (React, ReactDOM, invoke, remotedesign) {
+        requirejs(['react', 'react-dom', 'src/remote/remote', 'src/remote/invoke', 'test/pocs/src/remotedesign'],
+            function (React, ReactDOM, remote, invoke, remotedesign) {
 
 
                 var invoker = new invoke.RemoteInvoker('http://localhost:8080/invoke')

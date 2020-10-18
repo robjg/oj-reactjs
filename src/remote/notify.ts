@@ -1,5 +1,5 @@
 
-import { JavaClass } from './remote';
+import { JavaClass, javaClasses, RemoteObject } from './remote';
 
 export class NotificationType<T> {
 
@@ -10,9 +10,20 @@ export class NotificationType<T> {
 
         this.type = javaClass.name;
     }
+
+    static ofName<T>(name : string) {
+        return { andDataType: (type: JavaClass<T>) => new NotificationType(name, type) }
+    }
 }
 
-export class Notification<T> {
+export class Notification<T> implements RemoteObject<Notification<T>> {
+
+    static readonly javaClass = javaClasses.register(
+        Notification, "org.oddjob.Iconic");
+
+    getJavaClass(): JavaClass<Notification<T>> {
+        return Notification.javaClass;
+    }
 
     constructor(readonly remoteId: number,
         readonly type: NotificationType<T>,
