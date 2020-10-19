@@ -1,8 +1,9 @@
 import React from 'react';
 import { RemoteInvoker } from '../../../src/remote/invoke';
-import { RemoteSessionFactory, ConfigurationOwner } from '../../../src/remote/remote';
+import { RemoteSessionFactory } from '../../../src/remote/remote';
 import { DesignModel, ParserDesignModel } from '../../../src/design/design';
 import { DesignForm } from '../../../src/design/designForm';
+import { ConfigurationOwner, ConfigurationOwnerHandler } from '../../../src/remote/ojremotes';
 
 type RemoteDesignState = {
 
@@ -45,6 +46,7 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
         }
 
         const remoteSession = new RemoteSessionFactory(this.props.invoker)
+            .register(new ConfigurationOwnerHandler())
             .createRemoteSession();
 
         remoteSession.getOrCreate(1)
@@ -54,7 +56,7 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
 
                         if (proxy1.isA(ConfigurationOwner)) {
 
-                            const configOwner: ConfigurationOwner = 
+                            const configOwner: ConfigurationOwner =
                                 proxy1.as(ConfigurationOwner);
 
                             configOwner.formFor(proxy2)

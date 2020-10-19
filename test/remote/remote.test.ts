@@ -1,5 +1,7 @@
-import { javaClasses, RemoteProxy, RemoteSessionFactory, ServerInfo, ComponentTransportable, JAVA_STRING, ConfigurationOwner } from '../../src/remote/remote';
+import { javaClasses, JAVA_STRING } from '../../src/remote/java';
+import { RemoteProxy, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { Invoker, InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
+import {  ConfigurationOwner, ConfigurationOwnerHandler } from '../../src/remote/ojremotes';
 
 
 class A {
@@ -52,7 +54,8 @@ test('Session', async () => {
         }
     }
 
-    const sessionFactory = new RemoteSessionFactory(invoker);
+    const sessionFactory = new RemoteSessionFactory(invoker)
+        .register(new ConfigurationOwnerHandler());
 
     const session = sessionFactory.createRemoteSession();
     

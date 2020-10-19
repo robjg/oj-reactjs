@@ -2,8 +2,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ActionFactory, ActionContext, Action, contextSearch } from '../menu/actions';
-import { ConfigurationOwner } from '../remote/remote';
-import { DesignModel, ParserDesignModel } from './design';
+import { ConfigurationOwner } from '../remote/ojremotes';
+import { ParserDesignModel } from './design';
 import { DesignForm } from './designForm';
 import { definedOrError } from '../main/util';
 

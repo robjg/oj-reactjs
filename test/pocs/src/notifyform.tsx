@@ -1,7 +1,7 @@
 import React from 'react';
-import { RemoteNotifier, Notification, NotificationListener, NotificationType } from '../../../src/remote/notify';
-import { JavaClass, javaClasses } from '../../../src/remote/remote';
 
+import { JavaClass, javaClasses } from '../../../src/remote/java';
+import { RemoteNotifier, Notification, NotificationListener, NotificationType } from '../../../src/remote/notify';
 import { StateData  } from '../../../src/remote/ojremotes';
 
 StateData.javaClass;

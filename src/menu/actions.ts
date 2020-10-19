@@ -1,6 +1,6 @@
-import { ConfigurationOwner, RemoteSession } from '../remote/remote'
+import { RemoteProxy, RemoteSession } from '../remote/remote'
+import { ConfigurationOwner } from '../remote/ojremotes'
 
-import { RemoteProxy } from '../remote/remote'
 import { TreeChangeListener } from '../main/ojTreeModel';
 
 import { NodeInfo } from '../main/ojDao';

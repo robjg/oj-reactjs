@@ -1,5 +1,5 @@
 
-import { JavaClass, javaClasses, RemoteObject } from './remote';
+import { JavaClass, javaClasses, JavaObject } from './java';
 
 export class NotificationType<T> {
 
@@ -16,7 +16,7 @@ export class NotificationType<T> {
     }
 }
 
-export class Notification<T> implements RemoteObject<Notification<T>> {
+export class Notification<T> implements JavaObject<Notification<T>> {
 
     static readonly javaClass = javaClasses.register(
         Notification, "org.oddjob.Iconic");

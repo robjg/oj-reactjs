@@ -1,8 +1,6 @@
 import React from 'react';
 import { DesignInstance, FormItem, FormBuilder, TextField, SingleTypeSelection, IndexedMultiTypeTable, FieldGroup, MappedMultiTypeTable, DesignModel } from './design';
 
-import { render, fireEvent, Matcher } from '@testing-library/react'
-
 const TESTING: boolean = typeof test === 'function' ? true : false;
 
 function when<T, U>(t: T, fn: (t: T) => U): U | undefined {

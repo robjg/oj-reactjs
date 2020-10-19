@@ -1,14 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { DesignForm } from '../../../src/design/designForm'
-
-
 import { sequentialForm } from './data/SequentialForm';
-import { configuration } from './data/MealConfiguration';
 import { AvailableActions, Action, ActionContext } from '../../../src/menu/actions';
 import { MenuProvider } from '../../../src/menu/menuProvider';
-import { RemoteProxy, ConfigurationOwner } from '../../../src/remote/remote';
+import { RemoteProxy } from '../../../src/remote/remote';
+import { ConfigurationOwner } from '../../../src/remote/ojremotes'
 import { DesignActionFactory } from '../../../src/design/designAction';
 
 

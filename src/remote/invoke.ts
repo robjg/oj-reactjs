@@ -1,4 +1,4 @@
-import { JavaClass, javaClasses } from "./remote";
+import { JavaClass, javaClasses } from "./java";
 
 export class OperationType<T> {
 

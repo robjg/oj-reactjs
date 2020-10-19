@@ -1,4 +1,5 @@
-import { JavaClass, javaClasses, JAVA_STRING, RemoteObject, RemoteHandlerFactory, ClientToolkit } from './remote'
+import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOLEAN, JAVA_VOID } from './java';
+import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, } from './remote'
 import { OperationType } from './invoke'
 import { NotificationType, Notification } from './notify'
 
@@ -20,7 +21,7 @@ export type State = {
     flags: StateFlag[];
 }
 
-export class StateData implements RemoteObject<StateData> {
+export class StateData implements JavaObject<StateData> {
     static readonly javaClass = javaClasses.register(
         StateData, "org.oddjob.jmx.handlers.StatefulHandlerFactory$StateData");
 
@@ -62,7 +63,7 @@ export interface Iconic {
     removeIconListener(listener: IconListener): void;
 }
 
-export class Iconic implements RemoteObject<Iconic> {
+export class Iconic implements JavaObject<Iconic> {
     static readonly javaClass = javaClasses.register(
         Iconic, "org.oddjob.Iconic");
 
@@ -71,7 +72,7 @@ export class Iconic implements RemoteObject<Iconic> {
     }
 }
 
-export class IconData implements RemoteObject<IconData> {
+export class IconData implements JavaObject<IconData> {
     static readonly javaClass = javaClasses.register(
         IconData, "org.oddjob.jmx.handlers.IconHandlerFactory$IconData");
 
@@ -102,11 +103,10 @@ class IconicHandler implements RemoteHandlerFactory<Iconic> {
             .andDataType(javaClasses.forType(IconData))
             .withSignature(JAVA_STRING);
 
+    readonly interfaceClass = Iconic.javaClass;
 
     createHandler(toolkit: ClientToolkit): Iconic {
 
-
-        
         class Impl extends Iconic {
 
 
@@ -128,6 +128,71 @@ class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
             }
 
+        }
+
+        return new Impl();
+    }
+}
+
+// Configuraiton Owner
+
+export interface ConfigurationOwner {
+
+    formFor(proxy: RemoteProxy): Promise<string>;
+
+    blankForm(isComponent: boolean,
+        element: string,
+        propertyClass: string): Promise<string>;
+
+    replaceJson(proxy: RemoteProxy, json: string): void;
+}
+
+export class ConfigurationOwner implements JavaObject<ConfigurationOwner> {
+    static readonly javaClass = javaClasses.register(
+        ConfigurationOwner, "org.oddjob.arooa.parsing.ConfigurationOwner");
+
+    getJavaClass(): JavaClass<ConfigurationOwner> {
+        return ConfigurationOwner.javaClass;
+    }
+}
+
+export class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwner> {
+
+    static formFor: OperationType<string> =
+        new OperationType("formFor", JAVA_STRING.name, [JAVA_OBJECT.name]);
+
+    static blankForm: OperationType<string> =
+        new OperationType("blankForm", JAVA_STRING.name,
+            [JAVA_BOOLEAN.name, JAVA_STRING.name, JAVA_STRING.name]);
+
+    static replaceJson: OperationType<void> =
+        new OperationType("configReplaceJson", JAVA_VOID.name,
+            [JAVA_OBJECT.name, JAVA_STRING.name]);
+
+    readonly interfaceClass = ConfigurationOwner.javaClass;
+
+    createHandler(toolkit: ClientToolkit): ConfigurationOwner {
+
+        class Impl extends ConfigurationOwner {
+
+            formFor(proxy: RemoteProxy): Promise<string> {
+
+                return toolkit.invoke(ConfigurationOwnerHandler.formFor, proxy);
+            }
+
+            blankForm(isComponent: boolean,
+                element: string,
+                propertyClass: string): Promise<string> {
+
+                return toolkit.invoke(ConfigurationOwnerHandler.blankForm,
+                    isComponent, element, propertyClass);
+            }
+
+            replaceJson(proxy: RemoteProxy, json: string): void {
+
+                toolkit.invoke(ConfigurationOwnerHandler.replaceJson,
+                    proxy, json);
+            }
         }
 
         return new Impl();
