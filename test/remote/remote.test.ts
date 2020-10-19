@@ -1,7 +1,8 @@
 import { javaClasses, JAVA_STRING } from '../../src/remote/java';
-import { RemoteProxy, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
+import { RemoteConnection, RemoteProxy, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { Invoker, InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
-import {  ConfigurationOwner, ConfigurationOwnerHandler } from '../../src/remote/ojremotes';
+import { ConfigurationOwner, ConfigurationOwnerHandler } from '../../src/remote/ojremotes';
+import { NotificationListener, NotificationType } from '../../src/remote/notify';
 
 
 class A {
@@ -45,12 +46,24 @@ test('Session', async () => {
 
     let invokeIndex: number = 0;
 
-    const invoker: Invoker = {
-        invoke<T>(invokeRequest: InvokeRequest<T>) : Promise<InvokeResponse<T>> {
+    const invoker: RemoteConnection = {
+        invoke<T>(invokeRequest: InvokeRequest<T>): Promise<InvokeResponse<T>> {
 
             requests.push(invokeRequest);
 
             return Promise.resolve(responses[invokeIndex++]);
+        },
+
+        addNotificationListener<T>(remoteId: number,
+            notificationType: NotificationType<T>,
+            listener: NotificationListener<T>): void {
+            throw Error("Unexpected");
+        },
+
+        removeNotificationListener<T>(remoteId: number,
+            notificationType: NotificationType<T>,
+            listener: NotificationListener<T>): void {
+            throw Error("Unexpected");
         }
     }
 
@@ -58,16 +71,16 @@ test('Session', async () => {
         .register(new ConfigurationOwnerHandler());
 
     const session = sessionFactory.createRemoteSession();
-    
+
     const proxy: RemoteProxy = await session.getOrCreate(1);
 
     expect(proxy.isA(ConfigurationOwner)).toBe(true);
 
     const configurationOwner: ConfigurationOwner = proxy.as(ConfigurationOwner);
 
-    const form:string = await configurationOwner.blankForm(true, "some:foo", "foo.bar.foo");
+    const form: string = await configurationOwner.blankForm(true, "some:foo", "foo.bar.foo");
 
-    expect(form).toBe("Foo"); 
+    expect(form).toBe("Foo");
 
     const formRequest = requests[1];
 

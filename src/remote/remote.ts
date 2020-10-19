@@ -1,5 +1,6 @@
 import { JavaClass, javaClasses, JavaObject } from './java';
-import { Invoker, OperationType, InvokeRequest, InvokeResponse } from './invoke';
+import { Invoker, OperationType, InvokeRequest, InvokeResponse, RemoteInvoker } from './invoke';
+import { NotificationListener, NotificationType, Notifier, RemoteNotifier } from './notify';
 
 
 export interface RemoteProxy {
@@ -26,6 +27,37 @@ export interface Exportable {
     exportTransportable(): Transportable;
 }
 
+export interface RemoteConnection extends Invoker, Notifier {
+
+}
+
+export class RemoteConnection {
+
+    static of(invoker: Invoker, notifier: Notifier): RemoteConnection {
+        return new class {
+            invoke<T>(invokeRequest: InvokeRequest<T>): Promise<InvokeResponse<T>> {
+                return invoker.invoke(invokeRequest);
+            }
+
+            addNotificationListener<T>(remoteId: number,
+                notificationType: NotificationType<T>,
+                listener: NotificationListener<T>): void {
+                notifier.addNotificationListener(remoteId, notificationType, listener);
+            }
+
+            removeNotificationListener<T>(remoteId: number,
+                notificationType: NotificationType<T>,
+                listener: NotificationListener<T>): void {
+                notifier.removeNotificationListener(remoteId, notificationType, listener);
+            }
+        }
+    }
+
+    static fromHost(host: string): RemoteConnection {
+        return RemoteConnection.of(new RemoteInvoker(`http://${host}/invoke`),
+            new RemoteNotifier(`ws://${host}/notifier`));
+    }
+}
 
 export interface RemoteSession {
 
@@ -82,7 +114,7 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
     readonly managerFactory: HandlerManagerFactory;
 
-    constructor(readonly invoker: Invoker, factories: Map<JavaClass<any>, RemoteHandlerFactory<any>>) {
+    constructor(readonly remote: RemoteConnection, factories: Map<JavaClass<any>, RemoteHandlerFactory<any>>) {
         this.managerFactory = new HandlerManagerFactory(factories);
     }
 
@@ -102,7 +134,7 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
             return Promise.resolve(proxy);
         }
 
-        const toolkit = new ClientToolkitImpl(remoteId, this, this.invoker)
+        const toolkit = new ClientToolkitImpl(remoteId, this, this.remote)
 
         const remoteHandler: RemoteOddjobBean = new RemoteOddjobBeanHandler().createHandler(toolkit);
 
@@ -125,9 +157,9 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
 export class RemoteSessionFactory {
 
-    readonly factories = new Map<JavaClass<any>, RemoteHandlerFactory<any>>(); 
+    readonly factories = new Map<JavaClass<any>, RemoteHandlerFactory<any>>();
 
-    constructor(readonly invoker: Invoker) {
+    constructor(readonly remote: RemoteConnection) {
 
     }
 
@@ -138,13 +170,17 @@ export class RemoteSessionFactory {
 
     createRemoteSession(): RemoteSession {
 
-        return new RemoteSessionImpl(this.invoker, this.factories);
+        return new RemoteSessionImpl(this.remote, this.factories);
     }
 }
 
 export interface ClientToolkit {
 
     invoke<T>(operationType: OperationType<T>, ...args: any): Promise<T>;
+
+    addNotificationListener<T>(notificationType: NotificationType<T>, notificationListener: NotificationListener<T>): void;
+
+    removeNotificationListener<T>(notificationType: NotificationType<T>, notificationListener: NotificationListener<T>): void;
 }
 
 
@@ -152,8 +188,7 @@ class ClientToolkitImpl implements ClientToolkit {
 
     constructor(private readonly remoteId: number,
         private readonly remoteIdMappings: RemoteIdMappings,
-        private readonly invoker: Invoker) {
-
+        private readonly remote: RemoteConnection) {
     }
 
     async invoke<T>(operationType: OperationType<T>, ...args: any): Promise<T> {
@@ -190,7 +225,7 @@ class ClientToolkitImpl implements ClientToolkit {
             invokeRequest.argTypes = actualTypes;
         }
 
-        const invokeResponse : InvokeResponse<T> = await this.invoker.invoke(invokeRequest)
+        const invokeResponse: InvokeResponse<T> = await this.remote.invoke(invokeRequest)
 
         if (invokeResponse.value &&
             ComponentTransportable.javaClass.name == invokeResponse.type) {
@@ -201,6 +236,14 @@ class ClientToolkitImpl implements ClientToolkit {
         else {
             return invokeResponse.value;
         }
+    }
+
+    addNotificationListener<T>(notificationType: NotificationType<T>, notificationListener: NotificationListener<T>): void {
+        this.remote.addNotificationListener(this.remoteId, notificationType, notificationListener);
+    }
+
+    removeNotificationListener<T>(notificationType: NotificationType<T>, notificationListener: NotificationListener<T>): void {
+        this.remote.removeNotificationListener(this.remoteId, notificationType, notificationListener);
     }
 }
 
@@ -244,8 +287,8 @@ class RemoteOddjobBeanHandler implements RemoteHandlerFactory<RemoteOddjobBean> 
 
     static serverInfoOp: OperationType<ServerInfo> =
         OperationType.ofName("serverInfo")
-        .andDataType(ServerInfo.javaClass)
-        .withSignature();
+            .andDataType(ServerInfo.javaClass)
+            .withSignature();
 
     readonly interfaceClass = RemoteOddjobBean.javaClass;
 

@@ -1,6 +1,5 @@
 import React from 'react';
-import { RemoteInvoker } from '../../../src/remote/invoke';
-import { RemoteSessionFactory } from '../../../src/remote/remote';
+import { RemoteConnection, RemoteSessionFactory } from '../../../src/remote/remote';
 import { DesignModel, ParserDesignModel } from '../../../src/design/design';
 import { DesignForm } from '../../../src/design/designForm';
 import { ConfigurationOwner, ConfigurationOwnerHandler } from '../../../src/remote/ojremotes';
@@ -14,7 +13,7 @@ type RemoteDesignState = {
 
 type RemoteDesignProps = {
 
-    invoker: RemoteInvoker;
+    remote: RemoteConnection;
 }
 
 export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteDesignState> {
@@ -45,7 +44,7 @@ export class RemoteDesignForm extends React.Component<RemoteDesignProps, RemoteD
             return;
         }
 
-        const remoteSession = new RemoteSessionFactory(this.props.invoker)
+        const remoteSession = new RemoteSessionFactory(this.props.remote)
             .register(new ConfigurationOwnerHandler())
             .createRemoteSession();
 

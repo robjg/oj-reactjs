@@ -1,7 +1,7 @@
 import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOLEAN, JAVA_VOID } from './java';
 import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, } from './remote'
 import { OperationType } from './invoke'
-import { NotificationType, Notification } from './notify'
+import { NotificationType, Notification, NotificationListener } from './notify'
 
 
 // Stateful
@@ -51,7 +51,7 @@ export interface IconListener {
 
 export interface Iconic {
 
-    iconForId(id: String): Promise<IconData>;
+    iconForId(id: String): Promise<ImageIconData>;
 
     addIconListener(listener: IconListener): void;
 
@@ -76,14 +76,25 @@ export class IconData implements JavaObject<IconData> {
     static readonly javaClass = javaClasses.register(
         IconData, "org.oddjob.jmx.handlers.IconHandlerFactory$IconData");
 
+    constructor(readonly id: string) { }
+
+    getJavaClass(): JavaClass<IconData> {
+        return IconData.javaClass;
+    }
+}
+
+export class ImageIconData implements JavaObject<IconData> {
+    static readonly javaClass = javaClasses.register(
+        ImageIconData, "org.oddjob.images.ImageIconData");
+
     constructor(readonly wdith: number,
         readonly height: number,
         readonly pixels: string,
         readonly description?: string
     ) { }
 
-    getJavaClass(): JavaClass<IconData> {
-        return IconData.javaClass;
+    getJavaClass(): JavaClass<ImageIconData> {
+        return ImageIconData.javaClass;
     }
 }
 
@@ -93,29 +104,60 @@ class IconicHandler implements RemoteHandlerFactory<Iconic> {
         NotificationType.ofName("org.oddjob.iconchanged")
             .andDataType(IconData.javaClass);
 
-    static SYNCHRONIZE: OperationType<Notification<IconData>[]> =
+    static SYNCHRONIZE: OperationType<Notification<IconData>> =
         OperationType.ofName("iconicSynchronize")
             .andDataType(javaClasses.forType(Notification))
             .withSignature();
 
-    static ICON_FOR: OperationType<IconData> =
+    static ICON_FOR: OperationType<ImageIconData> =
         OperationType.ofName("Iconic.iconForId")
-            .andDataType(javaClasses.forType(IconData))
+            .andDataType(javaClasses.forType(ImageIconData))
             .withSignature(JAVA_STRING);
 
     readonly interfaceClass = Iconic.javaClass;
 
     createHandler(toolkit: ClientToolkit): Iconic {
 
+        var listeners: IconListener[] = [];
+
+        var lastEvent: IconEvent | null = null;
+
+        function extractEvent(notification: Notification<IconData>): IconEvent {
+            // the id should never actually be missing.
+            const iconId: string = notification.data?.id || "unknown";
+            return new IconEvent(notification.remoteId, iconId);
+        }
+
+        const notificationListener: NotificationListener<IconData> = {
+            handleNotification: (notification: Notification<IconData>) => {
+                listeners.forEach(l => l.iconEvent(lastEvent = extractEvent(notification)));
+            }
+        }
+
+
         class Impl extends Iconic {
 
 
-            iconForId(id: String): Promise<IconData> {
+            iconForId(id: String): Promise<ImageIconData> {
 
                 return toolkit.invoke(IconicHandler.ICON_FOR, id);
             }
 
             addIconListener(listener: IconListener): void {
+
+
+                if (lastEvent == null) {
+
+                    toolkit.invoke(IconicHandler.SYNCHRONIZE)
+                        .then(notification => {
+                            listener.iconEvent(lastEvent = extractEvent(notification));
+
+                            toolkit.addNotificationListener(IconicHandler.ICON_CHANGED_NOTIF_TYPE,
+                                notificationListener);
+                        });
+                }
+
+                listeners.push(listener);
 
             }
 
@@ -126,6 +168,12 @@ class IconicHandler implements RemoteHandlerFactory<Iconic> {
              */
             removeIconListener(listener: IconListener): void {
 
+                listeners = listeners.filter(e => e != listener);
+                if (listeners.length == 0) {
+                    lastEvent == null;
+                    toolkit.removeNotificationListener(IconicHandler.ICON_CHANGED_NOTIF_TYPE,
+                        notificationListener);
+                }
             }
 
         }

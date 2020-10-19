@@ -15,21 +15,19 @@
             paths: {
                 'react': "../../node_modules/react/umd/react.development",
                 'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
-                'src/remote/invoke': "./main",
                 'src/remote/remote': "./main",
                 'test/pocs/src/remotedesign': "./main"
             }
         });
 
-        requirejs(['react', 'react-dom', 'src/remote/remote', 'src/remote/invoke', 'test/pocs/src/remotedesign'],
-            function (React, ReactDOM, remote, invoke, remotedesign) {
+        requirejs(['react', 'react-dom', 'src/remote/remote', 'test/pocs/src/remotedesign'],
+            function (React, ReactDOM, remote, remotedesign) {
 
-
-                var invoker = new invoke.RemoteInvoker('http://localhost:8080/invoke')
+                var remote = remote.RemoteConnection.fromHost('localhost:8080');
 
                 ReactDOM.render(
                     React.createElement(remotedesign.RemoteDesignForm,
-                        { invoker: invoker }, null),
+                        { remote: remote }, null),
                     document.getElementById('form')
                 );
 

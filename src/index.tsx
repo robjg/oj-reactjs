@@ -9,7 +9,8 @@ import './css/split-pane.css';
 
 import { OjMain } from './main/ojMain';
 import { RemoteInvoker } from './remote/invoke';
-import { RemoteSessionFactory } from './remote/remote';
+import { RemoteNotifier } from './remote/notify';
+import { RemoteSessionFactory, RemoteConnection } from './remote/remote';
 import { ConfigurationOwnerHandler } from './remote/ojremotes';
 import { DesignActionFactory } from './design/designAction';
 import { ContextManager } from './menu/actions';
@@ -23,9 +24,9 @@ const main = new OjMain({
 
 const treeModel = main.ojTreeModel;
 
-const invoker = new RemoteInvoker(location.origin + '/invoke');
+const remote = RemoteConnection.fromHost(location.host); 
 
-const remoteSession = new RemoteSessionFactory(invoker)
+const remoteSession = new RemoteSessionFactory(remote)
     .register(new ConfigurationOwnerHandler())
     .createRemoteSession();
 
