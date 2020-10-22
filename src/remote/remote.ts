@@ -1,6 +1,7 @@
 import { JavaClass, javaClasses, JavaObject } from './java';
 import { Invoker, OperationType, InvokeRequest, InvokeResponse, RemoteInvoker } from './invoke';
 import { NotificationListener, NotificationType, Notifier, RemoteNotifier } from './notify';
+import { Logger } from '../logging';
 
 
 export interface RemoteProxy {
@@ -55,7 +56,7 @@ export class RemoteConnection {
 
     static fromHost(host: string): RemoteConnection {
         return RemoteConnection.of(new RemoteInvoker(`http://${host}/invoke`),
-            new RemoteNotifier(`ws://${host}/notifier`));
+            RemoteNotifier.fromWebSocket(`ws://${host}/notifier`));
     }
 }
 
@@ -163,6 +164,10 @@ export class RemoteSessionFactory {
 
     }
 
+    static from(remote: RemoteConnection): RemoteSessionFactory {
+        return new RemoteSessionFactory(remote);
+    }
+
     register<T extends JavaObject<T>>(handlerFactory: RemoteHandlerFactory<T>): RemoteSessionFactory {
         this.factories.set(handlerFactory.interfaceClass, handlerFactory);
         return this;
@@ -176,15 +181,20 @@ export class RemoteSessionFactory {
 
 export interface ClientToolkit {
 
+    readonly logger: Logger;
+
     invoke<T>(operationType: OperationType<T>, ...args: any): Promise<T>;
 
     addNotificationListener<T>(notificationType: NotificationType<T>, notificationListener: NotificationListener<T>): void;
 
     removeNotificationListener<T>(notificationType: NotificationType<T>, notificationListener: NotificationListener<T>): void;
+
 }
 
 
 class ClientToolkitImpl implements ClientToolkit {
+
+    readonly logger = Logger.getLogger();
 
     constructor(private readonly remoteId: number,
         private readonly remoteIdMappings: RemoteIdMappings,

@@ -51,7 +51,7 @@ export interface IconListener {
 
 export interface Iconic {
 
-    iconForId(id: String): Promise<ImageIconData>;
+    iconForId(id: String): Promise<ImageData>;
 
     addIconListener(listener: IconListener): void;
 
@@ -74,7 +74,7 @@ export class Iconic implements JavaObject<Iconic> {
 
 export class IconData implements JavaObject<IconData> {
     static readonly javaClass = javaClasses.register(
-        IconData, "org.oddjob.jmx.handlers.IconHandlerFactory$IconData");
+        IconData, "org.oddjob.jmx.handlers.IconicHandlerFactory$IconData");
 
     constructor(readonly id: string) { }
 
@@ -83,22 +83,21 @@ export class IconData implements JavaObject<IconData> {
     }
 }
 
-export class ImageIconData implements JavaObject<IconData> {
+export class ImageData implements JavaObject<IconData> {
     static readonly javaClass = javaClasses.register(
-        ImageIconData, "org.oddjob.images.ImageIconData");
+        ImageData, "org.oddjob.images.ImageData");
 
-    constructor(readonly wdith: number,
-        readonly height: number,
-        readonly pixels: string,
+    constructor(readonly bytes: string,
+        readonly mediaType: string,
         readonly description?: string
     ) { }
 
-    getJavaClass(): JavaClass<ImageIconData> {
-        return ImageIconData.javaClass;
+    getJavaClass(): JavaClass<ImageData> {
+        return ImageData.javaClass;
     }
 }
 
-class IconicHandler implements RemoteHandlerFactory<Iconic> {
+export class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
     static ICON_CHANGED_NOTIF_TYPE: NotificationType<IconData> =
         NotificationType.ofName("org.oddjob.iconchanged")
@@ -109,9 +108,9 @@ class IconicHandler implements RemoteHandlerFactory<Iconic> {
             .andDataType(javaClasses.forType(Notification))
             .withSignature();
 
-    static ICON_FOR: OperationType<ImageIconData> =
+    static ICON_FOR: OperationType<ImageData> =
         OperationType.ofName("Iconic.iconForId")
-            .andDataType(javaClasses.forType(ImageIconData))
+            .andDataType(javaClasses.forType(ImageData))
             .withSignature(JAVA_STRING);
 
     readonly interfaceClass = Iconic.javaClass;
@@ -122,25 +121,35 @@ class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
         var lastEvent: IconEvent | null = null;
 
-        function extractEvent(notification: Notification<IconData>): IconEvent {
-            // the id should never actually be missing.
-            const iconId: string = notification.data?.id || "unknown";
-            return new IconEvent(notification.remoteId, iconId);
+        function extractEvent(notification: Notification<IconData>): IconEvent | null {
+            if (notification.data?.id) {
+                return new IconEvent(notification.remoteId, notification.data.id)
+            }
+            else {
+                toolkit.logger.warn("Icon notification has no icon id: " + JSON.stringify(notification));
+                return null;
+            }
         }
 
         const notificationListener: NotificationListener<IconData> = {
             handleNotification: (notification: Notification<IconData>) => {
-                listeners.forEach(l => l.iconEvent(lastEvent = extractEvent(notification)));
+                lastEvent = extractEvent(notification);
+                if (lastEvent != null) {
+                    const notNullLastEvent: IconEvent = lastEvent;
+                    listeners.forEach(l => l.iconEvent(notNullLastEvent));
+                }
             }
         }
 
-
         class Impl extends Iconic {
 
+            async iconForId(id: String): Promise<ImageData> {
 
-            iconForId(id: String): Promise<ImageIconData> {
-
-                return toolkit.invoke(IconicHandler.ICON_FOR, id);
+                const imageData = await toolkit.invoke(IconicHandler.ICON_FOR, id);
+                if (!imageData) {
+                    toolkit.logger.warn("No Image Data for " + id);
+                }
+                return imageData;
             }
 
             addIconListener(listener: IconListener): void {
@@ -150,11 +159,17 @@ class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
                     toolkit.invoke(IconicHandler.SYNCHRONIZE)
                         .then(notification => {
-                            listener.iconEvent(lastEvent = extractEvent(notification));
+                            const event = extractEvent(notification);
+                            if (event != null) {
+                                listener.iconEvent(lastEvent = event);
+                            }
 
                             toolkit.addNotificationListener(IconicHandler.ICON_CHANGED_NOTIF_TYPE,
                                 notificationListener);
                         });
+                }
+                else {
+                    listener.iconEvent(lastEvent);                    
                 }
 
                 listeners.push(listener);

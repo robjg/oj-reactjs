@@ -1,4 +1,5 @@
 
+import { map } from 'jquery';
 import { JavaClass, javaClasses, JavaObject } from './java';
 
 export class NotificationType<T> {
@@ -11,7 +12,7 @@ export class NotificationType<T> {
         this.type = javaClass.name;
     }
 
-    static ofName<T>(name : string) {
+    static ofName<T>(name: string) {
         return { andDataType: (type: JavaClass<T>) => new NotificationType(name, type) }
     }
 }
@@ -58,42 +59,194 @@ class SubscriptionRequest<T> {
     }
 }
 
+class ListenersByType {
+
+    private readonly listeners: Map<String, NotificationListener<any>[]> = new Map();
+
+    dispatch(notification: Notification<any>) {
+
+        const listeners: NotificationListener<any>[] | undefined =
+            this.listeners.get(notification.type.name)
+
+        if (listeners) {
+            listeners.forEach(element => {
+                element.handleNotification(notification);
+            });
+        }
+    }
+
+    addNotificationListener<T>(
+        notificationType: NotificationType<T>,
+        listener: NotificationListener<T>): boolean {
+
+        const listeners: NotificationListener<any>[] | undefined =
+            this.listeners.get(notificationType.name)
+
+        if (listeners) {
+            listeners.push(listener);
+            return false;
+        }
+        else {
+            this.listeners.set(notificationType.name, [listener]);
+            return true;
+        }
+    }
+
+    removeNotificationListener<T>(
+        notificationType: NotificationType<T>,
+        listener: NotificationListener<T>): boolean {
+
+        const listeners: NotificationListener<any>[] | undefined =
+            this.listeners.get(notificationType.name)
+
+        if (listeners) {
+            const newListeners: NotificationListener<T>[] =
+                listeners.filter(e => e != listener);
+
+            if (newListeners.length == 0) {
+                this.listeners.delete(notificationType.name)
+                return true;
+            }
+            else {
+                this.listeners.set(notificationType.name,
+                    newListeners);
+                return false;
+            }
+        }
+        else {
+            // Don't thing this should ever happen. Should we error?
+            return false;
+        }
+    }
+
+    isEmpty(): boolean {
+        return this.listeners.size == 0;
+    }
+}
+
+class ListenerManager {
+
+    private readonly listeners: Map<number, ListenersByType> = new Map();
+
+    dispatch(notification: Notification<any>) {
+
+        const listeners: ListenersByType | undefined =
+            this.listeners.get(notification.remoteId)
+
+        if (listeners) {
+            listeners.dispatch(notification);
+        }
+
+    }
+
+    addNotificationListener<T>(remoteId: number,
+        notificationType: NotificationType<T>,
+        listener: NotificationListener<T>): boolean {
+
+        const listeners: ListenersByType | undefined =
+            this.listeners.get(remoteId)
+
+        if (listeners) {
+            return listeners.addNotificationListener(
+                notificationType, listener);
+        }
+        else {
+            const newListeners = new ListenersByType();
+            this.listeners.set(remoteId, newListeners);
+            return newListeners.addNotificationListener(
+                notificationType, listener);
+        }
+    }
+
+    removeNotificationListener<T>(remoteId: number,
+        notificationType: NotificationType<T>,
+        listener: NotificationListener<T>): boolean {
+
+        const listeners: ListenersByType | undefined =
+            this.listeners.get(remoteId)
+
+        if (listeners) {
+            
+            const lastForType: boolean = listeners.removeNotificationListener(
+                notificationType, listener);
+
+            if (listeners.isEmpty()) {
+                this.listeners.delete(remoteId) 
+                    return true;
+            }
+            else {
+                return lastForType;
+            }
+        }
+        else {
+            // Don't thing this should ever happen. Should we error?
+            return false;
+        }
+    }
+}
+
+export interface Channel {
+
+    send(message: string): void
+
+    setReceive(callback: (message: string) => void): void;
+}
 
 export class RemoteNotifier implements Notifier {
 
-    private readonly ws: WebSocket;
+    private readonly listeners: ListenerManager = new ListenerManager();
 
-    private listener?: NotificationListener<any>;
+    constructor(private readonly channel: Channel) {
+        this.channel.setReceive((message: string) => {
 
-    constructor(url: string) {
-        this.ws = new WebSocket(url);
-        this.ws.onmessage = this.callback;
+            const notification = JSON.parse(message) as Notification<any>;    
+            this.listeners.dispatch(notification);
+        });
     }
 
-    callback = (event: any) => {
+    static fromWebSocket(url: string): RemoteNotifier {
 
-        const notification = JSON.parse(event.data) as Notification<any>;
+        const ws: WebSocket = new WebSocket(url);
 
-        this.listener?.handleNotification(notification);
+        return new RemoteNotifier({
+            send: (message: string) => ws.send(message),
+            setReceive: (callback: (message: string) => void) => {
+                const wsCallback = (event: any) => {
+                    const data = event.data as string; 
+                    callback(data);                   
+                }
+                ws.onmessage = wsCallback;
+            }
+        })        
     }
 
+    static fromChannel(channel: Channel) : RemoteNotifier {
+        return new RemoteNotifier(channel);
+    }
 
     addNotificationListener<T>(remoteId: number,
         notificationType: NotificationType<T>,
         listener: NotificationListener<T>): void {
 
-        this.listener = listener;
+        if (this.listeners.addNotificationListener(
+            remoteId, notificationType, listener)) {
 
-        const request = new SubscriptionRequest<T>("ADD", remoteId, notificationType);
+                const request = new SubscriptionRequest<T>("ADD", remoteId, notificationType);
 
-        this.ws.send(JSON.stringify(request));
+                this.channel.send(JSON.stringify(request));
+        }
     }
 
     removeNotificationListener<T>(remoteId: number,
         notificationType: NotificationType<T>,
         listener: NotificationListener<T>): void {
 
+        if (this.listeners.removeNotificationListener(
+            remoteId, notificationType, listener)) {
 
+                const request = new SubscriptionRequest<T>("REMOVE", remoteId, notificationType);
 
+                this.channel.send(JSON.stringify(request));
+        }
     }
 }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Test OJ Remotes</title>
+</head>
+
+<body>
+    <div id="form"></div>
+
+    <script src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        requirejs.config({
+            paths: {
+                'react': "../../node_modules/react/umd/react.development",
+                'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
+                'src/remote/remote': "./main",
+                'test/pocs/src/ojremotesform': "./main"
+            }
+        });
+
+        requirejs(['react', 'react-dom', 'src/remote/remote', 'test/pocs/src/ojremotesform'],
+            function (React, ReactDOM, remote, ojrmeotesform) {
+
+
+                var remote = remote.RemoteConnection.fromHost('localhost:8080')
+
+                ReactDOM.render(
+                    React.createElement(ojrmeotesform.RemotesForm,
+                        { remote: remote }, null),
+                    document.getElementById('form')
+                );
+
+            });
+
+    </script>
+
+</body>
+
+</html>
