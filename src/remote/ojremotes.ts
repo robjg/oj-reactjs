@@ -1,7 +1,41 @@
 import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOLEAN, JAVA_VOID } from './java';
-import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, } from './remote'
+import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, Initialisation, } from './remote'
 import { OperationType } from './invoke'
 import { NotificationType, Notification, NotificationListener } from './notify'
+
+
+// Object
+
+export interface ObjectProxy {
+
+    readonly toString: string;
+}
+
+export class ObjectProxy implements JavaObject<ObjectProxy> {
+    static readonly javaClass = javaClasses.register(
+        ObjectProxy, JAVA_OBJECT.name);
+
+    getJavaClass() {
+        return ObjectProxy.javaClass;
+    }
+}
+
+export class ObjectHandler implements RemoteHandlerFactory<ObjectProxy> {
+
+    readonly interfaceClass = ObjectProxy.javaClass;
+
+    createHandler(toolkit: ClientToolkit, initialisation: Initialisation<string>): ObjectProxy {
+
+        const remoteName: string = initialisation.data;
+
+        class Impl extends ObjectProxy {
+
+            readonly toString: string = remoteName;
+        }
+
+        return new Impl();
+    }
+}
 
 
 // Stateful

@@ -1,7 +1,32 @@
 import React from 'react';
 
 import { RemoteConnection, RemoteSession, RemoteSessionFactory } from '../../../src/remote/remote';
-import { StateData, IconicHandler, Iconic, IconEvent, ImageData  } from '../../../src/remote/ojremotes';
+import { StateData, IconicHandler, Iconic, IconEvent, ImageData, ObjectHandler, ObjectProxy  } from '../../../src/remote/ojremotes';
+
+
+type ObjectProps = {
+
+    object: ObjectProxy;
+}
+
+type ObjectState = {
+
+    toString: string;
+}
+
+class ObjectOut extends React.Component<ObjectProps, ObjectState> {
+
+    constructor(props: ObjectProps) {
+        super(props);
+
+        this.state = { toString: props.object.toString };
+    }
+
+    render() {
+
+        return <>Name: {this.state.toString}</>;
+    }
+}
 
 
 type IconicState = {
@@ -59,6 +84,7 @@ type RemotesState = {
 
     remoteId: string;
     iconic: Iconic | null;
+    object: ObjectProxy | null;
 }
 
 type RemotesProps = {
@@ -75,6 +101,7 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
         this.state = {
             remoteId: '',
             iconic: null,
+            object: null,
         };
 
         this.handleChangeRemoteId = this.handleChangeRemoteId.bind(this);
@@ -97,6 +124,7 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
         }
 
         const session: RemoteSession = RemoteSessionFactory.from(this.props.remote)
+        .register(new ObjectHandler())
         .register(new IconicHandler())
         .createRemoteSession();
 
@@ -105,6 +133,10 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
 
             if (proxy.isA(Iconic)) {
                 this.setState({iconic: proxy.as(Iconic)});
+            }
+        
+            if (proxy.isA( ObjectProxy )) {
+                this.setState( { object: proxy.as( ObjectProxy ) } )
             }
         });
     }
@@ -125,6 +157,14 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
                 </form>
                 <table>
                     <tbody>
+                    <tr>
+                        <th>Object</th>
+                        <td>{
+                        (this.state.object) ?
+                            <ObjectOut object={this.state.object}/>
+                         : <Empty/>
+                    }</td>
+                    </tr>
                     <tr>
                         <th>Iconic</th>
                         <td>{
