@@ -141,11 +141,7 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
         const serverInfo = await remoteHandler.serverInfo();
 
-        const theClases = serverInfo.interfaces
-            .filter(name => javaClasses.isKnown(name))
-            .map(name => javaClasses.forName(name));
-
-        const handlerManager = this.managerFactory.create(theClases, toolkit);
+        const handlerManager = this.managerFactory.create(serverInfo.implementations, toolkit);
 
         proxy = new RemoteProxyImpl(handlerManager);
 
@@ -257,8 +253,19 @@ class ClientToolkitImpl implements ClientToolkit {
     }
 }
 
+export interface Initialisation<T> {
+    type: string;
+    data: T;
+}
+
+export interface Implementation<T> {
+    type: string;
+    version: string;
+    initialisation?: Initialisation<T>; 
+}
+
 export interface ServerInfo {
-    interfaces: string[];
+    implementations: Implementation<any>[];
     noop(): void;
 }
 
@@ -275,7 +282,7 @@ export interface RemoteHandlerFactory<T extends JavaObject<T>> {
 
     readonly interfaceClass: JavaClass<T>;
 
-    createHandler(toolkit: ClientToolkit): T;
+    createHandler(toolkit: ClientToolkit, initialisation?: Initialisation<any>): T;
 
 }
 
@@ -334,14 +341,18 @@ class HandlerManagerFactory {
         this.factories.set(RemoteOddjobBean.javaClass, new RemoteOddjobBeanHandler());
     }
 
-    create(theClasses: JavaClass<any>[], clientToolkit: ClientToolkit): HandlerManager {
+    create(implementations: Implementation<any>[], clientToolkit: ClientToolkit): HandlerManager {
 
         const handlers = new Map<JavaClass<any>, any>();
 
-        theClasses.forEach(jc => {
-            const factory = this.factories.get(jc);
+        implementations.filter(impl => javaClasses.isKnown(impl.type))
+        .forEach(impl => {
+            const javaClass: JavaClass<any> = javaClasses.forName(impl.type);
+            const factory = this.factories.get(javaClass);
             if (factory != undefined) {
-                handlers.set(jc, factory.createHandler(clientToolkit))
+
+                const handler = factory.createHandler(clientToolkit, impl.initialisation);
+                handlers.set(javaClass, handler)
             }
         })
 

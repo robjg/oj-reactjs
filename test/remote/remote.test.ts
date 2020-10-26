@@ -37,8 +37,11 @@ test('Session', async () => {
 
     responses.push(new InvokeResponse<ServerInfo>(ServerInfo.javaClass.name,
         {
-            interfaces: [
-                ConfigurationOwner.javaClass.name
+            implementations: [
+                {
+                    type: ConfigurationOwner.javaClass.name,
+                    version: "2.0"
+                }
             ]
         }));
 
