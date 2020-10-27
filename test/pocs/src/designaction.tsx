@@ -63,6 +63,7 @@ const context1: ActionContext = {
                 return null as T;
             }
         }
+        destroy(): void {}
     }
 }
 
@@ -75,6 +76,7 @@ const context2: ActionContext = {
         as<T>(cntor: new (...args: any[]) => T): T {
             return null as T;
         }
+        destroy(): void {}
     }
 }
 

@@ -29,7 +29,8 @@ test('Test JavaClasses', () => {
 
 });
 
-test('Session', async () => {
+// should move
+test('Session With ConfigurationOwner', async () => {
 
     const requests: Array<InvokeRequest<any>> = new Array();
 

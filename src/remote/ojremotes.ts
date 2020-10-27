@@ -1,5 +1,5 @@
 import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOLEAN, JAVA_VOID } from './java';
-import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, Initialisation, } from './remote'
+import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, Initialisation, Destroyable, } from './remote'
 import { OperationType } from './invoke'
 import { NotificationType, Notification, NotificationListener } from './notify'
 
@@ -175,7 +175,7 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
             }
         }
 
-        class Impl extends Iconic {
+        class Impl extends Iconic implements Destroyable {
 
             async iconForId(id: String): Promise<ImageData> {
 
@@ -223,6 +223,11 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
                     toolkit.removeNotificationListener(IconicHandler.ICON_CHANGED_NOTIF_TYPE,
                         notificationListener);
                 }
+            }
+
+            destroy(): void {
+                toolkit.removeNotificationListener(IconicHandler.ICON_CHANGED_NOTIF_TYPE,
+                    notificationListener);
             }
 
         }
@@ -316,7 +321,7 @@ export class StructuralHandler implements RemoteHandlerFactory<Structural> {
             }
         }
 
-        class Impl extends Structural {
+        class Impl extends Structural implements Destroyable {
 
             addStructuralListener(listener: StructuralListener): void {
 
@@ -357,6 +362,10 @@ export class StructuralHandler implements RemoteHandlerFactory<Structural> {
                 }
             }
 
+            destroy(): void {
+                toolkit.removeNotificationListener(StructuralHandler.STRUCTURAL_NOTIF_TYPE,
+                    notificationListener);
+            }
         }
 
         return new Impl();

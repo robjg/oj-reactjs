@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { RemoteConnection, RemoteSession, RemoteSessionFactory } from '../../../src/remote/remote';
+import { RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory } from '../../../src/remote/remote';
 import { StateData, IconicHandler, Iconic, IconEvent, ImageData, ObjectHandler, ObjectProxy, Structural, StructuralEvent, StructuralHandler } from '../../../src/remote/ojremotes';
 
 // Object
@@ -137,6 +137,8 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
 
     readonly session: RemoteSession
 
+    private proxy: RemoteProxy | null = null;
+
     constructor(props: RemotesProps) {
         super(props);
         this.state = {
@@ -164,6 +166,15 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
     handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
 
+        if (this.proxy) {
+            this.proxy.destroy();
+            this.setState({
+                iconic: null,
+                object: null,
+                structural: null,
+            });
+        }
+
         const remoteId = parseInt(this.state.remoteId);
 
         if (remoteId == NaN) {
@@ -174,34 +185,19 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
         this.session.getOrCreate(remoteId)
             .then(proxy => {
 
-                let object: ObjectProxy | null = null;
-                let iconic: Iconic | null = null;
-                let structural: Structural | null = null;
+                this.proxy = proxy;
 
                 if (proxy.isA(ObjectProxy)) {
-                    object = proxy.as(ObjectProxy);
-                }
-                else {
-                    object = null;
+                    this.setState({ object: proxy.as(ObjectProxy) });
                 }
 
                 if (proxy.isA(Iconic)) {
-                    iconic = proxy.as(Iconic);
-                }
-                else {
-                    iconic = null;
+                    this.setState({ iconic: proxy.as(Iconic) });
                 }
 
                 if (proxy.isA(Structural)) {
-                    structural = proxy.as(Structural);
+                    this.setState({ structural: proxy.as(Structural) });
                 }
-                else {
-                    structural = null;
-                }
-
-                this.setState({ object: object,
-                    iconic: iconic,
-                    structural: structural });
             });
     }
 

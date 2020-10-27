@@ -3,8 +3,12 @@ import { Invoker, OperationType, InvokeRequest, InvokeResponse, RemoteInvoker } 
 import { NotificationListener, NotificationType, Notifier, RemoteNotifier } from './notify';
 import { Logger } from '../logging';
 
+export interface Destroyable {
 
-export interface RemoteProxy {
+    destroy(): void;
+}
+
+export interface RemoteProxy extends Destroyable {
 
     isA(cntor: { new(...args: any[]): any }): boolean;
 
@@ -113,6 +117,10 @@ class RemoteProxyImpl implements RemoteProxy {
         else {
             throw new Error("No handler for " + jc.name);
         }
+    }
+
+    destroy() {
+        this.manager.destroy();
     }
 }
 
@@ -268,24 +276,31 @@ export interface Initialisation<T> {
     data: T;
 }
 
-export interface Implementation<T> {
-    type: string;
-    version: string;
-    initialisation?: Initialisation<T>; 
+export class Implementation<T> {
+
+    constructor (readonly type: string, 
+        readonly version: string,
+    readonly initialisation?: Initialisation<T>) {
+
+    } 
 }
 
 export interface ServerInfo {
+    
     implementations: Implementation<any>[];
-    noop(): void;
 }
 
 export class ServerInfo implements JavaObject<ServerInfo> {
     static readonly javaClass = javaClasses.register(
         ServerInfo, "org.oddjob.jmx.server.ServerInfo");
 
+    
+
     getJavaClass(): JavaClass<ServerInfo> {
         return ServerInfo.javaClass;
     }
+
+
 }
 
 export interface RemoteHandlerFactory<T extends JavaObject<T>> {
@@ -312,7 +327,7 @@ class RemoteOddjobBean implements JavaObject<RemoteOddjobBean> {
 
 class RemoteOddjobBeanHandler implements RemoteHandlerFactory<RemoteOddjobBean> {
 
-    static serverInfoOp: OperationType<ServerInfo> =
+    static SERVER_INFO_OP: OperationType<ServerInfo> =
         OperationType.ofName("serverInfo")
             .andDataType(ServerInfo.javaClass)
             .withSignature();
@@ -324,7 +339,7 @@ class RemoteOddjobBeanHandler implements RemoteHandlerFactory<RemoteOddjobBean> 
         class Impl extends RemoteOddjobBean {
             serverInfo(): Promise<ServerInfo> {
 
-                return toolkit.invoke(RemoteOddjobBeanHandler.serverInfoOp);
+                return toolkit.invoke(RemoteOddjobBeanHandler.SERVER_INFO_OP);
             }
 
         }
@@ -333,8 +348,7 @@ class RemoteOddjobBeanHandler implements RemoteHandlerFactory<RemoteOddjobBean> 
     }
 }
 
-
-class HandlerManager {
+class HandlerManager implements Destroyable {
 
     constructor(readonly handlers: Map<JavaClass<any>, any>) {
 
@@ -342,6 +356,20 @@ class HandlerManager {
 
     handlerFor<T>(javaClass: JavaClass<T>): T {
         return this.handlers.get(javaClass);
+    }
+
+    destroy(): void {
+
+        function isDestroyable(handler: any): handler is Destroyable {
+            return (handler as Destroyable).destroy !== undefined;
+          }
+                    
+          this.handlers.forEach((v, k) => {
+         
+            if (isDestroyable(v)) {
+                v.destroy();
+            }            
+        });
     }
 }
 

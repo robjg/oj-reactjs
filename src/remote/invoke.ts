@@ -1,4 +1,4 @@
-import { JavaClass, javaClasses } from "./java";
+import { JavaClass, javaClasses, JavaObject } from "./java";
 
 export class OperationType<T> {
 
@@ -34,6 +34,11 @@ export class InvokeResponse<T> {
         readonly value?: any) {
 
         }
+
+    static ofJavaObject<T extends JavaObject<T>>(javaObject: T): InvokeResponse<T> {
+        
+        return new InvokeResponse(javaObject.getJavaClass.name, javaObject);
+    }
 
     getJavaType(): JavaClass<T> | undefined {
         return javaClasses.forName(this.type);

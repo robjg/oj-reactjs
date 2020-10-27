@@ -1,4 +1,7 @@
-import { StateData, StateFlag } from '../../src/remote/ojremotes';
+import { InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
+import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
+import { IconData, IconEvent, Iconic, IconicHandler, StateData, StateFlag } from '../../src/remote/ojremotes';
+import { Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 
 test('StateData', () => {
 
@@ -11,5 +14,108 @@ test('StateData', () => {
     expect(stateData.jobState.flags[0]).toBe(StateFlag.EXCEPTION);
 
     expect(stateData.date).toStrictEqual(new Date("Oct 5, 2020 9:53:12 AM"));
+
+});
+
+
+
+test('Iconic Handler', async () => {
+
+    let listener_: NotificationListener<any> | null = null;
+
+    const impls: Implementation<any>[] = [ 
+        new Implementation(Iconic.javaClass.name, "2.0") ];
+
+    const syncNotification: Notification<IconData> = new Notification(42,
+        IconicHandler.ICON_CHANGED_NOTIF_TYPE, 1000, new IconData("complete"));
+
+    const laterNotification: Notification<IconData> = new Notification(42,
+            IconicHandler.ICON_CHANGED_NOTIF_TYPE, 1001, new IconData("ready"));
+
+    const remote: RemoteConnection = {
+
+            invoke<T>(invokeRequest: InvokeRequest<T>): Promise<InvokeResponse<T>> {
+
+                if (invokeRequest.operationType.name == "serverInfo") {
+                    return Promise.resolve(InvokeResponse.ofJavaObject(
+                        new class extends ServerInfo {
+                           implementations = impls;
+                        }));
+                }
+
+                if (invokeRequest.operationType.name == IconicHandler.SYNCHRONIZE.name) {
+                    return Promise.resolve(InvokeResponse.ofJavaObject(syncNotification));
+                }
+
+                throw Error("Unexpected");
+            },
+
+            addNotificationListener<T>(remoteId: number,
+                notificationType: NotificationType<T>,
+                listener: NotificationListener<T>): void {
+                    expect(remoteId).toBe(42);
+                    expect(notificationType).toBe(IconicHandler.ICON_CHANGED_NOTIF_TYPE);
+
+                    if (listener_ == null) {
+                        listener_ = listener;
+                    }
+                    else {
+                        throw new Error("Unexpected.");
+                    }
+            },
+
+            removeNotificationListener<T>(remoteId: number,
+                notificationType: NotificationType<T>,
+                listener: NotificationListener<T>): void {
+                    if (listener_ == listener) {
+                        listener_ = null;
+                    }
+                    else {
+                        throw new Error("Unexpected.");
+                    }
+           }    
+        }
+
+    const session: RemoteSession = RemoteSessionFactory.from(remote)
+        .register(new IconicHandler())
+        .createRemoteSession();
+
+
+    const proxy : RemoteProxy = await session.getOrCreate(42);
+
+    expect(proxy.isA(Iconic)).toBe(true);
+
+    const iconic: Iconic = proxy.as(Iconic);
+
+    const results : IconEvent[] = []; 
+
+    iconic.addIconListener({ iconEvent: (event: IconEvent) => {results.push(event)}});
+
+    const latch = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (listener_ == null) {
+                reject("Still null")
+            }
+            else {
+                resolve();
+            }
+        }, 0);
+    });
+
+    await latch;
+
+    expect(listener_).not.toBeNull();
+    expect(results.length).toBe(1);
+
+    // 
+    if(listener_) {
+        (listener_  as NotificationListener<any>).handleNotification(laterNotification);
+    }
+
+    expect(results.length).toBe(2);
+
+    proxy.destroy();
+
+    expect(listener_).toBeNull();
 
 });
