@@ -231,6 +231,138 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
     }
 }
 
+// Structural
+
+export class StructuralEvent {
+
+    constructor(readonly remoteId: number,
+        readonly children: number[]) { }
+}
+
+
+export interface StructuralListener {
+
+    childEvent(event: StructuralEvent): void;
+}
+
+export interface Structural {
+
+    addStructuralListener(listener: StructuralListener): void;
+
+    /**
+     * Remove a listener.
+     * 
+     * @param listener The IconListener.
+     */
+    removeStructuralListener(listener: StructuralListener): void;
+}
+
+export class Structural implements JavaObject<Structural> {
+    static readonly javaClass = javaClasses.register(
+        Structural, "org.oddjob.Structural");
+
+    getJavaClass(): JavaClass<Structural> {
+        return Structural.javaClass;
+    }
+}
+
+export class ChildData implements JavaObject<ChildData> {
+    static readonly javaClass = javaClasses.register(
+        ChildData, "org.oddjob.jmx.handlers.StructuralHandlerFactory$ChildData");
+
+    constructor(readonly remoteIds: number[]) { }
+
+    getJavaClass(): JavaClass<ChildData> {
+        return ChildData.javaClass;
+    }
+}
+
+export class StructuralHandler implements RemoteHandlerFactory<Structural> {
+
+    static STRUCTURAL_NOTIF_TYPE: NotificationType<ChildData> =
+        NotificationType.ofName("org.oddjob.structural")
+            .andDataType(ChildData.javaClass);
+
+    static SYNCHRONIZE: OperationType<Notification<ChildData>> =
+        OperationType.ofName("structuralSynchronize")
+            .andDataType(javaClasses.forType(Notification))
+            .withSignature();
+
+    readonly interfaceClass = Structural.javaClass;
+
+    createHandler(toolkit: ClientToolkit): Structural {
+
+        var listeners: StructuralListener[] = [];
+
+        var lastEvent: StructuralEvent | null = null;
+
+        function extractEvent(notification: Notification<ChildData>): StructuralEvent | null {
+            if (notification.data?.remoteIds) {
+                return new StructuralEvent(notification.remoteId, notification.data.remoteIds);
+            }
+            else {
+                toolkit.logger.warn("Structural notification has no remotes ids: " + JSON.stringify(notification));
+                return null;
+            }
+        }
+
+        const notificationListener: NotificationListener<ChildData> = {
+            handleNotification: (notification: Notification<ChildData>) => {
+                lastEvent = extractEvent(notification);
+                if (lastEvent != null) {
+                    const notNullLastEvent: StructuralEvent = lastEvent;
+                    listeners.forEach(l => l.childEvent(notNullLastEvent));
+                }
+            }
+        }
+
+        class Impl extends Structural {
+
+            addStructuralListener(listener: StructuralListener): void {
+
+
+                if (lastEvent == null) {
+
+                    toolkit.invoke(StructuralHandler.SYNCHRONIZE)
+                        .then(notification => {
+                            const event = extractEvent(notification);
+                            if (event != null) {
+                                listener.childEvent(lastEvent = event);
+                            }
+
+                            toolkit.addNotificationListener(StructuralHandler.STRUCTURAL_NOTIF_TYPE,
+                                notificationListener);
+                        });
+                }
+                else {
+                    listener.childEvent(lastEvent);                    
+                }
+
+                listeners.push(listener);
+
+            }
+
+            /**
+             * Remove a listener.
+             * 
+             * @param listener The IconListener.
+             */
+            removeStructuralListener(listener: StructuralListener): void {
+
+                listeners = listeners.filter(e => e != listener);
+                if (listeners.length == 0) {
+                    lastEvent == null;
+                    toolkit.removeNotificationListener(StructuralHandler.STRUCTURAL_NOTIF_TYPE,
+                        notificationListener);
+                }
+            }
+
+        }
+
+        return new Impl();
+    }
+}
+
 // Configuraiton Owner
 
 export interface ConfigurationOwner {

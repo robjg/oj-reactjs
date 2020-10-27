@@ -102,7 +102,17 @@ class RemoteProxyImpl implements RemoteProxy {
     }
 
     as<T>(cntor: { new(...args: any[]): T }): T {
-        return this.manager.handlerFor(javaClasses.forType(cntor));
+        const jc: JavaClass<any> = javaClasses.forType(cntor);
+        if (!jc) {
+            throw new Error("No JavaClass for" + cntor);
+        }
+        const t : T = this.manager.handlerFor(jc);
+        if (t) {
+            return t;
+        }
+        else {
+            throw new Error("No handler for " + jc.name);
+        }
     }
 }
 
