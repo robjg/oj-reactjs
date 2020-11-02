@@ -32,6 +32,7 @@ class ExampleMenu extends React.Component<ExampleMenuProps> {
 const context1: ActionContext = {
     parent: null,
     proxy: new class implements RemoteProxy {
+        remoteId: 1;
         isA(cntor: new (...args: any[]) => any): boolean {
             if (ConfigurationOwner == cntor) {
                 return true;
@@ -70,6 +71,7 @@ const context1: ActionContext = {
 const context2: ActionContext = {
     parent: context1,
     proxy: new class implements RemoteProxy {
+        remoteId: 2;
         isA(cntor: new (...args: any[]) => any): boolean {
             return false;
         }

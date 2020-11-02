@@ -1,7 +1,38 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 import { RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory } from '../../../src/remote/remote';
 import { StateData, IconicHandler, Iconic, IconEvent, ImageData, ObjectHandler, ObjectProxy, Structural, StructuralEvent, StructuralHandler } from '../../../src/remote/ojremotes';
+
+
+function Empty() {
+    return <p>Not defined</p>
+}
+
+
+interface AsyncCompProvider {
+
+    subscribe(callback: (jsx: ReactNode) => void): void;
+}
+
+class AsyncCompProvider {
+
+    last: ReactNode = <Empty />;
+
+    callbacks: ((jsx: ReactNode) => void)[] = [];
+
+    subscribe(callback: (jsx: ReactNode) => void): void {
+
+        callback(this.last);
+        this.callbacks.push(callback);
+    }
+
+    provide(jsx: ReactNode) {
+        this.last = jsx;
+        this.callbacks.forEach(cb => cb(jsx));
+    }
+}
+
+
 
 // Object
 
@@ -31,15 +62,35 @@ class ObjectOut extends React.Component<ObjectProps, ObjectState> {
 
 // Iconic
 
+class AsyncImage extends AsyncCompProvider {
+
+    onIconic(iconic: Iconic) {
+
+        iconic.addIconListener({
+
+            iconEvent: (event: IconEvent) => {
+                iconic.iconForId(event.iconId)
+                    .then(imageData => {
+                        const img: ReactNode =
+                            <img src={"data:" + imageData.mediaType + ";base64," + imageData.bytes}
+                                alt={imageData.description}
+                                title={imageData.description} />;
+                        this.provide(img);
+                    });
+            }
+        });
+    }
+}
+
 type IconicState = {
 
-    imageData: ImageData | null;
+    img: ReactNode;
 
 }
 
 type IconicProps = {
 
-    iconic: Iconic;
+    imgProvider: AsyncCompProvider;
 
 }
 
@@ -48,30 +99,16 @@ class IconicOut extends React.Component<IconicProps, IconicState> {
     constructor(props: IconicProps) {
         super(props);
 
-        this.state = { imageData: null };
+        this.state = { img: <></> };
     }
 
     componentDidMount() {
-        this.props.iconic.addIconListener({
-
-            iconEvent: (event: IconEvent) => {
-                this.props.iconic.iconForId(event.iconId)
-                    .then(imageData => {
-                        console.log(imageData);
-                        this.setState({ imageData: imageData });
-                    });
-            }
-        });
+        this.props.imgProvider.subscribe(
+            (img: ReactNode) => { this.setState({ img: img }) });
     }
 
     render() {
-        if (this.state.imageData == null) {
-            return <p>Loading...</p>
-        }
-        return <img src={"data:" + this.state.imageData.mediaType + ";base64,"
-            + this.state.imageData.bytes}
-            alt={this.state.imageData.description}
-            title={this.state.imageData.description} />;
+        return this.state.img;
     }
 }
 
@@ -114,18 +151,90 @@ class StructuralOut extends React.Component<StructuralProps, StructuralState> {
     }
 }
 
-
-function Empty() {
-    return <p>Not defined</p>
+export type InfoProps = {
+    proxy: RemoteProxy;
 }
 
+export type InfoState = {
+
+    object: ObjectProxy | null;
+    structural: Structural | null;
+}
+
+export class RemoteInfo extends React.Component<InfoProps, InfoState> {
+
+    private readonly imgProvider = new AsyncImage();
+
+    constructor(props: InfoProps) {
+        super(props);
+
+        const proxy = this.props.proxy;
+
+        let object = null;
+        if (proxy.isA(ObjectProxy)) {
+            object = proxy.as(ObjectProxy);
+        }
+
+        if (proxy.isA(Iconic)) {
+            this.imgProvider.onIconic(proxy.as(Iconic));
+        }
+
+        let structural = null
+        if (proxy.isA(Structural)) {
+            structural =  proxy.as(Structural);
+        }
+
+        this.state = {
+            object: object,
+            structural: structural,
+        };
+
+    }
+
+    componentWillUnmount() {
+
+        this.props.proxy.destroy();
+    }
+
+    render() {
+        return (
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Object</th>
+                        <td>{
+                            (this.state.object) ?
+                                <ObjectOut object={this.state.object} />
+                                : <Empty />
+                        }</td>
+                    </tr>
+                    <tr>
+                        <th>Iconic</th>
+                        <td>{
+                            <IconicOut imgProvider={this.imgProvider} />
+                        }</td>
+                    </tr>
+                    <tr>
+                        <th>Strucutural</th>
+                        <td>{
+                            (this.state.structural) ?
+                                <StructuralOut structural={this.state.structural} />
+                                : <Empty />
+                        }</td>
+                    </tr>
+                </tbody>
+            </table>
+        );
+
+    }
+
+}
 
 type RemotesState = {
 
     remoteId: string;
-    object: ObjectProxy | null;
-    iconic: Iconic | null;
-    structural: Structural | null;
+    children: ReactNode[];
+
 }
 
 type RemotesProps = {
@@ -137,19 +246,17 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
 
     readonly session: RemoteSession
 
-    private proxy: RemoteProxy | null = null;
-
     constructor(props: RemotesProps) {
         super(props);
+
         this.state = {
             remoteId: '',
-            iconic: null,
-            object: null,
-            structural: null,
+            children: [ ]
         };
 
         this.handleChangeRemoteId = this.handleChangeRemoteId.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleDestroy = this.handleDestroy.bind(this);
 
         this.session = RemoteSessionFactory.from(this.props.remote)
             .register(new ObjectHandler())
@@ -162,18 +269,12 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
         this.setState({ remoteId: event.currentTarget.value });
     }
 
+    handleDestroy(event: React.FormEvent<HTMLFormElement>) {
+        this.setState({ children: [] });
+    }
 
     handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-
-        if (this.proxy) {
-            this.proxy.destroy();
-            this.setState({
-                iconic: null,
-                object: null,
-                structural: null,
-            });
-        }
 
         const remoteId = parseInt(this.state.remoteId);
 
@@ -185,26 +286,19 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
         this.session.getOrCreate(remoteId)
             .then(proxy => {
 
-                this.proxy = proxy;
+                const children: ReactNode[]  = this.state.children;
+                children.push(<RemoteInfo key={children.length + 1} proxy={proxy}/>);
 
-                if (proxy.isA(ObjectProxy)) {
-                    this.setState({ object: proxy.as(ObjectProxy) });
-                }
-
-                if (proxy.isA(Iconic)) {
-                    this.setState({ iconic: proxy.as(Iconic) });
-                }
-
-                if (proxy.isA(Structural)) {
-                    this.setState({ structural: proxy.as(Structural) });
-                }
+                this.setState( {
+                    children: children
+                });
             });
     }
 
     render() {
         return (
             <>
-                <form onSubmit={this.handleSubmit}>
+                <form onSubmit={this.handleSubmit} onReset={this.handleDestroy}>
                     <ul>
                         <li>
                             <label>Remote Id
@@ -214,35 +308,12 @@ export class RemotesForm extends React.Component<RemotesProps, RemotesState> {
                     </ul>
 
                     <input type="submit" value="OK" />
+                    <input type="reset" value="Reset" />
+
                 </form>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Object</th>
-                            <td>{
-                                (this.state.object) ?
-                                    <ObjectOut object={this.state.object} />
-                                    : <Empty />
-                            }</td>
-                        </tr>
-                        <tr>
-                            <th>Iconic</th>
-                            <td>{
-                                (this.state.iconic) ?
-                                    <IconicOut iconic={this.state.iconic} />
-                                    : <Empty />
-                            }</td>
-                        </tr>
-                        <tr>
-                            <th>Strucutural</th>
-                            <td>{
-                                (this.state.structural) ?
-                                    <StructuralOut structural={this.state.structural} />
-                                    : <Empty />
-                            }</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div>
+                { this.state.children }
+                </div>
             </>);
     }
 

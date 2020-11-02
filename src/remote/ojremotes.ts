@@ -1,5 +1,5 @@
 import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOLEAN, JAVA_VOID } from './java';
-import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, Initialisation, Destroyable, } from './remote'
+import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, Initialisation, Destroyable, RemoteConnection, RemoteSessionFactory, RemoteSession, } from './remote'
 import { OperationType } from './invoke'
 import { NotificationType, Notification, NotificationListener } from './notify'
 
@@ -435,4 +435,15 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
 
         return new Impl();
     }
+}
+
+export function ojRemoteSession(remote: RemoteConnection): RemoteSession {
+
+    return RemoteSessionFactory.from(remote)
+    .register(new ObjectHandler())
+    .register(new IconicHandler())
+    .register(new StructuralHandler())
+    .register(new ConfigurationOwnerHandler())
+    .createRemoteSession();
+
 }

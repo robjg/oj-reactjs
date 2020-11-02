@@ -16,21 +16,21 @@
                 'react': "../../node_modules/react/umd/react.development",
                 'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
                 'src/remote/remote': "./main",
-                'test/pocs/src/ojremotesform': "./main"
+                'src/tree/view': "./main"
             }
         });
 
-        requirejs(['react', 'react-dom', 'src/remote/remote', 'test/pocs/src/ojremotesform'],
-            function (React, ReactDOM, remote, ojrmeotesform) {
+        requirejs(['react', 'react-dom', 'src/remote/remote', 'src/tree/view'],
+            function (React, ReactDOM, remote, tree) {
+
 
                 var remote = remote.RemoteConnection.fromHost('localhost:8080')
 
                 ReactDOM.render(
-                    React.createElement(ojrmeotesform.RemotesForm,
+                    React.createElement(tree.OjRoot,
                         { remote: remote }, null),
                     document.getElementById('form')
                 );
-
             });
 
     </script>

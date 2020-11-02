@@ -10,6 +10,8 @@ export interface Destroyable {
 
 export interface RemoteProxy extends Destroyable {
 
+    readonly remoteId: number;
+
     isA(cntor: { new(...args: any[]): any }): boolean;
 
     as<T>(cntor: { new(...args: any[]): T }): T;
@@ -97,7 +99,8 @@ export class ComponentTransportable implements Transportable, JavaObject<Compone
 
 class RemoteProxyImpl implements RemoteProxy {
 
-    constructor(readonly manager: HandlerManager) {
+    constructor(readonly remoteId: number,
+        readonly manager: HandlerManager) {
 
     }
 
@@ -161,7 +164,7 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
         const handlerManager = this.managerFactory.create(serverInfo.implementations, toolkit);
 
-        proxy = new RemoteProxyImpl(handlerManager);
+        proxy = new RemoteProxyImpl(remoteId, handlerManager);
 
         this.proxies.set(remoteId, proxy);
         this.ids.set(proxy, remoteId);
