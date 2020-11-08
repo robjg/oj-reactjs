@@ -49,6 +49,9 @@ class JavaClasses {
 
     register<T>(cntor: { new(...args: any[]): T }, className: string): JavaClass<T> {
         const javaClass = new JavaClassImpl<T>(className)
+        if (this.registry.has(cntor)) {
+            throw new Error("Already registered " + cntor  + " for " + className);
+        }
         this.registry.set(cntor, javaClass);
         this.byName.set(className, javaClass);
         return javaClass;

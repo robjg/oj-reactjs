@@ -20,7 +20,7 @@ export class NotificationType<T> {
 export class Notification<T> implements JavaObject<Notification<T>> {
 
     static readonly javaClass = javaClasses.register(
-        Notification, "org.oddjob.Iconic");
+        Notification, "org.oddjob.remote.Notification");
 
     getJavaClass(): JavaClass<Notification<T>> {
         return Notification.javaClass;

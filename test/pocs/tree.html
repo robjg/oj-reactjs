@@ -3,11 +3,22 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Test OJ Remotes</title>
+    <title>Test OJ Tree</title>
+    <style>
+.tree {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}        
+    </style>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    <link rel="stylesheet" href="../../src/css/tree.css">
+    <link rel="stylesheet" href="../../src/css/global.css">
 </head>
 
 <body>
-    <div id="form"></div>
+    <div id='ojNodeRoot' class='tree global-font'></div>
 
     <script src="../../node_modules/requirejs/require.js"></script>
     <script>
@@ -29,7 +40,7 @@
                 ReactDOM.render(
                     React.createElement(tree.OjRoot,
                         { remote: remote }, null),
-                    document.getElementById('form')
+                    document.getElementById('ojNodeRoot')
                 );
             });
 

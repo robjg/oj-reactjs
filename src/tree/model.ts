@@ -1,5 +1,6 @@
 import { IconEvent, Iconic, IconListener, ImageData, ObjectProxy, Structural, StructuralEvent } from "../remote/ojremotes";
 import { RemoteProxy, RemoteSession } from "../remote/remote";
+import { arrayDiff, DiffOp, Op } from "./util";
 
 
 export interface NodeController {
@@ -75,6 +76,8 @@ export interface NodeModel {
 
     readonly isStructural: boolean;
 
+    readonly isIconic: boolean;
+
     addSelectionListener(listener: NodeSelectionListener): void;
 
     addStructureListener(listener: NodeStructureListener): void;
@@ -120,6 +123,8 @@ export class ProxyNodeModelController implements NodeModelController {
 
     readonly nodeId: number;
 
+    private expanded: boolean = false;
+
     private selectionListeners: NodeSelectionListener[] = [];
 
     private structureListeners: NodeStructureListener[] = [];
@@ -128,7 +133,13 @@ export class ProxyNodeModelController implements NodeModelController {
 
     private children: NodeModelController[] = [];
 
+    private structureInitialised: boolean = false;
+
     private structural: Structural | null;
+
+    private iconic: Iconic | null;
+
+    private icon: ImageData | null = null;
 
     constructor(readonly proxy: RemoteProxy, readonly nodeFactory: NodeFactory) {
 
@@ -150,8 +161,11 @@ export class ProxyNodeModelController implements NodeModelController {
         }
 
         if (proxy.isA(Iconic)) {
-            const iconic: Iconic = proxy.as(Iconic);
-            iconic.addIconListener(this.iconListenerFor(iconic));
+            this.iconic = proxy.as(Iconic);
+            this.iconic.addIconListener(this.iconListenerFor(this.iconic));
+        }
+        else {
+            this.iconic = null;
         }
 
     }
@@ -160,11 +174,52 @@ export class ProxyNodeModelController implements NodeModelController {
         return this.structural != null;
     }
 
+    get isIconic() {
+        return this.iconic != null;
+    }
+
     private structuralListener = {
         childEvent: (event: StructuralEvent) => {
             const existing: number[] = this.children.map(e => e.nodeId)
-            if (this.compareNodeList(existing, event.children)) {
-                this.fireStructureChanged();
+
+            const result: DiffOp<number>[] = arrayDiff(existing, event.children);
+            if (result.length > 0) {
+
+                const promises: Promise<DiffOp<NodeModelController | number>>[] = result.map(op => {
+                    if (op.op == Op.INSERT) {
+                        const insertPromise: Promise<NodeModelController> = 
+                             this.nodeFactory.createNode(op.value);
+
+                        return insertPromise.then( node => 
+                            ({ op: op.op, value: node, index: op.index }));
+                    }
+                    else {
+                        return Promise.resolve(op);
+                    }
+                });
+
+                Promise.all(promises)
+                    .then((ops: DiffOp<NodeModelController | number>[]) => {
+                        ops.forEach(op => {
+                            if (op.op == Op.INSERT) {
+                                this.children.splice(op.index, 0, op.value as NodeModelController)
+                            }
+                            else {
+                                const existing: NodeModelController = this.children[op.index];
+                                if (existing.nodeId != op.value as number) {
+                                    throw new Error("This should never happen");
+                                }
+                                existing.destroy();
+                                this.children.splice(op.index, 1);
+                            }
+                        });
+
+                        this.structureInitialised = true;
+                        this.fireStructureChanged();
+                    });
+            }
+            else {
+                this.structureInitialised = true;
             }
         }
     }
@@ -175,6 +230,7 @@ export class ProxyNodeModelController implements NodeModelController {
             iconEvent: (event: IconEvent) => {
                 iconic.iconForId(event.iconId)
                     .then((imageData: ImageData) => {
+                        this.icon = imageData;
                         this.iconListeners.forEach(l => l.iconChanged(imageData));
                     });
             }
@@ -190,74 +246,22 @@ export class ProxyNodeModelController implements NodeModelController {
         this.structureListeners.forEach(e => e.childrenChanged(event));
     }
 
-    private childInserted(nodeId: number, index: number): void {
-
-        this.nodeFactory.createNode(nodeId)
-            .then(node => {
-                this.children.push(node);
-            });
-
-    }
-
-    private childDeleted(nodeId: number, index: number): void {
-
-        this.children[index].destroy();
-        this.children = this.children.splice(index, 1);
-    }
-
-    private compareNodeList(nodes1: number[], nodes2: number[]): boolean {
-
-        let changed: boolean = false;
-
-        var lastI = 0, insertPoint = 0;
-
-        for (var j = 0; j < nodes2.length; ++j) {
-
-            var found = false;
-
-            for (var i = lastI; i < nodes1.length; ++i) {
-
-                if (nodes2[j] == nodes1[i]) {
-
-                    for (; lastI < i; ++lastI) {
-                        this.childDeleted(nodes1[lastI], insertPoint);
-                        changed = true;
-                    }
-                    ++lastI;
-                    ++insertPoint;
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                this.childInserted(nodes2[j], insertPoint++);
-                changed = true;
-            }
-        }
-
-        for (var i = lastI; i < nodes1.length; ++i) {
-            this.childDeleted(nodes1[i], insertPoint);
-            changed = true;
-        }
-
-        return changed;
-    }
-
-    select(): void {
+    select: () => void = () => {
         this.selectionListeners.forEach(e => e.nodeSelected());
     }
 
-    unselct(): void {
+    unselct: () => void = () => {
         this.selectionListeners.forEach(e => e.nodeUnselected());
     }
 
-    expand(): void {
-        this.structureListeners.forEach(e => e.nodeExpanded);
+    expand: () => void = () => {
+        this.expanded = true;
+        this.structureListeners.forEach(e => e.nodeExpanded());
     }
 
-    collapse(): void {
-        this.structureListeners.forEach(e => e.nodeCollapsed);
+    collapse: () => void  = () => {
+        this.expanded = false;
+        this.structureListeners.forEach(e => e.nodeCollapsed());
     }
 
 
@@ -266,10 +270,24 @@ export class ProxyNodeModelController implements NodeModelController {
     }
 
     addStructureListener(listener: NodeStructureListener): void {
-        this.structureListeners.push(listener);
+        if (this.structureInitialised) {
+            listener.childrenChanged({
+                children: this.children
+            });
+        }
+        if (this.expanded) {
+            listener.nodeExpanded();
+        }
+        else {
+            listener.nodeCollapsed();
+        }
+        this.structureListeners.push(listener)
     }
 
     addIconListener(listener: NodeIconListener): void {
+        if (this.icon) {
+            listener.iconChanged(this.icon);
+        }
         this.iconListeners.push(listener);
     }
 

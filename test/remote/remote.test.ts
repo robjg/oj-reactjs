@@ -1,35 +1,10 @@
-import { javaClasses, JAVA_STRING } from '../../src/remote/java';
+import { JAVA_STRING } from '../../src/remote/java';
 import { RemoteConnection, RemoteProxy, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
-import { Invoker, InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
+import { InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
 import { ConfigurationOwner, ConfigurationOwnerHandler } from '../../src/remote/ojremotes';
 import { NotificationListener, NotificationType } from '../../src/remote/notify';
 
-
-class A {
-
-}
-
-class B {
-
-}
-
-
-test('Test JavaClasses', () => {
-
-    javaClasses.register(A, "foo.A");
-    javaClasses.register(B, "foo.B");
-
-    const classA = javaClasses.forName("foo.A");
-
-    expect(classA.name).toBe("foo.A");
-
-    const classB = javaClasses.forType(B);
-
-    expect(classB.name).toBe("foo.B");
-
-});
-
-// should move
+// Should move
 test('Session With ConfigurationOwner', async () => {
 
     const requests: Array<InvokeRequest<any>> = new Array();
