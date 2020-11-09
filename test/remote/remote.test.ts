@@ -1,8 +1,9 @@
 import { JAVA_STRING } from '../../src/remote/java';
 import { RemoteConnection, RemoteProxy, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
-import { ConfigurationOwner, ConfigurationOwnerHandler } from '../../src/remote/ojremotes';
+import { ConfigurationOwner, ConfigurationOwnerHandler, ObjectHandler, ObjectProxy } from '../../src/remote/ojremotes';
 import { NotificationListener, NotificationType } from '../../src/remote/notify';
+import { mock } from 'jest-mock-extended';
 
 // Should move
 test('Session With ConfigurationOwner', async () => {
@@ -25,7 +26,7 @@ test('Session With ConfigurationOwner', async () => {
 
     let invokeIndex: number = 0;
 
-    const invoker: RemoteConnection = {
+    const remote: RemoteConnection = {
         invoke<T>(invokeRequest: InvokeRequest<T>): Promise<InvokeResponse<T>> {
 
             requests.push(invokeRequest);
@@ -46,7 +47,7 @@ test('Session With ConfigurationOwner', async () => {
         }
     }
 
-    const sessionFactory = new RemoteSessionFactory(invoker)
+    const sessionFactory = new RemoteSessionFactory(remote)
         .register(new ConfigurationOwnerHandler());
 
     const session = sessionFactory.createRemoteSession();
@@ -67,3 +68,33 @@ test('Session With ConfigurationOwner', async () => {
     expect(formRequest.remoteId).toStrictEqual(1);
     expect(formRequest.argTypes).toBeUndefined();
 })
+
+
+test("Session create and destroy and create again", async () => {
+
+    const invokeResponse = new InvokeResponse<ServerInfo>(ServerInfo.javaClass.name,
+        {
+            implementations: [
+                {
+                    type: ObjectProxy.javaClass.name,
+                    version: "2.0"
+                }
+            ]
+        });
+
+    const remote = mock<RemoteConnection>();
+    remote.invoke.mockReturnValue(Promise.resolve(invokeResponse));
+
+    const sessionFactory = new RemoteSessionFactory(remote);
+
+    const session = sessionFactory.createRemoteSession();
+
+    const proxy1: RemoteProxy = await session.getOrCreate(42);
+
+    proxy1.destroy();
+
+    const proxy2: RemoteProxy = await session.getOrCreate(42);
+
+    expect(proxy1).not.toBe(proxy2);
+
+});

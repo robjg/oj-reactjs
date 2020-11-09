@@ -100,7 +100,8 @@ export class ComponentTransportable implements Transportable, JavaObject<Compone
 class RemoteProxyImpl implements RemoteProxy {
 
     constructor(readonly remoteId: number,
-        readonly manager: HandlerManager) {
+        readonly manager: HandlerManager,
+        private readonly destroyCallback: (proxy: RemoteProxy) => void) {
 
     }
 
@@ -124,6 +125,7 @@ class RemoteProxyImpl implements RemoteProxy {
 
     destroy() {
         this.manager.destroy();
+        this.destroyCallback(this);
     }
 }
 
@@ -164,11 +166,16 @@ class RemoteSessionImpl implements RemoteSession, RemoteIdMappings {
 
         const handlerManager = this.managerFactory.create(serverInfo.implementations, toolkit);
 
-        proxy = new RemoteProxyImpl(remoteId, handlerManager);
+        proxy = new RemoteProxyImpl(remoteId, handlerManager, this.proxyDestroyed );
 
         this.proxies.set(remoteId, proxy);
         this.ids.set(proxy, remoteId);
         return proxy;
+    }
+
+    private proxyDestroyed = (proxy: RemoteProxy): void => {
+        this.proxies.delete(proxy.remoteId);
+        this.ids.delete(proxy);
     }
 
 }
