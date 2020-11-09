@@ -51,3 +51,11 @@ test("Phaser over three Phases phases in order", async () => {
 
     expect(results).toEqual(expect.arrayContaining([42, 24]));
 })
+
+test("Phaser release before next", async () => {
+
+    const phaser: Phaser = new Phaser();
+
+    expect(() => phaser.release()).toThrow("Phaser is out of step as phase 0 not started yet.");
+
+})

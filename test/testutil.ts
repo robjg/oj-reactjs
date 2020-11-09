@@ -51,7 +51,7 @@ export class Phaser {
 
 
     release(): void {
-        if (this.releaseCount > this.resolvers.length) {
+        if (this.releaseCount >= this.resolvers.length) {
             throw new Error("Phaser is out of step as phase " + 
             this.releaseCount + " not started yet.");
         }

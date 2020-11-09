@@ -66,8 +66,6 @@ test("Structure Changes Broadcast", async () => {
         }
     }
 
-
-
     const proxyMc = new ProxyNodeModelController(p1, nodeFactory);
 
     expect(proxyMc.isStructural).toBe(true);
@@ -97,16 +95,19 @@ test("Structure Changes Broadcast", async () => {
 
     const listener = new StubListener();
     
+    expect(listener.expanded).toBe(undefined);
+
     proxyMc.addStructureListener(listener);
 
-    await phaser.next();
-
     expect(listener.expanded).toBe(false);
-    expect(listener.children).toStrictEqual([n2, n3]);
 
     proxyMc.expand();
 
+    await phaser.next();
+
     expect(listener.expanded).toBe(true);
+
+    expect(listener.children).toStrictEqual([n2, n3]);
 
     expect(sl.length).toBe(1);
     sl[0].childEvent({ remoteId: 1, children: [3]});
@@ -114,6 +115,34 @@ test("Structure Changes Broadcast", async () => {
     await phaser.next();
 
     expect(listener.children).toStrictEqual([n3]);
+});
+
+test("Structural No Children", async () => {
+
+    const structural: Structural = mock<Structural>();
+
+    const proxy = mock<RemoteProxy>(); 
+    proxy.isA.calledWith(Structural).mockReturnValue(true);
+    proxy.as.calledWith(Structural).mockReturnValue(structural);
+
+    const nodeFactory = mock<NodeFactory>();
+
+    const proxyMc = new ProxyNodeModelController(proxy, nodeFactory);
+
+    const remoteListener: StructuralListener = 
+        (structural.addStructuralListener as any).mock.calls[0][0];
+
+    const nodeListener: NodeStructureListener = mock<NodeStructureListener>();
+    nodeListener.childrenChanged = (event: ChildrenChangedEvent) => {
+        expect(event.children.length).toBe(0);
+    }
+
+    proxyMc.addStructureListener(nodeListener);
+
+    remoteListener.childEvent({ remoteId: 1, children: [] });
+
+    expect(nodeListener.nodeCollapsed).not.toBeCalled();
+    expect(nodeListener.nodeExpanded).not.toBeCalled();
 });
 
 

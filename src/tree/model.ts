@@ -123,17 +123,17 @@ export class ProxyNodeModelController implements NodeModelController {
 
     readonly nodeId: number;
 
-    private expanded: boolean = false;
-
     private selectionListeners: NodeSelectionListener[] = [];
 
     private structureListeners: NodeStructureListener[] = [];
 
     private iconListeners: NodeIconListener[] = [];
 
-    private children: NodeModelController[] = [];
+    // childIds will only be null during initialisation
+    private childIds: number[] | null = null;
 
-    private structureInitialised: boolean = false;
+    // child nodes will be null when node collapsed.
+    private childNodes: NodeModelController[] | null = null;
 
     private structural: Structural | null;
 
@@ -180,49 +180,106 @@ export class ProxyNodeModelController implements NodeModelController {
 
     private structuralListener = {
         childEvent: (event: StructuralEvent) => {
-            const existing: number[] = this.children.map(e => e.nodeId)
-
-            const result: DiffOp<number>[] = arrayDiff(existing, event.children);
-            if (result.length > 0) {
-
-                const promises: Promise<DiffOp<NodeModelController | number>>[] = result.map(op => {
-                    if (op.op == Op.INSERT) {
-                        const insertPromise: Promise<NodeModelController> = 
-                             this.nodeFactory.createNode(op.value);
-
-                        return insertPromise.then( node => 
-                            ({ op: op.op, value: node, index: op.index }));
+            if (this.childNodes) {
+                if (event.children.length == 0) {
+                    this.removeChildren();
+                    this.fireStructureChanged([]);
+                }
+                else {
+                    this.updateChildNodes(event.children)
+                }
+            }
+            else {
+                // Allow view to change if we got between children and no children
+                if (this.childIds) {
+                    if (this.childIds.length == 0) {
+                        this.fireCollapse();
+                    }
+                    else if (event.children.length == 0) {
+                        this.fireStructureChanged([]);
+                    }
+                }
+                else {
+                    this.childIds = event.children;
+                    if (this.childIds.length == 0) {
+                        this.fireStructureChanged([]);
                     }
                     else {
-                        return Promise.resolve(op);
+                        this.fireCollapse();
+                    }
+                }
+            }
+            this.childIds = event.children;
+        }
+    }
+
+    private updateChildNodes(newIds?: number[]): void {
+
+        if (!this.childIds) {
+            throw Error("Null child ids - should never happen");
+        }
+
+        let result: DiffOp<number>[];
+        if (newIds) {
+            result = arrayDiff(this.childIds, newIds);
+        }
+        else {
+            result = this.childIds.map((e, i) =>
+                ({ op: Op.INSERT, value: e, index: i }));
+        }
+
+        if (result.length == 0) {
+            throw Error("No updates = should never happen");
+        }
+
+        const promises: Promise<DiffOp<NodeModelController | number>>[] = result.map(op => {
+            if (op.op == Op.INSERT) {
+                const insertPromise: Promise<NodeModelController> =
+                    this.nodeFactory.createNode(op.value);
+
+                return insertPromise.then(node =>
+                    ({ op: op.op, value: node, index: op.index }));
+            }
+            else {
+                return Promise.resolve(op);
+            }
+        });
+
+        Promise.all(promises)
+            .then((ops: DiffOp<NodeModelController | number>[]) => {
+
+                if (!this.childNodes) {
+                    this.childNodes = [];
+                }
+
+                ops.forEach(op => {
+                    if (op.op == Op.INSERT) {
+                        (this.childNodes as NodeModelController[]).splice(op.index, 0, op.value as NodeModelController)
+                    }
+                    else {
+                        const existing: NodeModelController = (this.childNodes as NodeModelController[])[op.index];
+                        if (existing.nodeId != op.value as number) {
+                            throw new Error("This should never happen");
+                        }
+                        existing.destroy();
+                        (this.childNodes as NodeModelController[]).splice(op.index, 1);
                     }
                 });
 
-                Promise.all(promises)
-                    .then((ops: DiffOp<NodeModelController | number>[]) => {
-                        ops.forEach(op => {
-                            if (op.op == Op.INSERT) {
-                                this.children.splice(op.index, 0, op.value as NodeModelController)
-                            }
-                            else {
-                                const existing: NodeModelController = this.children[op.index];
-                                if (existing.nodeId != op.value as number) {
-                                    throw new Error("This should never happen");
-                                }
-                                existing.destroy();
-                                this.children.splice(op.index, 1);
-                            }
-                        });
+                this.fireStructureChanged(this.childNodes);
+            });
 
-                        this.structureInitialised = true;
-                        this.fireStructureChanged();
-                    });
-            }
-            else {
-                this.structureInitialised = true;
-            }
-        }
     }
+
+    private removeChildren(): void {
+
+        if (!this.childNodes) {
+            throw new Error("No child nodes - should be impossible")
+        }
+        this.childNodes.forEach(e => e.destroy());
+        this.childNodes = null;
+    }
+
 
     private iconListenerFor(iconic: Iconic): IconListener {
 
@@ -237,13 +294,18 @@ export class ProxyNodeModelController implements NodeModelController {
         };
     }
 
-    private fireStructureChanged(): void {
+    private fireStructureChanged(childNodes: NodeModelController[]): void {
 
         const event = {
-            children: this.children,
+            children: childNodes,
         };
 
         this.structureListeners.forEach(e => e.childrenChanged(event));
+    }
+
+    private fireCollapse(): void {
+
+        this.structureListeners.forEach(e => e.nodeCollapsed());
     }
 
     select: () => void = () => {
@@ -255,13 +317,23 @@ export class ProxyNodeModelController implements NodeModelController {
     }
 
     expand: () => void = () => {
-        this.expanded = true;
+        if (!this.childIds || this.childIds.length == 0) {
+            throw new Error("Can't expand a node without children.");
+        }
+
+        this.updateChildNodes();
+
         this.structureListeners.forEach(e => e.nodeExpanded());
     }
 
-    collapse: () => void  = () => {
-        this.expanded = false;
-        this.structureListeners.forEach(e => e.nodeCollapsed());
+    collapse: () => void = () => {
+        if (!this.childNodes) {
+            throw new Error("Can't collapse a node without children.");
+        }
+
+        this.removeChildren();
+
+        this.fireCollapse();
     }
 
 
@@ -270,17 +342,23 @@ export class ProxyNodeModelController implements NodeModelController {
     }
 
     addStructureListener(listener: NodeStructureListener): void {
-        if (this.structureInitialised) {
+        if (this.childNodes) {
             listener.childrenChanged({
-                children: this.children
+                children: this.childNodes
             });
-        }
-        if (this.expanded) {
             listener.nodeExpanded();
         }
-        else {
-            listener.nodeCollapsed();
+        else if (this.childIds) {
+            if (this.childIds.length == 0) {
+                listener.childrenChanged({
+                    children: []
+                })                
+            }
+            else {
+                listener.nodeCollapsed();
+            }
         }
+
         this.structureListeners.push(listener)
     }
 
