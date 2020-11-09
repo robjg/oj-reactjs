@@ -1,7 +1,9 @@
-import { InvokeRequest, InvokeResponse } from '../../src/remote/invoke';
+import { mock } from 'jest-mock-extended';
+import { InvokeRequest, InvokeResponse, OperationType } from '../../src/remote/invoke';
 import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
-import { IconData, IconEvent, Iconic, IconicHandler, StateData, StateFlag } from '../../src/remote/ojremotes';
-import { Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
+import { IconData, IconEvent, Iconic, IconicHandler, ImageData, StateData, StateFlag } from '../../src/remote/ojremotes';
+import { ClientToolkit, Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
+import { Latch } from '../testutil';
 
 test('StateData', () => {
 
@@ -32,6 +34,8 @@ test('Iconic Handler', async () => {
     const laterNotification: Notification<IconData> = new Notification(42,
             IconicHandler.ICON_CHANGED_NOTIF_TYPE, 1001, new IconData("ready"));
 
+    const latch: Latch = new Latch();
+
     const remote: RemoteConnection = {
 
             invoke<T>(invokeRequest: InvokeRequest<T>): Promise<InvokeResponse<T>> {
@@ -58,6 +62,7 @@ test('Iconic Handler', async () => {
 
                     if (listener_ == null) {
                         listener_ = listener;
+                        latch.countDown();
                     }
                     else {
                         throw new Error("Unexpected.");
@@ -91,18 +96,7 @@ test('Iconic Handler', async () => {
 
     iconic.addIconListener({ iconEvent: (event: IconEvent) => {results.push(event)}});
 
-    const latch = new Promise((resolve, reject) => {
-        setTimeout(() => {
-            if (listener_ == null) {
-                reject("Still null")
-            }
-            else {
-                resolve();
-            }
-        }, 0);
-    });
-
-    await latch;
+    await latch.promise;
 
     expect(listener_).not.toBeNull();
     expect(results.length).toBe(1);
@@ -119,3 +113,25 @@ test('Iconic Handler', async () => {
     expect(listener_).toBeNull();
 
 });
+
+test("Iconic Handler Caches Icons OK", async () => {
+
+    const toolkit: ClientToolkit = mock<ClientToolkit>();
+
+    toolkit.invoke = <T>(operationType: OperationType<T>, ...args: any): Promise<T> => {
+
+        expect(operationType).toBe(IconicHandler.ICON_FOR);
+
+        return Promise.resolve(new ImageData("abc", "image/gif")) as unknown as Promise<T>;
+
+    }
+
+    const handler: Iconic = new IconicHandler().createHandler(toolkit);
+
+    const result1: ImageData = await handler.iconForId("foo");
+
+    const result2: ImageData = await handler.iconForId("foo");
+
+    expect(result1).toBe(result2);
+});
+

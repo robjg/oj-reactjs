@@ -85,7 +85,7 @@ export interface IconListener {
 
 export interface Iconic {
 
-    iconForId(id: String): Promise<ImageData>;
+    iconForId(id: string): Promise<ImageData>;
 
     addIconListener(listener: IconListener): void;
 
@@ -147,6 +147,8 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
             .andDataType(javaClasses.forType(ImageData))
             .withSignature(JAVA_STRING);
 
+    static iconCache: Map<string, ImageData> = new Map();
+
     readonly interfaceClass = Iconic.javaClass;
 
     createHandler(toolkit: ClientToolkit): Iconic {
@@ -177,11 +179,19 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
         class Impl extends Iconic implements Destroyable {
 
-            async iconForId(id: String): Promise<ImageData> {
+            async iconForId(id: string): Promise<ImageData> {
+
+                const cachedImage = IconicHandler.iconCache.get(id);
+                if (cachedImage) {
+                    return Promise.resolve(cachedImage);
+                }
 
                 const imageData = await toolkit.invoke(IconicHandler.ICON_FOR, id);
                 if (!imageData) {
                     toolkit.logger.warn("No Image Data for " + id);
+                }
+                else {
+                    IconicHandler.iconCache.set(id, imageData);
                 }
                 return imageData;
             }
