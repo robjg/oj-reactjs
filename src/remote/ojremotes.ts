@@ -2,6 +2,7 @@ import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOL
 import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, Initialisation, Destroyable, RemoteConnection, RemoteSessionFactory, RemoteSession, } from './remote'
 import { OperationType } from './invoke'
 import { NotificationType, Notification, NotificationListener } from './notify'
+import { Logger, LoggerFactory } from '../logging';
 
 
 // Object
@@ -133,6 +134,8 @@ export class ImageData implements JavaObject<IconData> {
 
 export class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
+    private static readonly logger: Logger = LoggerFactory.getLogger(IconicHandler);
+
     static ICON_CHANGED_NOTIF_TYPE: NotificationType<IconData> =
         NotificationType.ofName("org.oddjob.iconchanged")
             .andDataType(IconData.javaClass);
@@ -162,7 +165,7 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
                 return new IconEvent(notification.remoteId, notification.data.id)
             }
             else {
-                toolkit.logger.warn("Icon notification has no icon id: " + JSON.stringify(notification));
+                IconicHandler.logger.warn("Icon notification has no icon id: " + JSON.stringify(notification));
                 return null;
             }
         }
@@ -188,7 +191,7 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
                 const imageData = await toolkit.invoke(IconicHandler.ICON_FOR, id);
                 if (!imageData) {
-                    toolkit.logger.warn("No Image Data for " + id);
+                    IconicHandler.logger.warn("No Image Data for " + id);
                 }
                 else {
                     IconicHandler.iconCache.set(id, imageData);
@@ -294,6 +297,8 @@ export class ChildData implements JavaObject<ChildData> {
 
 export class StructuralHandler implements RemoteHandlerFactory<Structural> {
 
+    private static readonly logger: Logger = LoggerFactory.getLogger(StructuralHandler);
+
     static STRUCTURAL_NOTIF_TYPE: NotificationType<ChildData> =
         NotificationType.ofName("org.oddjob.structural")
             .andDataType(ChildData.javaClass);
@@ -316,7 +321,7 @@ export class StructuralHandler implements RemoteHandlerFactory<Structural> {
                 return new StructuralEvent(notification.remoteId, notification.data.remoteIds);
             }
             else {
-                toolkit.logger.warn("Structural notification has no remotes ids: " + JSON.stringify(notification));
+                StructuralHandler.logger.warn("Structural notification has no remotes ids: " + JSON.stringify(notification));
                 return null;
             }
         }

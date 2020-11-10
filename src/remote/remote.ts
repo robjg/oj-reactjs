@@ -205,8 +205,6 @@ export class RemoteSessionFactory {
 
 export interface ClientToolkit {
 
-    readonly logger: Logger;
-
     invoke<T>(operationType: OperationType<T>, ...args: any): Promise<T>;
 
     addNotificationListener<T>(notificationType: NotificationType<T>, notificationListener: NotificationListener<T>): void;
@@ -217,8 +215,6 @@ export interface ClientToolkit {
 
 
 class ClientToolkitImpl implements ClientToolkit {
-
-    readonly logger = Logger.getLogger();
 
     constructor(private readonly remoteId: number,
         private readonly remoteIdMappings: RemoteIdMappings,

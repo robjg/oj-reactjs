@@ -19,13 +19,19 @@ export type ProxyTreeProps = {
 
 }
 
+enum Toggle {
+    NONE,
+    COLLAPSED,
+    EXPANDED
+}
+
 type ProxyTreeState = {
 
     children: NodeModelController[];
 
     icon: ReactNode;
 
-    expanded: boolean;
+    toggle: Toggle;
 }
 
 
@@ -47,7 +53,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         this.state = {
             children: [],
             icon: emptyImage,
-            expanded: false
+            toggle: Toggle.NONE
         };
     }
 
@@ -72,37 +78,33 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
     private structureListener: NodeStructureListener = {
 
         childrenChanged: (event: ChildrenChangedEvent): void => {
-            this.setState({ children: event.children });
+            // not expanded if children go.
+            const expanded: Toggle = event.children.length == 0 ? Toggle.NONE : this.state.toggle;
+            this.setState({
+                children: event.children,
+                toggle: expanded
+            });
         },
 
         nodeExpanded: (): void => {
 
-            this.setState({ expanded: true });
+            this.setState({ toggle: Toggle.EXPANDED });
         },
 
         nodeCollapsed: (): void => {
 
-            this.setState({ expanded: false });
+            this.setState({ toggle: Toggle.COLLAPSED });
         }
     }
 
     renderToggleImage(): ReactNode {
-        if (this.props.model.isStructural) {
-
-            if (this.state.expanded) {
-                if (this.state.children.length == 0) {
-                    return <></>;
-                }
-                else {
-                    return <img src={ProxyTree.MINUS_IMG_SRC} className="toggle" alt="collapse" title="collapse" onClick={this.props.model.collapse} />;
-                }
-            }
-            else {
+        switch (this.state.toggle) {
+            case Toggle.NONE:
+                return <></>;
+            case Toggle.COLLAPSED:
                 return <img src={ProxyTree.PLUS_IMG_SRC} className="toggle" alt="expaned" title="expand" onClick={this.props.model.expand} />
-            }
-        }
-        else {
-            return <></>;
+            case Toggle.EXPANDED:
+                return <img src={ProxyTree.MINUS_IMG_SRC} className="toggle" alt="collapse" title="collapse" onClick={this.props.model.collapse} />;
         }
     }
 
@@ -112,7 +114,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
             <li>{this.renderToggleImage()}
                 {this.state.icon}
                 <span className="nodeLabel"><a>{this.nodename}</a></span>
-                {this.state.expanded ?
+                {this.state.toggle == Toggle.EXPANDED ?
                     <ul>{this.state.children.map(e => <ProxyTree key={e.nodeId} model={e} />)}</ul> :
                     <></>}
             </li>
@@ -158,8 +160,8 @@ export class OjRoot extends React.Component<OjRootProps, OjRootState> {
     render() {
         if (this.state.root) {
             return <ul>
-                    <ProxyTree model={this.state.root} />
-                </ul>;
+                <ProxyTree model={this.state.root} />
+            </ul>;
         }
         else {
             return <></>
