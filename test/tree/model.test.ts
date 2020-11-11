@@ -1,4 +1,4 @@
-import { mock } from 'jest-mock-extended';
+import { mock, mockReset } from 'jest-mock-extended';
 import { OperationType } from '../../src/remote/invoke';
 
 import { JavaClass } from '../../src/remote/java';
@@ -9,7 +9,7 @@ import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelControlle
 import { Latch, Phaser } from '../testutil';
 
 
-test("Structure Changes Broadcast", async () => {
+test("Structure Changes Broadcast from 2 nodes to 1", async () => {
 
     let sl: StructuralListener[] = [];
 
@@ -119,7 +119,7 @@ test("Structure Changes Broadcast", async () => {
     expect(listener.children).toStrictEqual([n3]);
 });
 
-test("Structural No Children", async () => {
+test("Structural No Children and None Added", () => {
 
     const structural: Structural = mock<Structural>();
 
@@ -134,19 +134,76 @@ test("Structural No Children", async () => {
     const remoteListener: StructuralListener =
         (structural.addStructuralListener as any).mock.calls[0][0];
 
-    const nodeListener: NodeStructureListener = mock<NodeStructureListener>();
-    nodeListener.childrenChanged = (event: ChildrenChangedEvent) => {
-        expect(event.children.length).toBe(0);
-    }
+    const nodeListener = mock<NodeStructureListener>();
+
+    // listen to the model
 
     proxyMc.addStructureListener(nodeListener);
 
+    // send event - event could arrive first but probably not in real life because of synchronise.
+
     remoteListener.childEvent({ remoteId: 1, children: [] });
+
+    // And check what we get
 
     expect(nodeListener.nodeCollapsed).not.toBeCalled();
     expect(nodeListener.nodeExpanded).not.toBeCalled();
+
+    const event: ChildrenChangedEvent = nodeListener.childrenChanged.mock.calls[0][0];
+    
+    expect(event.children.length).toBe(0);
+
+    // sanity check
+
+    expect(nodeFactory.createNode).not.toBeCalled();
 });
 
+test("Give Structural with children when children removed then notification of 0 children only", () => {
+
+    const structural: Structural = mock<Structural>();
+
+    const proxy = mock<RemoteProxy>();
+    proxy.isA.calledWith(Structural).mockReturnValue(true);
+    proxy.as.calledWith(Structural).mockReturnValue(structural);
+
+    const nodeFactory = mock<NodeFactory>();
+
+    const proxyMc = new ProxyNodeModelController(proxy, nodeFactory);
+
+    const remoteListener: StructuralListener =
+        (structural.addStructuralListener as any).mock.calls[0][0];
+
+    const nodeListener = mock<NodeStructureListener>();
+
+    // listen to the model
+
+    proxyMc.addStructureListener(nodeListener);
+
+    // send event - event could arrive first but probably not in real life because of synchronise.
+
+    remoteListener.childEvent({ remoteId: 1, children: [2, 3] });
+
+    // And check what we get
+
+    expect(nodeListener.nodeCollapsed).toBeCalledTimes(1);
+    expect(nodeListener.nodeExpanded).not.toBeCalled();
+
+    expect(nodeListener.childrenChanged).not.toBeCalled();
+
+    // now remove nodes
+
+    mockReset(nodeListener.nodeCollapsed);
+
+    remoteListener.childEvent({ remoteId: 1, children: [] });
+
+    const event: ChildrenChangedEvent = nodeListener.childrenChanged.mock.calls[0][0];
+    
+    expect(event.children.length).toBe(0);
+
+    expect(nodeListener.nodeCollapsed).not.toBeCalled();
+    expect(nodeListener.nodeExpanded).not.toBeCalled();
+
+});
 
 test("Icon Changes", async () => {
 

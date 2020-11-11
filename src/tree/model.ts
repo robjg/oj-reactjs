@@ -1,3 +1,4 @@
+import { Logger, LoggerFactory } from "../logging";
 import { IconEvent, Iconic, IconListener, ImageData, ObjectProxy, Structural, StructuralEvent } from "../remote/ojremotes";
 import { RemoteProxy, RemoteSession } from "../remote/remote";
 import { arrayDiff, DiffOp, Op } from "./util";
@@ -123,9 +124,9 @@ export class ProxyNodeModelController implements NodeModelController {
 
     private static nodeCount = 0; 
 
-    readonly nodeName: string;
+    private readonly logger: Logger = LoggerFactory.getLogger(ProxyNodeModelController);
 
-    readonly nodeId: number;
+    readonly nodeName: string;
 
     readonly uniqueId = ++ProxyNodeModelController.nodeCount;
 
@@ -148,8 +149,6 @@ export class ProxyNodeModelController implements NodeModelController {
     private icon: ImageData | null = null;
 
     constructor(readonly proxy: RemoteProxy, readonly nodeFactory: NodeFactory) {
-
-        this.nodeId = proxy.remoteId;
 
         if (proxy.isA(ObjectProxy)) {
             this.nodeName = proxy.as(ObjectProxy).toString;
@@ -176,6 +175,10 @@ export class ProxyNodeModelController implements NodeModelController {
 
     }
 
+    get nodeId() {
+        return this.proxy.remoteId;
+    }
+
     get isStructural() {
         return this.structural != null;
     }
@@ -199,7 +202,12 @@ export class ProxyNodeModelController implements NodeModelController {
                 // Allow view to change if we got between children and no children
                 if (this.childIds) {
                     if (this.childIds.length == 0) {
-                        this.fireCollapse();
+                        if (event.children.length == 0) {
+                            this.logger.warn("This is a bug caused by the server sending the structural notification multiple times.");
+                        }
+                        else {
+                            this.fireCollapse();
+                        }
                     }
                     else if (event.children.length == 0) {
                         this.fireStructureChanged([]);
