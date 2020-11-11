@@ -33,6 +33,12 @@ export class Notification<T> implements JavaObject<Notification<T>> {
         readonly data?: T) {
     }
 
+    static from<T>(remoteId: number,
+        type: NotificationType<T>,
+        sequence: number,
+        data?: T): Notification<T> {
+        return new Notification<T>(remoteId, type, sequence, data);
+    }
 }
 
 
@@ -167,13 +173,13 @@ class ListenerManager {
             this.listeners.get(remoteId)
 
         if (listeners) {
-            
+
             const lastForType: boolean = listeners.removeNotificationListener(
                 notificationType, listener);
 
             if (listeners.isEmpty()) {
-                this.listeners.delete(remoteId) 
-                    return true;
+                this.listeners.delete(remoteId)
+                return true;
             }
             else {
                 return lastForType;
@@ -195,7 +201,7 @@ export interface Channel {
 
 export class RemoteNotifier implements Notifier {
 
-    private readonly logger: Logger = LoggerFactory.getLogger(RemoteNotifier); 
+    private readonly logger: Logger = LoggerFactory.getLogger(RemoteNotifier);
 
     private readonly listeners: ListenerManager = new ListenerManager();
 
@@ -204,7 +210,7 @@ export class RemoteNotifier implements Notifier {
 
             this.logger.debug("Received: " + message);
 
-            const notification = JSON.parse(message) as Notification<any>;    
+            const notification = JSON.parse(message) as Notification<any>;
             this.listeners.dispatch(notification);
         });
     }
@@ -217,15 +223,15 @@ export class RemoteNotifier implements Notifier {
             send: (message: string) => ws.send(message),
             setReceive: (callback: (message: string) => void) => {
                 const wsCallback = (event: any) => {
-                    const data = event.data as string; 
-                    callback(data);                   
+                    const data = event.data as string;
+                    callback(data);
                 }
                 ws.onmessage = wsCallback;
             }
-        })        
+        })
     }
 
-    static fromChannel(channel: Channel) : RemoteNotifier {
+    static fromChannel(channel: Channel): RemoteNotifier {
         return new RemoteNotifier(channel);
     }
 
@@ -236,9 +242,9 @@ export class RemoteNotifier implements Notifier {
         if (this.listeners.addNotificationListener(
             remoteId, notificationType, listener)) {
 
-                const request = new SubscriptionRequest<T>("ADD", remoteId, notificationType);
+            const request = new SubscriptionRequest<T>("ADD", remoteId, notificationType);
 
-                this.sendRequest(request);
+            this.sendRequest(request);
         }
     }
 
@@ -249,9 +255,9 @@ export class RemoteNotifier implements Notifier {
         if (this.listeners.removeNotificationListener(
             remoteId, notificationType, listener)) {
 
-                const request = new SubscriptionRequest<T>("REMOVE", remoteId, notificationType);
+            const request = new SubscriptionRequest<T>("REMOVE", remoteId, notificationType);
 
-                this.sendRequest(request);
+            this.sendRequest(request);
         }
     }
 

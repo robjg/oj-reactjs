@@ -1,10 +1,12 @@
-import {  mock } from 'jest-mock-extended';
+import { mock } from 'jest-mock-extended';
+import { OperationType } from '../../src/remote/invoke';
 
 import { JavaClass } from '../../src/remote/java';
-import { Iconic, IconListener, ImageData, Structural, StructuralListener } from '../../src/remote/ojremotes';
-import { RemoteProxy } from '../../src/remote/remote';
+import { Notification, NotificationListener } from '../../src/remote/notify';
+import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, Structural, StructuralListener } from '../../src/remote/ojremotes';
+import { ClientToolkit, RemoteProxy } from '../../src/remote/remote';
 import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
-import { Phaser } from '../testutil';
+import { Latch, Phaser } from '../testutil';
 
 
 test("Structure Changes Broadcast", async () => {
@@ -52,7 +54,7 @@ test("Structure Changes Broadcast", async () => {
 
     let n3: NodeModelController = mock<NodeModelController>();
     (n3 as any).nodeId = 3;
-    
+
     const nodeFactory = new class NfStub implements NodeFactory {
         createNode(nodeId: number): Promise<NodeModelController> {
             if (nodeId == 2) {
@@ -77,24 +79,24 @@ test("Structure Changes Broadcast", async () => {
         index = 0;
         expanded: boolean | undefined = undefined;
         children: NodeModelController[] = [];
-        
-        nodeExpanded: () => void = () => { 
+
+        nodeExpanded: () => void = () => {
             this.expanded = true;
         }
 
-        nodeCollapsed: () => void = () => { 
+        nodeCollapsed: () => void = () => {
             this.expanded = false;
         }
 
-        childrenChanged: (event: ChildrenChangedEvent) => void = 
-        (event: ChildrenChangedEvent) => {
-            this.children = event.children;
-            phaser.release();
-        }
+        childrenChanged: (event: ChildrenChangedEvent) => void =
+            (event: ChildrenChangedEvent) => {
+                this.children = event.children;
+                phaser.release();
+            }
     };
 
     const listener = new StubListener();
-    
+
     expect(listener.expanded).toBe(undefined);
 
     proxyMc.addStructureListener(listener);
@@ -110,7 +112,7 @@ test("Structure Changes Broadcast", async () => {
     expect(listener.children).toStrictEqual([n2, n3]);
 
     expect(sl.length).toBe(1);
-    sl[0].childEvent({ remoteId: 1, children: [3]});
+    sl[0].childEvent({ remoteId: 1, children: [3] });
 
     await phaser.next();
 
@@ -121,7 +123,7 @@ test("Structural No Children", async () => {
 
     const structural: Structural = mock<Structural>();
 
-    const proxy = mock<RemoteProxy>(); 
+    const proxy = mock<RemoteProxy>();
     proxy.isA.calledWith(Structural).mockReturnValue(true);
     proxy.as.calledWith(Structural).mockReturnValue(structural);
 
@@ -129,7 +131,7 @@ test("Structural No Children", async () => {
 
     const proxyMc = new ProxyNodeModelController(proxy, nodeFactory);
 
-    const remoteListener: StructuralListener = 
+    const remoteListener: StructuralListener =
         (structural.addStructuralListener as any).mock.calls[0][0];
 
     const nodeListener: NodeStructureListener = mock<NodeStructureListener>();
@@ -164,7 +166,7 @@ test("Icon Changes", async () => {
             if (cntor as unknown == Iconic) {
                 return new class Impl extends Iconic {
                     addIconListener(listener: IconListener) {
-                        listener.iconEvent({ remoteId: 1, iconId: "foo" });                        
+                        listener.iconEvent({ remoteId: 1, iconId: "foo" });
                         remoteListener.push(listener);
                     }
 
@@ -194,7 +196,7 @@ test("Icon Changes", async () => {
 
     let n3: NodeModelController = mock<NodeModelController>();
     (n3 as any).nodeId = 3;
-    
+
     const nodeFactory = new class NfStub implements NodeFactory {
         createNode(nodeId: number): Promise<NodeModelController> {
             if (nodeId == 2) {
@@ -230,7 +232,7 @@ test("Icon Changes", async () => {
     expect(iconResults.length).toBe(1);
     expect(iconResults[0].description).toBe("foo");
 
-    remoteListener[0].iconEvent({ remoteId: 1, iconId: "bar"});
+    remoteListener[0].iconEvent({ remoteId: 1, iconId: "bar" });
 
     await phaser.next();
 
@@ -238,4 +240,78 @@ test("Icon Changes", async () => {
     expect(iconResults[1].description).toBe("bar");
 })
 
+
+test("Iconic Handler Copes if Icon arrives later than cached notification", async () => {
+
+    const toolkit: ClientToolkit = mock<ClientToolkit>();
+
+    const synchLatch = new Latch();
+    const allDone = new Latch(2);
+
+    toolkit.invoke = <T>(operationType: OperationType<T>, ...args: any): Promise<T> => {
+        if (operationType == IconicHandler.ICON_FOR) {
+            if (args[0] == "foo") {
+                return Promise.resolve(new ImageData("abc", "image/gif", "foo")) as unknown as Promise<T>;
+            }
+            else if (args[0] == "bar") {
+                const promise = new Promise<T>((resolve) => {
+                    setInterval(() => {
+                        resolve(new ImageData("xyz", "image/gif", "bar") as unknown as T)
+                        
+                    }, 100);
+                });
+                return promise;
+            }
+            else {
+                throw new Error("Unexpected");
+            }
+        }
+        else if (operationType == IconicHandler.SYNCHRONIZE) {
+            const promise: Promise<T> = Promise.resolve(Notification.from(
+                42, IconicHandler.ICON_CHANGED_NOTIF_TYPE,
+                1000, new IconData("foo")) as unknown as T);
+            promise.then(() => synchLatch.countDown())
+            return promise;
+        }
+        else {
+            throw new Error("Unexpected");
+        }
+    }
+
+    const handler: Iconic = new IconicHandler().createHandler(toolkit);
+
+    const remoteProxy = mock<RemoteProxy>();
+    remoteProxy.isA.calledWith(Iconic).mockReturnValue(true);
+    remoteProxy.as.calledWith(Iconic).mockReturnValue(handler);
+
+    const nodeFactory: NodeFactory = mock<NodeFactory>();
+
+    const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
+
+    const nodeIconListener = mock<NodeIconListener>();
+
+    proxyMc.addIconListener(nodeIconListener);
+
+    proxyMc.addIconListener({ iconChanged: (image) => {allDone.countDown()}})
+
+    await synchLatch.promise;
+
+    const notificationListener: NotificationListener<any> =
+        (toolkit.addNotificationListener as any).mock.calls[0][1];
+
+    notificationListener.handleNotification(Notification.from(
+        42, IconicHandler.ICON_CHANGED_NOTIF_TYPE,
+        1001, new IconData("bar")))
+
+    notificationListener.handleNotification(Notification.from(
+        42, IconicHandler.ICON_CHANGED_NOTIF_TYPE,
+        1002, new IconData("foo")))
+
+    await allDone.promise;
+
+    const calls: any[][] = nodeIconListener.iconChanged.mock.calls;
+
+    // bar icon change doesn't make it because second foo beats the image data.
+    expect((calls[1][0] as ImageData).description).toBe("foo");
+});
 

@@ -25,6 +25,26 @@ test("Test Latch with count of two", async () => {
     expect(results).toEqual(expect.arrayContaining([42, 24]));
 })
 
+test("Test Latch released more than count", async () => {
+
+    const latch: Latch = new Latch();
+
+    const results: number[] = [];
+
+    setImmediate(() => {
+        results.push(42);
+        latch.countDown();
+        latch.countDown();
+    });
+
+    await latch.promise;
+
+    expect(results.length).toBe(1);
+
+    expect(results).toEqual(expect.arrayContaining([42]));
+})
+
+
 test("Phaser over three Phases phases in order", async () => {
 
     const phaser: Phaser = new Phaser();

@@ -289,12 +289,19 @@ export class ProxyNodeModelController implements NodeModelController {
 
     private iconListenerFor(iconic: Iconic): IconListener {
 
+        let lastIconId: string | null = null;
+
         return {
             iconEvent: (event: IconEvent) => {
-                iconic.iconForId(event.iconId)
+                const iconId = event.iconId;
+                lastIconId = iconId;
+                iconic.iconForId(iconId)
                     .then((imageData: ImageData) => {
-                        this.icon = imageData;
-                        this.iconListeners.forEach(l => l.iconChanged(imageData));
+                        // only update if another update hasn't beaten this one.
+                        if (lastIconId == iconId) {
+                            this.icon = imageData;
+                            this.iconListeners.forEach(l => l.iconChanged(imageData));
+                        }
                     });
             }
         };
