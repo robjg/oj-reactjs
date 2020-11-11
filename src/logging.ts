@@ -132,8 +132,14 @@ class DefaultConfiguration implements LoggingConfiguration {
 
     getLevel(loggerName: string): LogLevel {
 
-        return this.loggerConfigs.get(loggerName)?.level ||
-            this.root.level || LogLevel.WARN;
+        let level = this.loggerConfigs.get(loggerName)?.level;
+        if (level == undefined) {
+            level = this.root.level;
+        }
+        if (level == undefined) {
+            level = LogLevel.WARN;
+        }
+        return level;
     }
 }
 
@@ -156,7 +162,7 @@ export interface LoggerFactory {
 
 export class LoggerFactory {
 
-    static configuration: DefaultConfiguration = new DefaultConfiguration()
+    static config: DefaultConfiguration = new DefaultConfiguration()
 
     static loggers: Map<string, Logger> = new Map();
 
@@ -172,9 +178,9 @@ export class LoggerFactory {
             return logger;
         }
 
-        const appender: LogAppender = this.configuration.getAppender(name);
+        const appender: LogAppender = this.config.getAppender(name);
 
-        const level: LogLevel = this.configuration.getLevel(name);
+        const level: LogLevel = this.config.getLevel(name);
 
         const newLogger = new DefaultLogger(name, level, appender);
 

@@ -115,7 +115,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
                 {this.state.icon}
                 <span className="nodeLabel"><a>{this.nodename}</a></span>
                 {this.state.toggle == Toggle.EXPANDED ?
-                    <ul>{this.state.children.map(e => <ProxyTree key={e.nodeId} model={e} />)}</ul> :
+                    <ul>{this.state.children.map(e => <ProxyTree key={e.uniqueId} model={e} />)}</ul> :
                     <></>}
             </li>
         );

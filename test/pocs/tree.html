@@ -5,12 +5,12 @@
     <meta charset="UTF-8" />
     <title>Test OJ Tree</title>
     <style>
-.tree {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-}        
+        .tree {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
     </style>
     <link rel="stylesheet" href="../../src/css/main.css">
     <link rel="stylesheet" href="../../src/css/tree.css">
@@ -27,13 +27,17 @@
                 'react': "../../node_modules/react/umd/react.development",
                 'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
                 'src/remote/remote': "./main",
-                'src/tree/view': "./main"
+                'src/tree/view': "./main",
+                'src/logging': "./main"
             }
         });
 
-        requirejs(['react', 'react-dom', 'src/remote/remote', 'src/tree/view'],
-            function (React, ReactDOM, remote, tree) {
+        requirejs(['react', 'react-dom', 'src/remote/remote', 'src/tree/view', 'src/logging'],
+            function (React, ReactDOM, remote, tree, logging) {
 
+                logging.LoggerFactory.config
+                    .setLogger("RemoteNotifier", { level: 0 })
+                    .setLogger("RemoteInvoker", { level: 0 });
 
                 var remote = remote.RemoteConnection.fromHost('localhost:8080')
 

@@ -1,3 +1,4 @@
+import { Logger, LoggerFactory } from "../logging";
 import { JavaClass, javaClasses, JavaObject } from "./java";
 
 export class OperationType<T> {
@@ -56,6 +57,8 @@ export interface Invoker {
 
 export class RemoteInvoker implements Invoker {
 
+    private readonly logger: Logger = LoggerFactory.getLogger(RemoteInvoker); 
+
     constructor(readonly url: string) {
 
     }    
@@ -63,6 +66,8 @@ export class RemoteInvoker implements Invoker {
     async invoke<T>(invokeRequest: InvokeRequest<T>) : Promise<InvokeResponse<T>> {
         
         const jsonBody = JSON.stringify(invokeRequest);
+
+        this.logger.debug("Invoking: " + jsonBody);
 
         const response: Response = await fetch(this.url, {
                     method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -87,6 +92,8 @@ export class RemoteInvoker implements Invoker {
         }
 
         const json = await response.json(); // parses JSON response into native JavaScript objects
+
+        this.logger.debug("Response: " + JSON.stringify(json));
 
         if (isInvokeResponse(json)) {
             return json;

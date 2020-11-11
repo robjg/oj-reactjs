@@ -9,9 +9,9 @@ test("Log To Custom Appender", () => {
     const appender: LogAppender = mock<LogAppender>();
     Object.defineProperty(appender, 'name', { value : "TestAppender" });
 
-    LoggerFactory.configuration.addAppender(appender)
+    LoggerFactory.config.addAppender(appender)
             .setRoot( { appender: "TestAppender" })
-            .setLogger("Foo", { level: LogLevel.INFO });
+            .setLogger("Foo", { level: LogLevel.DEBUG });
 
     const logger: Logger = LoggerFactory.getLogger(Foo);   
 

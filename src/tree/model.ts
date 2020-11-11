@@ -74,6 +74,8 @@ export interface NodeModel {
 
     readonly nodeId: number;
 
+    readonly uniqueId: number;
+
     readonly isStructural: boolean;
 
     readonly isIconic: boolean;
@@ -119,9 +121,13 @@ export class SessionNodeFactory implements NodeFactory {
 
 export class ProxyNodeModelController implements NodeModelController {
 
+    private static nodeCount = 0; 
+
     readonly nodeName: string;
 
     readonly nodeId: number;
+
+    readonly uniqueId = ++ProxyNodeModelController.nodeCount;
 
     private selectionListeners: NodeSelectionListener[] = [];
 

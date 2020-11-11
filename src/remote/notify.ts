@@ -1,5 +1,6 @@
 
 import { map } from 'jquery';
+import { Logger, LoggerFactory } from '../logging';
 import { JavaClass, javaClasses, JavaObject } from './java';
 
 export class NotificationType<T> {
@@ -194,10 +195,14 @@ export interface Channel {
 
 export class RemoteNotifier implements Notifier {
 
+    private readonly logger: Logger = LoggerFactory.getLogger(RemoteNotifier); 
+
     private readonly listeners: ListenerManager = new ListenerManager();
 
     constructor(private readonly channel: Channel) {
         this.channel.setReceive((message: string) => {
+
+            this.logger.debug("Received: " + message);
 
             const notification = JSON.parse(message) as Notification<any>;    
             this.listeners.dispatch(notification);
@@ -233,7 +238,7 @@ export class RemoteNotifier implements Notifier {
 
                 const request = new SubscriptionRequest<T>("ADD", remoteId, notificationType);
 
-                this.channel.send(JSON.stringify(request));
+                this.sendRequest(request);
         }
     }
 
@@ -246,7 +251,16 @@ export class RemoteNotifier implements Notifier {
 
                 const request = new SubscriptionRequest<T>("REMOVE", remoteId, notificationType);
 
-                this.channel.send(JSON.stringify(request));
+                this.sendRequest(request);
         }
+    }
+
+    private sendRequest(request: SubscriptionRequest<any>) {
+
+        const message = JSON.stringify(request);
+
+        this.logger.debug("Sending: " + message);
+
+        this.channel.send(message);
     }
 }

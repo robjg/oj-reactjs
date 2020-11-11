@@ -134,7 +134,7 @@ export class ImageData implements JavaObject<IconData> {
 
 export class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
-    private static readonly logger: Logger = LoggerFactory.getLogger(IconicHandler);
+    private readonly logger: Logger = LoggerFactory.getLogger(IconicHandler);
 
     static ICON_CHANGED_NOTIF_TYPE: NotificationType<IconData> =
         NotificationType.ofName("org.oddjob.iconchanged")
@@ -160,12 +160,14 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
         var lastEvent: IconEvent | null = null;
 
+        const factory = this;
+
         function extractEvent(notification: Notification<IconData>): IconEvent | null {
             if (notification.data?.id) {
                 return new IconEvent(notification.remoteId, notification.data.id)
             }
             else {
-                IconicHandler.logger.warn("Icon notification has no icon id: " + JSON.stringify(notification));
+                factory.logger.warn("Icon notification has no icon id: " + JSON.stringify(notification));
                 return null;
             }
         }
@@ -191,7 +193,7 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
 
                 const imageData = await toolkit.invoke(IconicHandler.ICON_FOR, id);
                 if (!imageData) {
-                    IconicHandler.logger.warn("No Image Data for " + id);
+                    factory.logger.warn("No Image Data for " + id);
                 }
                 else {
                     IconicHandler.iconCache.set(id, imageData);
@@ -297,7 +299,7 @@ export class ChildData implements JavaObject<ChildData> {
 
 export class StructuralHandler implements RemoteHandlerFactory<Structural> {
 
-    private static readonly logger: Logger = LoggerFactory.getLogger(StructuralHandler);
+    private readonly logger: Logger = LoggerFactory.getLogger(StructuralHandler);
 
     static STRUCTURAL_NOTIF_TYPE: NotificationType<ChildData> =
         NotificationType.ofName("org.oddjob.structural")
@@ -312,16 +314,18 @@ export class StructuralHandler implements RemoteHandlerFactory<Structural> {
 
     createHandler(toolkit: ClientToolkit): Structural {
 
-        var listeners: StructuralListener[] = [];
+        let listeners: StructuralListener[] = [];
 
-        var lastEvent: StructuralEvent | null = null;
+        let lastEvent: StructuralEvent | null = null;
+
+        const factory = this;
 
         function extractEvent(notification: Notification<ChildData>): StructuralEvent | null {
             if (notification.data?.remoteIds) {
                 return new StructuralEvent(notification.remoteId, notification.data.remoteIds);
             }
             else {
-                StructuralHandler.logger.warn("Structural notification has no remotes ids: " + JSON.stringify(notification));
+                factory.logger.warn("Structural notification has no remotes ids: " + JSON.stringify(notification));
                 return null;
             }
         }
