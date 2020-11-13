@@ -5,7 +5,7 @@ import { JavaClass } from '../../src/remote/java';
 import { Notification, NotificationListener } from '../../src/remote/notify';
 import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, Structural, StructuralListener } from '../../src/remote/ojremotes';
 import { ClientToolkit, RemoteProxy } from '../../src/remote/remote';
-import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
+import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
 import { Latch, Phaser } from '../testutil';
 
 
@@ -372,3 +372,28 @@ test("Iconic Handler Copes if Icon arrives later than cached notification", asyn
     expect((calls[1][0] as ImageData).description).toBe("foo");
 });
 
+test("Tree Selection select deselect", () => {
+
+    const remoteProxy = mock<RemoteProxy>();
+
+    const nodeFactory: NodeFactory = mock<NodeFactory>();
+
+    const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
+
+    const selectionListener = mock<NodeSelectionListener>();
+
+    proxyMc.addSelectionListener(selectionListener);
+
+    expect(selectionListener.nodeUnselected).toBeCalledTimes(1);
+    expect(selectionListener.nodeSelected).toBeCalledTimes(0);
+
+    proxyMc.select();
+
+    expect(selectionListener.nodeUnselected).toBeCalledTimes(1);
+    expect(selectionListener.nodeSelected).toBeCalledTimes(1);
+
+    proxyMc.unselect();
+
+    expect(selectionListener.nodeUnselected).toBeCalledTimes(2);
+    expect(selectionListener.nodeSelected).toBeCalledTimes(1);
+})

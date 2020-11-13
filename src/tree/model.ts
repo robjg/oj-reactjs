@@ -8,7 +8,7 @@ export interface NodeController {
 
     select(): void;
 
-    unselct(): void;
+    unselect(): void;
 
     expand(): void;
 
@@ -147,6 +147,8 @@ export class ProxyNodeModelController implements NodeModelController {
     private iconic: Iconic | null;
 
     private icon: ImageData | null = null;
+
+    private selected: boolean = false;
 
     constructor(readonly proxy: RemoteProxy, readonly nodeFactory: NodeFactory) {
 
@@ -330,10 +332,12 @@ export class ProxyNodeModelController implements NodeModelController {
     }
 
     select: () => void = () => {
+        this.selected = true;
         this.selectionListeners.forEach(e => e.nodeSelected());
     }
 
-    unselct: () => void = () => {
+    unselect: () => void = () => {
+        this.selected = false;
         this.selectionListeners.forEach(e => e.nodeUnselected());
     }
 
@@ -359,6 +363,13 @@ export class ProxyNodeModelController implements NodeModelController {
 
 
     addSelectionListener(listener: NodeSelectionListener): void {
+        if (this.selected) {
+            listener.nodeSelected();
+        }
+        else {
+            listener.nodeUnselected();
+        }
+
         this.selectionListeners.push(listener);
     }
 

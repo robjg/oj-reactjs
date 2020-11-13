@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { ImageData, ojRemoteSession } from '../remote/ojremotes';
 import { RemoteConnection, RemoteSession } from '../remote/remote';
-import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeStructureListener, ProxyNodeModelController, SessionNodeFactory } from './model';
+import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController, SessionNodeFactory } from './model';
 
 
 const emptyImageStyle = {
@@ -32,6 +32,8 @@ type ProxyTreeState = {
     icon: ReactNode;
 
     toggle: Toggle;
+
+    selected: boolean;
 }
 
 
@@ -53,13 +55,15 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         this.state = {
             children: [],
             icon: emptyImage,
-            toggle: Toggle.NONE
+            toggle: Toggle.NONE,
+            selected: false
         };
     }
 
     componentDidMount() {
         this.props.model.addIconListener(this.iconListener);
         this.props.model.addStructureListener(this.structureListener);
+        this.props.model.addSelectionListener(this.selectionListener);
     }
 
     private iconListener: NodeIconListener = {
@@ -97,6 +101,32 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
+    private selectionListener: NodeSelectionListener = {
+
+        nodeSelected: (): void => {
+
+            this.setState({
+                selected: true
+            });
+        },
+
+        nodeUnselected: (): void => {
+
+            this.setState({
+                selected: false
+            });
+        }
+    }
+
+    private toggleSelect = (): void => {
+        if (this.state.selected) {
+            this.props.model.unselect();
+        }
+        else {
+            this.props.model.select();
+        }
+    }
+
     renderToggleImage(): ReactNode {
         switch (this.state.toggle) {
             case Toggle.NONE:
@@ -110,10 +140,12 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
     render() {
 
+        const selected = this.state.selected ? "selected" : "";
+        const labelClasses= `nodeLabel ${selected}`;
         return (
             <li>{this.renderToggleImage()}
                 {this.state.icon}
-                <span className="nodeLabel"><a>{this.nodename}</a></span>
+                <span className={labelClasses}><a onClick={this.toggleSelect}>{this.nodename}</a></span>
                 {this.state.toggle == Toggle.EXPANDED ?
                     <ul>{this.state.children.map(e => <ProxyTree key={e.uniqueId} model={e} />)}</ul> :
                     <></>}
