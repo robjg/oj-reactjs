@@ -1,10 +1,13 @@
 import { RemoteProxy, RemoteSession } from '../remote/remote'
-import { ConfigurationOwner } from '../remote/ojremotes'
 
 import { TreeChangeListener } from '../main/ojTreeModel';
 
 import { NodeInfo } from '../main/ojDao';
 
+
+/**
+ * The context in which an ActionFactory may or may not create an Action.
+ */
 export type ActionContext = {
 
     parent: ActionContext | null;
@@ -12,14 +15,18 @@ export type ActionContext = {
     proxy: RemoteProxy;
 }
 
-
+/**
+ * Creates an Action or not given then ActionContext.
+ */
 export type ActionFactory = {
 
     createAction(actionContext: ActionContext): Action | null;
 }
 
 
-
+/**
+ * An Action is something that can be performed via a menu
+ */
 export interface Action {
 
     name: string;
@@ -29,6 +36,8 @@ export interface Action {
     perform: () => void;
 
 }
+
+
 
 export function contextSearch<T>(context: ActionContext | null, cntor: ({ new(...args: any[]): T })): T | null {
     if (context == null) {
@@ -42,14 +51,19 @@ export function contextSearch<T>(context: ActionContext | null, cntor: ({ new(..
 
 
 
+/**
+ * Old way
+ */
 export interface AvailableActions {
 
     actionsFor(nodeId: number): Promise<Action[]>;
 }
 
-export const availalableActionFactories: ActionFactory[] = [];
 
 
+/**
+ * Used by the old tree
+ */
 export class ContextManager implements TreeChangeListener, AvailableActions {
 
     contexts: Map<number, Promise<ActionContext>> = new Map();
@@ -130,3 +144,4 @@ export class ContextManager implements TreeChangeListener, AvailableActions {
         }
     }
 }
+

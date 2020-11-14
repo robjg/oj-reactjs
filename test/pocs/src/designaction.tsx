@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import { sequentialForm } from './data/SequentialForm';
 import { AvailableActions, Action, ActionContext } from '../../../src/menu/actions';
-import { MenuProvider } from '../../../src/menu/menuProvider';
+import { MenuProvider } from '../../../src/menu/menu';
 import { RemoteProxy } from '../../../src/remote/remote';
 import { ConfigurationOwner } from '../../../src/remote/ojremotes'
 import { DesignActionFactory } from '../../../src/design/designAction';

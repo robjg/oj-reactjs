@@ -9,7 +9,7 @@ import { LocalDataSource } from '../../design/LocalDataSource';
 import { designDefinitions } from './data/FruitDesigns';
 import { configuration } from './data/MealConfiguration';
 import { AvailableActions, Action } from '../../../src/menu/actions';
-import { MenuProvider } from '../../../src/menu/menuProvider';
+import { MenuProvider } from '../../../src/menu/menu';
 
 /** 
  * Context Menu using old style DesignFactory Design Form. 

@@ -1,11 +1,12 @@
 import { mock, mockReset } from 'jest-mock-extended';
+import { Action } from '../../src/menu/actions';
 import { OperationType } from '../../src/remote/invoke';
 
 import { JavaClass } from '../../src/remote/java';
 import { Notification, NotificationListener } from '../../src/remote/notify';
 import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, Structural, StructuralListener } from '../../src/remote/ojremotes';
 import { ClientToolkit, RemoteProxy } from '../../src/remote/remote';
-import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
+import { ChildrenChangedEvent, NodeActionFactory, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
 import { Latch, Phaser } from '../testutil';
 
 
@@ -55,8 +56,9 @@ test("Structure Changes Broadcast from 2 nodes to 1", async () => {
     let n3: NodeModelController = mock<NodeModelController>();
     (n3 as any).nodeId = 3;
 
-    const nodeFactory = new class NfStub implements NodeFactory {
-        createNode(nodeId: number): Promise<NodeModelController> {
+
+    const nodeFactory: NodeActionFactory = mock<NodeActionFactory>();
+    nodeFactory.createNode = (nodeId: number): Promise<NodeModelController> => {
             if (nodeId == 2) {
                 const promise: Promise<NodeModelController> = Promise.resolve(n2);
                 return promise;
@@ -65,8 +67,7 @@ test("Structure Changes Broadcast from 2 nodes to 1", async () => {
                 return Promise.resolve(n3);
             }
             throw new Error('Method not implemented for ' + nodeId);
-        }
-    }
+        };
 
     const proxyMc = new ProxyNodeModelController(p1, nodeFactory);
 
@@ -127,7 +128,7 @@ test("Structural No Children and None Added", () => {
     proxy.isA.calledWith(Structural).mockReturnValue(true);
     proxy.as.calledWith(Structural).mockReturnValue(structural);
 
-    const nodeFactory = mock<NodeFactory>();
+    const nodeFactory = mock<NodeActionFactory>();
 
     const proxyMc = new ProxyNodeModelController(proxy, nodeFactory);
 
@@ -166,7 +167,7 @@ test("Give Structural with children when children removed then notification of 0
     proxy.isA.calledWith(Structural).mockReturnValue(true);
     proxy.as.calledWith(Structural).mockReturnValue(structural);
 
-    const nodeFactory = mock<NodeFactory>();
+    const nodeFactory = mock<NodeActionFactory>();
 
     const proxyMc = new ProxyNodeModelController(proxy, nodeFactory);
 
@@ -254,8 +255,8 @@ test("Icon Changes", async () => {
     let n3: NodeModelController = mock<NodeModelController>();
     (n3 as any).nodeId = 3;
 
-    const nodeFactory = new class NfStub implements NodeFactory {
-        createNode(nodeId: number): Promise<NodeModelController> {
+    const nodeFactory: NodeActionFactory = mock<NodeActionFactory>()
+    nodeFactory.createNode = (nodeId: number): Promise<NodeModelController>  => {
             if (nodeId == 2) {
                 const promise: Promise<NodeModelController> = Promise.resolve(n2);
                 return promise;
@@ -264,8 +265,7 @@ test("Icon Changes", async () => {
                 return Promise.resolve(n3);
             }
             throw new Error('Method not implemented for ' + nodeId);
-        }
-    }
+        };
 
 
     const proxyMc = new ProxyNodeModelController(p1, nodeFactory);
@@ -341,7 +341,7 @@ test("Iconic Handler Copes if Icon arrives later than cached notification", asyn
     remoteProxy.isA.calledWith(Iconic).mockReturnValue(true);
     remoteProxy.as.calledWith(Iconic).mockReturnValue(handler);
 
-    const nodeFactory: NodeFactory = mock<NodeFactory>();
+    const nodeFactory: NodeActionFactory = mock<NodeActionFactory>();
 
     const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
 
@@ -376,7 +376,7 @@ test("Tree Selection select deselect", () => {
 
     const remoteProxy = mock<RemoteProxy>();
 
-    const nodeFactory: NodeFactory = mock<NodeFactory>();
+    const nodeFactory: NodeActionFactory = mock<NodeActionFactory>();
 
     const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
 
@@ -397,3 +397,25 @@ test("Tree Selection select deselect", () => {
     expect(selectionListener.nodeUnselected).toBeCalledTimes(2);
     expect(selectionListener.nodeSelected).toBeCalledTimes(1);
 })
+
+test("Provide Actions", async () => {
+
+
+    const remoteProxy = mock<RemoteProxy>();
+
+    const fooAction: Action = {
+        name: "Foo",
+        isEnabled: true,
+        perform: () => {}
+    }
+
+    const nodeFactory = mock<NodeActionFactory>();
+    nodeFactory.provideActions.mockReturnValue(Promise.resolve([fooAction]));
+
+    const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
+
+    const actions = await proxyMc.provideActions();
+
+    expect(actions.length).toBe(1);
+    expect(actions[0].name).toBe("Foo");
+});

@@ -30,11 +30,16 @@ type JobMenuProps = {
     onMenuSelected: () => void
 };
 
-class JobMenu extends React.Component<JobMenuProps, {}> {
+export class JobMenu extends React.Component<JobMenuProps, {}> {
 
     render() {
+        let actions = this.props.actions;
+        if (actions.length == 0) {
+            actions = [new NoopAction()];
+        }
+
         return <ul>
-            {this.props.actions.map((action, index) =>
+            {actions.map((action, index) =>
                 <li key={index} className='menuItem'>
                     <MenuItem action={action} onMenuSelected={this.props.onMenuSelected} />
                 </li>)
@@ -52,6 +57,9 @@ class NoopAction implements Action {
     perform() { }
 }
 
+/**
+ * Provides a menu old style.
+ */
 export class MenuProvider {
 
     private lastId: number = -1;
@@ -83,13 +91,10 @@ export class MenuProvider {
                 Promise.resolve([]);
 
             actions.then(acts => {
-                if (acts.length == 0) {
-                    acts = [new NoopAction()];
-                }
                 ReactDOM.render(
                     <JobMenu actions={acts} onMenuSelected={unmount} />,
                     menuMount
-                );        
+                );
             })
         }
     }

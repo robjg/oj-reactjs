@@ -1,4 +1,7 @@
 import React, { ReactNode } from 'react';
+import { DesignActionFactory } from '../design/designAction';
+import { Action } from '../menu/actions';
+import { JobMenu } from '../menu/menu';
 import { ImageData, ojRemoteSession } from '../remote/ojremotes';
 import { RemoteConnection, RemoteSession } from '../remote/remote';
 import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController, SessionNodeFactory } from './model';
@@ -16,7 +19,6 @@ const emptyImage = <span style={emptyImageStyle} >&nbsp;</span>;
 export type ProxyTreeProps = {
 
     model: NodeModelController;
-
 }
 
 enum Toggle {
@@ -34,6 +36,8 @@ type ProxyTreeState = {
     toggle: Toggle;
 
     selected: boolean;
+
+    actions: Action[] | null;
 }
 
 
@@ -56,8 +60,13 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
             children: [],
             icon: emptyImage,
             toggle: Toggle.NONE,
-            selected: false
+            selected: false,
+            actions: null
         };
+
+        this.toggleSelect = this.toggleSelect.bind(this);
+        this.actionsOff = this.actionsOff.bind(this);
+        this.findActions = this.findActions.bind(this);
     }
 
     componentDidMount() {
@@ -118,7 +127,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
-    private toggleSelect = (): void => {
+    private toggleSelect(): void {
         if (this.state.selected) {
             this.props.model.unselect();
         }
@@ -138,6 +147,34 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
+    private actionsOff() {
+        this.setState({
+            actions: null
+        });
+    }
+
+    private findActions() {
+        this.props.model.provideActions()
+            .then(actions => this.setState({
+                actions: actions
+            }));
+    }
+
+    renderConextMenu(): ReactNode {
+
+        if (this.state.actions) {
+            return <JobMenu actions={this.state.actions} onMenuSelected={this.actionsOff}/>
+        }
+        else {
+            if (this.state.selected) {
+                return <button onClick={this.findActions}>...</button>
+            }
+            else {
+                return <></>
+            }
+        }
+    } 
+
     render() {
 
         const selected = this.state.selected ? "selected" : "";
@@ -146,6 +183,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
             <li>{this.renderToggleImage()}
                 {this.state.icon}
                 <span className={labelClasses}><a onClick={this.toggleSelect}>{this.nodename}</a></span>
+                {this.renderConextMenu()}
                 {this.state.toggle == Toggle.EXPANDED ?
                     <ul>{this.state.children.map(e => <ProxyTree key={e.uniqueId} model={e} />)}</ul> :
                     <></>}
@@ -174,7 +212,8 @@ export class OjRoot extends React.Component<OjRootProps, OjRootState> {
 
         const session: RemoteSession = ojRemoteSession(props.remote);
 
-        this.nodeFactory = new SessionNodeFactory(session);
+        this.nodeFactory = new SessionNodeFactory(session,
+            [new DesignActionFactory() ]);
 
         this.state = {
             root: null

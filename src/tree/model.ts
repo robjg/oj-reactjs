@@ -1,4 +1,5 @@
 import { Logger, LoggerFactory } from "../logging";
+import { Action, ActionContext, ActionFactory } from "../menu/actions";
 import { IconEvent, Iconic, IconListener, ImageData, ObjectProxy, Structural, StructuralEvent } from "../remote/ojremotes";
 import { RemoteProxy, RemoteSession } from "../remote/remote";
 import { arrayDiff, DiffOp, Op } from "./util";
@@ -17,6 +18,7 @@ export interface NodeController {
 
 export interface NodeModelController extends NodeModel, NodeController {
 
+    provideActions(): Promise<Action[]>
 }
 
 export type ChildrenChangedEvent = {
@@ -94,6 +96,8 @@ export interface NodeModel {
 export interface NodeFactory {
 
     createNode(nodeId: number): Promise<NodeModelController>;
+
+
 }
 
 class Tracker {
@@ -103,19 +107,65 @@ class Tracker {
     add(nodeId: number, ProxyTree: NodeModelController) { }
 }
 
+export interface NodeActionFactory extends NodeFactory {
+
+    provideActions(): Promise<Action[]>;
+}
+
+
+class ProxyNodeHelperImpl implements NodeActionFactory {
+
+    private actionContext: ActionContext;
+
+    constructor(readonly proxy: RemoteProxy, 
+            readonly factory: SessionNodeFactory,
+            readonly actionFactories: ActionFactory[],
+            readonly parent?: ProxyNodeHelperImpl) {
+
+                this.actionContext = {
+
+                    proxy: proxy,
+
+                    parent: parent ? parent.actionContext : null
+                }
+            }
+
+
+    createNode(childId: number): Promise<NodeModelController> {
+
+        return this.factory.createNodeWithHelper(childId, this);
+    }
+
+    provideActions(): Promise<Action[]> {
+        const actions: Action[] = this.actionFactories.map(f => f.createAction(this.actionContext))
+        .filter((e): e is Action => e != null )
+        return Promise.resolve(actions);
+    }
+
+}
+
 export class SessionNodeFactory implements NodeFactory {
 
     readonly tracker: Tracker
 
-    constructor(readonly session: RemoteSession) {
+    constructor(readonly session: RemoteSession,
+        readonly actionFactories: ActionFactory[]) {
         this.tracker = new Tracker();
     }
 
     async createNode(nodeId: number): Promise<NodeModelController> {
 
+        return this.createNodeWithHelper(nodeId);
+    }
+
+    async createNodeWithHelper(nodeId: number, 
+        parentHelper?: ProxyNodeHelperImpl): Promise<NodeModelController> {
+
         const proxy = await this.session.getOrCreate(nodeId);
 
-        return new ProxyNodeModelController(proxy, this);
+        const helper = new ProxyNodeHelperImpl(proxy, this, this.actionFactories, parentHelper);
+
+        return new ProxyNodeModelController(proxy, helper);
     }
 }
 
@@ -150,7 +200,8 @@ export class ProxyNodeModelController implements NodeModelController {
 
     private selected: boolean = false;
 
-    constructor(readonly proxy: RemoteProxy, readonly nodeFactory: NodeFactory) {
+    constructor(readonly proxy: RemoteProxy, 
+        readonly nodeFactory: NodeActionFactory) {
 
         if (proxy.isA(ObjectProxy)) {
             this.nodeName = proxy.as(ObjectProxy).toString;
@@ -174,7 +225,6 @@ export class ProxyNodeModelController implements NodeModelController {
         else {
             this.iconic = null;
         }
-
     }
 
     get nodeId() {
@@ -399,6 +449,11 @@ export class ProxyNodeModelController implements NodeModelController {
             listener.iconChanged(this.icon);
         }
         this.iconListeners.push(listener);
+    }
+
+    provideActions(): Promise<Action[]> {
+
+        return this.nodeFactory.provideActions();
     }
 
     destroy(): void {

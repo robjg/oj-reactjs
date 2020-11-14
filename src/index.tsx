@@ -8,13 +8,11 @@ import './css/form.css';
 import './css/split-pane.css';
 
 import { OjMain } from './main/ojMain';
-import { RemoteInvoker } from './remote/invoke';
-import { RemoteNotifier } from './remote/notify';
 import { RemoteSessionFactory, RemoteConnection } from './remote/remote';
 import { ConfigurationOwnerHandler } from './remote/ojremotes';
 import { DesignActionFactory } from './design/designAction';
 import { ContextManager } from './menu/actions';
-import { MenuProvider } from './menu/menuProvider';
+import { MenuProvider } from './menu/menu';
 
 const menuProvider = new MenuProvider();    
 
