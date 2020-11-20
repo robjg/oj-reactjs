@@ -193,27 +193,20 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
     }
 }
 
-type OjRootProps = {
+type TreeRootProps = {
 
-    remote: RemoteConnection;
+    nodeFactory: NodeFactory;
 }
 
-type OjRootState = {
+type TreeRootState = {
 
     root: NodeModelController | null;
 }
 
-export class OjRoot extends React.Component<OjRootProps, OjRootState> {
+export class TreeRoot extends React.Component<TreeRootProps, TreeRootState> {
 
-    private readonly nodeFactory: NodeFactory;
-
-    constructor(props: OjRootProps) {
+    constructor(props: TreeRootProps) {
         super(props);
-
-        const session: RemoteSession = ojRemoteSession(props.remote);
-
-        this.nodeFactory = new SessionNodeFactory(session,
-            [new DesignActionFactory() ]);
 
         this.state = {
             root: null
@@ -222,7 +215,7 @@ export class OjRoot extends React.Component<OjRootProps, OjRootState> {
 
     componentDidMount() {
 
-        this.nodeFactory.createNode(1)
+        this.props.nodeFactory.createNode(1)
             .then(node => {
                 this.setState({ root: node });
             })

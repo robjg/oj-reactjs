@@ -29,12 +29,12 @@
                 'react': "../../node_modules/react/umd/react.development",
                 'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
                 'src/remote/remote': "./main",
-                'src/tree/view': "./main",
+                'test/pocs/src/ojtree': "./main",
                 'src/logging': "./main"
             }
         });
 
-        requirejs(['react', 'react-dom', 'src/remote/remote', 'src/tree/view', 'src/logging'],
+        requirejs(['react', 'react-dom', 'src/remote/remote', 'test/pocs/src/ojtree', 'src/logging'],
             function (React, ReactDOM, remote, tree, logging) {
 
                 logging.LoggerFactory.config

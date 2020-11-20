@@ -32,7 +32,7 @@ export interface TreeSelectionEvent {
 
 	fromNodeId?: number;
 
-	toNodeId: number;
+	toNodeId?: number;
 }
 
 /**
@@ -48,7 +48,13 @@ export interface TreeSelectionListener {
 	selectionChanged: (event: TreeSelectionEvent) => void;
 }
 
-export interface TreeModel {
+export interface TreeSelectionModel {
+
+	addSelectionListener(listener: TreeSelectionListener): void;
+
+}
+
+export interface TreeModel extends TreeSelectionModel {
 
 	init(): void;
 
@@ -59,8 +65,6 @@ export interface TreeModel {
 	poll(): void;
 
 	select(nodeId: number): void;
-
-	addSelectionListener(listener: TreeSelectionListener): void;
 
 	addTreeChangeListener(listener: TreeChangeListener): void;
 }

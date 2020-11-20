@@ -13,22 +13,22 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^10.4.9",
     "@types/jest": "^25.2.2",
     "@types/jquery": "^3.5.3",
     "@types/react": "^16.9.52",
-    "@types/react-dom": "^16.9.8",
+    "@types/react-dom": "^16.9.9",
     "@types/rewire": "^2.5.28",
     "@types/testing-library__jest-dom": "^5.9.4",
     "clean-webpack-plugin": "^3.0.0",
-    "copy-webpack-plugin": "^6.1.0",
+    "copy-webpack-plugin": "^6.3.1",
     "css-loader": "^3.6.0",
-    "html-webpack-plugin": "^4.4.1",
+    "html-webpack-plugin": "^4.5.0",
     "jest": "^26.5.3",
     "jest-mock-extended": "^1.0.10",
     "mini-css-extract-plugin": "^0.9.0",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "^3.4.4",
     "react-test-renderer": "^16.14.0",
     "requirejs": "^2.3.6",
     "source-map-loader": "^0.2.4",
@@ -43,6 +43,6 @@
     "isomorphic-ws": "^4.0.1",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
-    "ws": "^7.3.1"
+    "ws": "^7.4.0"
   }
 }

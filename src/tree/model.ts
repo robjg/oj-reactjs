@@ -92,24 +92,33 @@ export interface NodeModel {
     destroy(): void;
 }
 
+export type NodeLifecycleEvent = {
+    node: NodeModelController
+}
+
+export interface NodeLifecycleListener {
+
+    nodeAdded(event: NodeLifecycleEvent): void;
+
+    nodeRemoved(event: NodeLifecycleEvent): void;
+}
+
+export interface NodeLifecycleSupport {
+
+    addLifecycleListener(listener: NodeLifecycleListener): void;    
+}
 
 export interface NodeFactory {
 
     createNode(nodeId: number): Promise<NodeModelController>;
 
-
-}
-
-class Tracker {
-
-    private nodeTracker: Map<number, NodeModelController> = new Map();
-
-    add(nodeId: number, ProxyTree: NodeModelController) { }
 }
 
 export interface NodeActionFactory extends NodeFactory {
 
     provideActions(): Promise<Action[]>;
+
+    nodeRemoved(node: NodeModelController): void;
 }
 
 
@@ -130,7 +139,6 @@ class ProxyNodeHelperImpl implements NodeActionFactory {
                 }
             }
 
-
     createNode(childId: number): Promise<NodeModelController> {
 
         return this.factory.createNodeWithHelper(childId, this);
@@ -142,15 +150,21 @@ class ProxyNodeHelperImpl implements NodeActionFactory {
         return Promise.resolve(actions);
     }
 
+    nodeRemoved(node: NodeModelController): void {
+        this.factory.nodeRemoved(node);
+    }
 }
 
-export class SessionNodeFactory implements NodeFactory {
+export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
 
-    readonly tracker: Tracker
+    private readonly lifecycleListeners: NodeLifecycleListener[] = [];
 
     constructor(readonly session: RemoteSession,
         readonly actionFactories: ActionFactory[]) {
-        this.tracker = new Tracker();
+    }
+
+    addLifecycleListener(listener: NodeLifecycleListener):void {
+        this.lifecycleListeners.push(listener);
     }
 
     async createNode(nodeId: number): Promise<NodeModelController> {
@@ -165,7 +179,15 @@ export class SessionNodeFactory implements NodeFactory {
 
         const helper = new ProxyNodeHelperImpl(proxy, this, this.actionFactories, parentHelper);
 
-        return new ProxyNodeModelController(proxy, helper);
+        const newNode =  new ProxyNodeModelController(proxy, helper);
+    
+        this.lifecycleListeners.forEach(l => l.nodeAdded({ node: newNode }));
+
+        return newNode;    
+    }
+
+    nodeRemoved(node: NodeModelController): void {
+        this.lifecycleListeners.forEach(l => l.nodeRemoved({ node: node }));
     }
 }
 
@@ -416,9 +438,6 @@ export class ProxyNodeModelController implements NodeModelController {
         if (this.selected) {
             listener.nodeSelected();
         }
-        else {
-            listener.nodeUnselected();
-        }
 
         this.selectionListeners.push(listener);
     }
@@ -457,6 +476,14 @@ export class ProxyNodeModelController implements NodeModelController {
     }
 
     destroy(): void {
+        if (this.childNodes) {
+            // should we fire collapse?
+            this.childNodes.forEach(child => child.destroy());            
+        }
+        if (this.selected) {
+            this.unselect();
+        }
+        this.nodeFactory.nodeRemoved(this);
         this.proxy.destroy();
     }
 

@@ -258,7 +258,7 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
     selectionChanged = (event: TreeSelectionEvent): void => {
 
         let fromNodeId: number | undefined = event.fromNodeId;
-        let toNodeId: number = event.toNodeId;
+        let toNodeId: number | undefined = event.toNodeId;
 
         if (fromNodeId !== undefined) {
             $(this.nodeIdSelector(fromNodeId.toString()) + ">span.nodeLabel")
@@ -266,13 +266,13 @@ export class OjTreeUI implements TreeChangeListener, TreeSelectionListener {
             $("#contextMenu").remove();
         }
 
-        if (toNodeId !== undefined) {
+        if (toNodeId) {
             $(this.nodeIdSelector(toNodeId.toString()) + ">span.nodeLabel")
                 .addClass('selected');
 
             const onClick: () => void = () => {
                 this.contextMenuProvider && 
-                    this.contextMenuProvider(toNodeId); 
+                    this.contextMenuProvider(toNodeId as number); 
                 };
                 
             if (onClick) {

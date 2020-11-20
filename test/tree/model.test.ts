@@ -6,8 +6,15 @@ import { JavaClass } from '../../src/remote/java';
 import { Notification, NotificationListener } from '../../src/remote/notify';
 import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, Structural, StructuralListener } from '../../src/remote/ojremotes';
 import { ClientToolkit, RemoteProxy } from '../../src/remote/remote';
-import { ChildrenChangedEvent, NodeActionFactory, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
+import { ChildrenChangedEvent, NodeActionFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
 import { Latch, Phaser } from '../testutil';
+
+import { Logger, LoggerFactory, LogLevel } from "../../src/logging";
+
+LoggerFactory.config
+    .setLogger("model.test", { level: LogLevel.WARN });
+
+const logger: Logger = LoggerFactory.getLogger("model.test");
 
 
 test("Structure Changes Broadcast from 2 nodes to 1", async () => {
@@ -59,15 +66,15 @@ test("Structure Changes Broadcast from 2 nodes to 1", async () => {
 
     const nodeFactory: NodeActionFactory = mock<NodeActionFactory>();
     nodeFactory.createNode = (nodeId: number): Promise<NodeModelController> => {
-            if (nodeId == 2) {
-                const promise: Promise<NodeModelController> = Promise.resolve(n2);
-                return promise;
-            }
-            if (nodeId == 3) {
-                return Promise.resolve(n3);
-            }
-            throw new Error('Method not implemented for ' + nodeId);
-        };
+        if (nodeId == 2) {
+            const promise: Promise<NodeModelController> = Promise.resolve(n2);
+            return promise;
+        }
+        if (nodeId == 3) {
+            return Promise.resolve(n3);
+        }
+        throw new Error('Method not implemented for ' + nodeId);
+    };
 
     const proxyMc = new ProxyNodeModelController(p1, nodeFactory);
 
@@ -151,13 +158,102 @@ test("Structural No Children and None Added", () => {
     expect(nodeListener.nodeExpanded).not.toBeCalled();
 
     const event: ChildrenChangedEvent = nodeListener.childrenChanged.mock.calls[0][0];
-    
+
     expect(event.children.length).toBe(0);
 
     // sanity check
 
     expect(nodeFactory.createNode).not.toBeCalled();
 });
+
+test("Destroy Structural Destroyes Children", async () => {
+
+    const structural1 = mock<Structural>();
+    const structural2 = mock<Structural>();
+
+    const p1 = mock<RemoteProxy>();
+    Object.defineProperty(p1, "nodeId", { value: 1 });
+    p1.isA.calledWith(Structural).mockReturnValue(true);
+    p1.as.calledWith(Structural).mockReturnValue(structural1);
+
+    const p2 = mock<RemoteProxy>();
+    Object.defineProperty(p2, "nodeId", { value: 2 });
+    p2.isA.calledWith(Structural).mockReturnValue(true);
+    p2.as.calledWith(Structural).mockReturnValue(structural2);
+
+    const p3 = mock<RemoteProxy>();
+    Object.defineProperty(p3, "nodeId", { value: 3 });
+
+    const factory = mock<NodeActionFactory>();
+
+    const latch1 = new Phaser();
+    const latch2 = new Latch();
+
+    const model3 = new ProxyNodeModelController(p3, factory);
+    factory.createNode.calledWith(3).mockReturnValue(Promise.resolve(model3));
+
+    const model2 = new ProxyNodeModelController(p2, factory);
+    factory.createNode.calledWith(2).mockReturnValue(Promise.resolve(model2));
+
+    const nodeSl2 = mock<NodeStructureListener>();
+    nodeSl2.childrenChanged.mockImplementation((event: ChildrenChangedEvent): void => {
+        logger.debug("Node 2 received " + event.children[0].nodeId);
+        latch2.countDown();
+    });
+    model2.addStructureListener(nodeSl2);
+
+    const model1 = new ProxyNodeModelController(p1, factory);
+
+    const nodeSl1 = mock<NodeStructureListener>();
+
+    nodeSl1.childrenChanged.mockImplementation((event: ChildrenChangedEvent): void => {
+        logger.debug("Node 1 received " + event.children[0].nodeId);
+        expect(event.children[0]).toBe(model2)
+        latch1.release();
+    });
+
+    model1.addStructureListener(nodeSl1);
+
+    const sl1 = structural1.addStructuralListener.mock.calls[0][0];
+
+    logger.debug("Sending child event for Node1");
+
+    sl1.childEvent({ remoteId: 1, children: [2] });
+
+    expect(nodeSl1.nodeCollapsed).toBeCalled();
+
+    logger.debug("Expanding Node 1");
+
+    model1.expand();
+
+    await latch1.next();
+
+    expect(nodeSl1.childrenChanged).toBeCalled();
+
+    const sl2 = structural2.addStructuralListener.mock.calls[0][0];
+
+    logger.debug("Sending child event for Node2");
+
+    sl2.childEvent({ remoteId: 2, children: [3] });
+
+    expect(nodeSl2.nodeCollapsed).toBeCalled();
+
+    logger.debug("Expanding Node 2");
+
+    model2.expand();
+
+    await latch2.promise;
+
+    expect(nodeSl2.childrenChanged).toBeCalled();
+
+    // Now destroy things.
+
+    model1.collapse();
+
+    expect(factory.nodeRemoved).toBeCalledWith(model2);
+    expect(factory.nodeRemoved).toBeCalledWith(model3);
+});
+
 
 test("Give Structural with children when children removed then notification of 0 children only", () => {
 
@@ -198,7 +294,7 @@ test("Give Structural with children when children removed then notification of 0
     remoteListener.childEvent({ remoteId: 1, children: [] });
 
     const event: ChildrenChangedEvent = nodeListener.childrenChanged.mock.calls[0][0];
-    
+
     expect(event.children.length).toBe(0);
 
     expect(nodeListener.nodeCollapsed).not.toBeCalled();
@@ -256,16 +352,16 @@ test("Icon Changes", async () => {
     (n3 as any).nodeId = 3;
 
     const nodeFactory: NodeActionFactory = mock<NodeActionFactory>()
-    nodeFactory.createNode = (nodeId: number): Promise<NodeModelController>  => {
-            if (nodeId == 2) {
-                const promise: Promise<NodeModelController> = Promise.resolve(n2);
-                return promise;
-            }
-            if (nodeId == 3) {
-                return Promise.resolve(n3);
-            }
-            throw new Error('Method not implemented for ' + nodeId);
-        };
+    nodeFactory.createNode = (nodeId: number): Promise<NodeModelController> => {
+        if (nodeId == 2) {
+            const promise: Promise<NodeModelController> = Promise.resolve(n2);
+            return promise;
+        }
+        if (nodeId == 3) {
+            return Promise.resolve(n3);
+        }
+        throw new Error('Method not implemented for ' + nodeId);
+    };
 
 
     const proxyMc = new ProxyNodeModelController(p1, nodeFactory);
@@ -314,7 +410,7 @@ test("Iconic Handler Copes if Icon arrives later than cached notification", asyn
                 const promise = new Promise<T>((resolve) => {
                     setInterval(() => {
                         resolve(new ImageData("xyz", "image/gif", "bar") as unknown as T)
-                        
+
                     }, 100);
                 });
                 return promise;
@@ -349,7 +445,7 @@ test("Iconic Handler Copes if Icon arrives later than cached notification", asyn
 
     proxyMc.addIconListener(nodeIconListener);
 
-    proxyMc.addIconListener({ iconChanged: (image) => {allDone.countDown()}})
+    proxyMc.addIconListener({ iconChanged: (image) => { allDone.countDown() } })
 
     await synchLatch.promise;
 
@@ -384,17 +480,16 @@ test("Tree Selection select deselect", () => {
 
     proxyMc.addSelectionListener(selectionListener);
 
-    expect(selectionListener.nodeUnselected).toBeCalledTimes(1);
     expect(selectionListener.nodeSelected).toBeCalledTimes(0);
 
     proxyMc.select();
 
-    expect(selectionListener.nodeUnselected).toBeCalledTimes(1);
+    expect(selectionListener.nodeUnselected).toBeCalledTimes(0);
     expect(selectionListener.nodeSelected).toBeCalledTimes(1);
 
     proxyMc.unselect();
 
-    expect(selectionListener.nodeUnselected).toBeCalledTimes(2);
+    expect(selectionListener.nodeUnselected).toBeCalledTimes(1);
     expect(selectionListener.nodeSelected).toBeCalledTimes(1);
 })
 
@@ -406,7 +501,7 @@ test("Provide Actions", async () => {
     const fooAction: Action = {
         name: "Foo",
         isEnabled: true,
-        perform: () => {}
+        perform: () => { }
     }
 
     const nodeFactory = mock<NodeActionFactory>();

@@ -8,7 +8,7 @@ import { OjJobActions } from "./ojJobActions";
 import { OjLogger } from "./ojLogger";
 import { OjProperties } from "./ojProperties";
 import { OjState } from "./ojState";
-import { TreeModel, OjTreeModel } from "./ojTreeModel";
+import { TreeModel, OjTreeModel, TreeSelectionModel, TreeSelectionListener } from "./ojTreeModel";
 import { TreeController, OjTreeController } from "./ojTreeController";
 import { OjTabsModel } from "./ojTabsModel";
 import { OjTreeUI, ContextMenuProvider } from "./ojTreeUI";
@@ -24,7 +24,7 @@ export class OjMain {
 	
 	private refreshModel: RefreshModel;
 
-    readonly ojTreeModel: TreeModel;
+    readonly ojTreeModel: TreeModel | null;
 
     private ojLog: Pollable;
 
@@ -53,24 +53,33 @@ export class OjMain {
 
     constructor(options?: { 
             idPrefix?: string;
-            contextMenuProvider?: ContextMenuProvider
+            contextMenuProvider?: ContextMenuProvider;
+            treeSelectionModel?: TreeSelectionModel
     }) {
 
         let ojDao = new OjDaoImpl();
 
-        this.ojTreeModel = new OjTreeModel(ojDao);
+        let treeSelectionModel: TreeSelectionModel;
+        if (options?.treeSelectionModel) {
+            treeSelectionModel = options?.treeSelectionModel;
+            this.ojTreeModel = null;
+        }
+        else {
+            this.ojTreeModel = new OjTreeModel(ojDao);
 
-        let ojTreeController: TreeController = new OjTreeController(this.ojTreeModel, this.pollController);
+            let ojTreeController: TreeController = new OjTreeController(this.ojTreeModel, this.pollController);
+            let ojTreeUI = new OjTreeUI(ojTreeController, ojDao, options);
 
-        let ojTreeUI = new OjTreeUI(ojTreeController, ojDao, options);
+            this.ojTreeModel.addTreeChangeListener(ojTreeUI);
+            this.ojTreeModel.addSelectionListener(ojTreeUI);
 
-        this.ojTreeModel.addTreeChangeListener(ojTreeUI);
-        this.ojTreeModel.addSelectionListener(ojTreeUI);
+            treeSelectionModel = this.ojTreeModel;
+        }
 
         let ojForm = new OjForm();
 
         let ojActions = new OjJobActions(ojDao, ojForm);
-        this.ojTreeModel.addSelectionListener(ojActions);
+        treeSelectionModel.addSelectionListener(ojActions);
 
         let tabsModel = new OjTabsModel("state");
         let tabsUI = new OjDetailTabsUI(tabsModel);
@@ -79,7 +88,7 @@ export class OjMain {
         let ojState = new OjState(ojDao, { selected: true });
 
         tabsModel.addTabSelectionListener(ojState);
-        this.ojTreeModel.addSelectionListener(ojState);
+        treeSelectionModel.addSelectionListener(ojState);
 
         let ojConsole = new OjLogger({
             fetchLogLines: function(nodeId, logSeq, ajaxCallback) {
@@ -88,21 +97,21 @@ export class OjMain {
         }, 'console');
 
         tabsModel.addTabSelectionListener(ojConsole);
-        this.ojTreeModel.addSelectionListener(ojConsole);
+        treeSelectionModel.addSelectionListener(ojConsole);
 
         this.ojConsole = ojConsole;
 
         let ojLog = new OjLogger(ojDao);
 
         tabsModel.addTabSelectionListener(ojLog);
-        this.ojTreeModel.addSelectionListener(ojLog);
+        treeSelectionModel.addSelectionListener(ojLog);
 
         this.ojLog = ojLog;
 
         let ojProperties = new OjProperties(ojDao);
 
         tabsModel.addTabSelectionListener(ojProperties);
-        this.ojTreeModel.addSelectionListener(ojProperties);
+        treeSelectionModel.addSelectionListener(ojProperties);
 
         this.refreshModel = new OjRefreshModel();
         let refreshUI: OjRefreshUI = new OjRefreshUI(this.refreshModel);
@@ -120,7 +129,7 @@ export class OjMain {
 
     private doPoll() {
 
-        this.ojTreeModel.poll();
+        this.ojTreeModel?.poll();
         this.ojLog.poll();
         this.ojConsole.poll();
     }
@@ -136,7 +145,7 @@ export class OjMain {
 
     public start = () => {
         if (!this.initialised) {
-            this.ojTreeModel.init();
+            this.ojTreeModel?.init();
             this.initialised = true;
         }
         this.doRestart();

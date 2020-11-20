@@ -9,30 +9,36 @@ import './css/split-pane.css';
 
 import { OjMain } from './main/ojMain';
 import { RemoteSessionFactory, RemoteConnection } from './remote/remote';
-import { ConfigurationOwnerHandler } from './remote/ojremotes';
+import { ConfigurationOwnerHandler, ojRemoteSession } from './remote/ojremotes';
 import { DesignActionFactory } from './design/designAction';
 import { ContextManager } from './menu/actions';
 import { MenuProvider } from './menu/menu';
+import ReactDOM from 'react-dom';
+import React from 'react';
+import { SessionNodeFactory } from './tree/model';
+import { TreeRoot } from './tree/view';
+import { TreeSelectionBridge } from './tree/bridge';
 
-const menuProvider = new MenuProvider();    
+const remote = RemoteConnection.fromHost(location.host);
 
-const main = new OjMain({ 
-    contextMenuProvider: (nodeId: number) : void => menuProvider.menuClick(nodeId)
+const session = ojRemoteSession(remote);
+
+const nodeFactory = new SessionNodeFactory(session,
+    [new DesignActionFactory()]);
+
+const bridge = new TreeSelectionBridge(nodeFactory);
+
+
+const main = new OjMain({
+    treeSelectionModel: bridge
 });
 
-const treeModel = main.ojTreeModel;
 
-const remote = RemoteConnection.fromHost(location.host); 
+ReactDOM.render(
+    React.createElement(TreeRoot,
+        { nodeFactory: nodeFactory }, null),
+    document.getElementById('ojNodeRoot')
+);
 
-const remoteSession = new RemoteSessionFactory(remote)
-    .register(new ConfigurationOwnerHandler())
-    .createRemoteSession();
-
-const contextManager = new ContextManager(remoteSession,
-    [ new DesignActionFactory() ]);
-
-treeModel.addTreeChangeListener(contextManager);
-
-menuProvider.availableActions = contextManager;
 
 main.start();
