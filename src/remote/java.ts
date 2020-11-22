@@ -106,7 +106,7 @@ export const JAVA_LONG = javaClasses.registerClass(new JavaPrimativeClass<number
 export const JAVA_BOOLEAN = javaClasses.registerClass(new JavaPrimativeClass<boolean>("boolean", "Z"));
 export const JAVA_SHORT = javaClasses.registerClass(new JavaPrimativeClass<boolean>("short", "S"));
 
-export const JAVA_VOID = javaClasses.registerClass(new JavaClassImpl("void"));
+export const JAVA_VOID = javaClasses.registerClass(new JavaClassImpl<void>("void"));
 
 export interface JavaObject<T extends JavaObject<T>> {
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { DesignActionFactory } from '../../../src/design/designAction';
 import { TreeSelectionEvent, TreeSelectionModel } from '../../../src/main/ojTreeModel';
+import { ojActions } from '../../../src/menu/ojactions';
 import { ojRemoteSession } from '../../../src/remote/ojremotes';
 import { RemoteConnection, RemoteSession } from '../../../src/remote/remote';
 import { TreeSelectionBridge } from '../../../src/tree/bridge';
@@ -27,8 +27,7 @@ export class OjRoot extends React.Component<OjRootProps, OjRootState> {
 
         const session: RemoteSession = ojRemoteSession(props.remote);
 
-        const nodeFactory = new SessionNodeFactory(session,
-            [new DesignActionFactory() ]);
+        const nodeFactory = new SessionNodeFactory(session, ojActions());
 
         this.bridge = new TreeSelectionBridge(nodeFactory);
 

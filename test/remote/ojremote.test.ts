@@ -1,7 +1,7 @@
 import { mock } from 'jest-mock-extended';
 import { InvokeRequest, InvokeResponse, OperationType } from '../../src/remote/invoke';
 import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
-import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, StateData, StateFlag } from '../../src/remote/ojremotes';
+import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, Runnable, RunnableHandler, StateData, StateFlag } from '../../src/remote/ojremotes';
 import { ClientToolkit, Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { Latch, Phaser } from '../testutil';
 
@@ -135,3 +135,14 @@ test("Iconic Handler Caches Icons OK", async () => {
     expect(result1).toBe(result2);
 });
 
+test("Runnable inovkes run", () => {
+
+    const toolkit: ClientToolkit = mock<ClientToolkit>();
+
+    const runnable: Runnable = new RunnableHandler().createHandler(toolkit);
+
+    runnable.run();
+
+    expect(toolkit.invoke).toBeCalledWith(RunnableHandler.RUN);
+
+})

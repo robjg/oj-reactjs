@@ -391,6 +391,49 @@ export class StructuralHandler implements RemoteHandlerFactory<Structural> {
     }
 }
 
+// Runnable
+
+export interface Runnable {
+
+    run(): void;
+}
+
+export class Runnable implements JavaObject<Runnable> {
+    static readonly javaClass = javaClasses.register(
+        Runnable, "java.lang.Runnable");
+
+    getJavaClass(): JavaClass<Runnable> {
+        return Runnable.javaClass;
+    }
+}
+
+export class RunnableHandler implements RemoteHandlerFactory<Runnable> {
+
+    static RUN: OperationType<void> =
+        OperationType.ofName("run")
+            .andDataType(JAVA_VOID)
+            .withSignature();
+
+    readonly interfaceClass = Runnable.javaClass;
+
+    createHandler(toolkit: ClientToolkit): Runnable {
+
+        const factory = this;
+
+
+        class Impl extends Runnable {
+
+            run(): void {
+
+                toolkit.invoke(RunnableHandler.RUN);
+            }
+        }
+
+        return new Impl();
+    }
+}
+
+
 // Configuraiton Owner
 
 export interface ConfigurationOwner {
@@ -463,6 +506,7 @@ export function ojRemoteSession(remote: RemoteConnection): RemoteSession {
     .register(new IconicHandler())
     .register(new StructuralHandler())
     .register(new ConfigurationOwnerHandler())
+    .register(new RunnableHandler())
     .createRemoteSession();
 
 }
