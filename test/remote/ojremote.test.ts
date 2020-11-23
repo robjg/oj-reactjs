@@ -1,9 +1,9 @@
 import { mock } from 'jest-mock-extended';
 import { InvokeRequest, InvokeResponse, OperationType } from '../../src/remote/invoke';
 import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
-import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, Runnable, RunnableHandler, StateData, StateFlag } from '../../src/remote/ojremotes';
+import { IconData, IconEvent, Iconic, IconicHandler, ImageData, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
 import { ClientToolkit, Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
-import { Latch, Phaser } from '../testutil';
+import { Latch } from '../testutil';
 
 test('StateData', () => {
 
@@ -144,5 +144,32 @@ test("Runnable inovkes run", () => {
     runnable.run();
 
     expect(toolkit.invoke).toBeCalledWith(RunnableHandler.RUN);
+
+})
+
+test("Resetable inovkes resets", () => {
+
+    const toolkit: ClientToolkit = mock<ClientToolkit>();
+
+    const resettable: Resettable = new ResettableHandler().createHandler(toolkit);
+
+    resettable.softReset();
+
+    expect(toolkit.invoke).toBeCalledWith(ResettableHandler.SOFT_RESET);
+
+    resettable.hardReset();
+
+    expect(toolkit.invoke).toBeCalledWith(ResettableHandler.HARD_RESET);
+})
+
+test("Stoppable inovkes stop", () => {
+
+    const toolkit: ClientToolkit = mock<ClientToolkit>();
+
+    const stoppable: Stoppable = new StoppableHandler().createHandler(toolkit);
+
+    stoppable.stop();
+
+    expect(toolkit.invoke).toBeCalledWith(StoppableHandler.STOP);
 
 })

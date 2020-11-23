@@ -1,7 +1,7 @@
 import { mock } from "jest-mock-extended";
-import { Runnable } from "../../src/remote/ojremotes";
+import { Resettable, Runnable, Stoppable } from "../../src/remote/ojremotes";
 import { RemoteProxy } from "../../src/remote/remote";
-import { RunnableActionFactory } from "../../src/menu/ojactions";
+import { HardResetActionFactory, RunActionFactory, SoftResetActionFactory, StopActionFactory } from "../../src/menu/ojactions";
 import { Action, ActionContext } from "../../src/menu/actions";
 
 test("Runnable Runs", () => {
@@ -18,7 +18,7 @@ test("Runnable Runs", () => {
         proxy: proxy
     };
 
-    const actionFactory = new RunnableActionFactory();
+    const actionFactory = new RunActionFactory();
 
     const action = actionFactory.createAction(actionContext);
 
@@ -29,3 +29,77 @@ test("Runnable Runs", () => {
     expect(runnable.run).toBeCalled();
 });
 
+test("Soft Reset Resets", () => {
+
+    const resettable = mock<Resettable>();
+
+    const proxy = mock<RemoteProxy>();
+    
+    proxy.isA.calledWith(Resettable).mockReturnValue(true);
+    proxy.as.calledWith(Resettable).mockReturnValue(resettable);
+
+    const actionContext: ActionContext = {
+        parent: null,
+        proxy: proxy
+    };
+
+    const actionFactory = new SoftResetActionFactory();
+
+    const action = actionFactory.createAction(actionContext);
+
+    expect(action).not.toBeNull();
+
+    (action as Action).perform();
+
+    expect(resettable.softReset).toBeCalled();
+});
+
+test("Hard Reset Resets", () => {
+
+    const resettable = mock<Resettable>();
+
+    const proxy = mock<RemoteProxy>();
+    
+    proxy.isA.calledWith(Resettable).mockReturnValue(true);
+    proxy.as.calledWith(Resettable).mockReturnValue(resettable);
+
+    const actionContext: ActionContext = {
+        parent: null,
+        proxy: proxy
+    };
+
+    const actionFactory = new HardResetActionFactory();
+
+    const action = actionFactory.createAction(actionContext);
+
+    expect(action).not.toBeNull();
+
+    (action as Action).perform();
+
+    expect(resettable.hardReset).toBeCalled();
+});
+
+test("Stoppable stops", () => {
+
+    const stoppable = mock<Stoppable>();
+
+    const proxy = mock<RemoteProxy>();
+    
+    proxy.isA.calledWith(Stoppable).mockReturnValue(true);
+    proxy.as.calledWith(Stoppable).mockReturnValue(stoppable);
+
+    const actionContext: ActionContext = {
+        parent: null,
+        proxy: proxy
+    };
+
+    const actionFactory = new StopActionFactory();
+
+    const action = actionFactory.createAction(actionContext);
+
+    expect(action).not.toBeNull();
+
+    (action as Action).perform();
+
+    expect(stoppable.stop).toBeCalled();
+});

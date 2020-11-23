@@ -433,6 +433,100 @@ export class RunnableHandler implements RemoteHandlerFactory<Runnable> {
     }
 }
 
+// Resettable
+
+export interface Resettable {
+
+    softReset(): void;
+
+    hardReset(): void;
+}
+
+export class Resettable implements JavaObject<Resettable> {
+    static readonly javaClass = javaClasses.register(
+        Resettable, "org.oddjob.Resettable");
+
+    getJavaClass(): JavaClass<Resettable> {
+        return Resettable.javaClass;
+    }
+}
+
+export class ResettableHandler implements RemoteHandlerFactory<Resettable> {
+
+    static SOFT_RESET: OperationType<void> =
+        OperationType.ofName("softReset")
+            .andDataType(JAVA_VOID)
+            .withSignature();
+
+            static HARD_RESET: OperationType<void> =
+            OperationType.ofName("hardReset")
+                .andDataType(JAVA_VOID)
+                .withSignature();
+
+                readonly interfaceClass = Resettable.javaClass;
+
+    createHandler(toolkit: ClientToolkit): Resettable {
+
+        const factory = this;
+
+
+        class Impl extends Resettable {
+
+            softReset(): void {
+
+                toolkit.invoke(ResettableHandler.SOFT_RESET);
+            }
+
+            hardReset(): void {
+
+                toolkit.invoke(ResettableHandler.HARD_RESET);
+            }
+        }
+
+        return new Impl();
+    }
+}
+
+// Stoppable
+
+export interface Stoppable {
+
+    stop(): void;
+}
+
+export class Stoppable implements JavaObject<Stoppable> {
+    static readonly javaClass = javaClasses.register(
+        Stoppable, "org.oddjob.Stoppable");
+
+    getJavaClass(): JavaClass<Stoppable> {
+        return Stoppable.javaClass;
+    }
+}
+
+export class StoppableHandler implements RemoteHandlerFactory<Stoppable> {
+
+    static STOP: OperationType<void> =
+        OperationType.ofName("stop")
+            .andDataType(JAVA_VOID)
+            .withSignature();
+
+    readonly interfaceClass = Stoppable.javaClass;
+
+    createHandler(toolkit: ClientToolkit): Stoppable {
+
+        const factory = this;
+
+        class Impl extends Stoppable {
+
+            stop(): void {
+
+                toolkit.invoke(StoppableHandler.STOP);
+            }
+        }
+
+        return new Impl();
+    }
+}
 
 // Configuraiton Owner
 
@@ -507,6 +601,8 @@ export function ojRemoteSession(remote: RemoteConnection): RemoteSession {
     .register(new StructuralHandler())
     .register(new ConfigurationOwnerHandler())
     .register(new RunnableHandler())
+    .register(new ResettableHandler())
+    .register(new StoppableHandler())
     .createRemoteSession();
 
 }

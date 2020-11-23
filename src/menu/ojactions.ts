@@ -1,9 +1,8 @@
 import { DesignActionFactory } from "../design/designAction";
-import { OjJobActions } from "../main/ojJobActions";
-import { Runnable } from "../remote/ojremotes";
+import { Resettable, Runnable, Stoppable } from "../remote/ojremotes";
 import { Action, ActionContext, ActionFactory } from "./actions";
 
-export class RunnableActionFactory implements ActionFactory {
+export class RunActionFactory implements ActionFactory {
 
     createAction(actionContext: ActionContext): Action | null {
  
@@ -27,8 +26,83 @@ export class RunnableActionFactory implements ActionFactory {
     }
 }
 
+export class SoftResetActionFactory implements ActionFactory {
+
+    createAction(actionContext: ActionContext): Action | null {
+ 
+        const proxy = actionContext.proxy;
+
+        if (proxy.isA(Resettable)) {
+
+            const resettable = proxy.as(Resettable);
+
+            return {
+                name: "Soft Reset",
+
+                isEnabled: true,
+
+                perform: (): void => resettable.softReset()
+            }
+        }
+        else {
+            return null;
+        }
+    }
+}
+
+export class HardResetActionFactory implements ActionFactory {
+
+    createAction(actionContext: ActionContext): Action | null {
+ 
+        const proxy = actionContext.proxy;
+
+        if (proxy.isA(Resettable)) {
+
+            const resettable = proxy.as(Resettable);
+
+            return {
+                name: "Hard Reset",
+
+                isEnabled: true,
+
+                perform: (): void => resettable.hardReset()
+            }
+        }
+        else {
+            return null;
+        }
+    }
+}
+
+export class StopActionFactory implements ActionFactory {
+
+    createAction(actionContext: ActionContext): Action | null {
+ 
+        const proxy = actionContext.proxy;
+
+        if (proxy.isA(Stoppable)) {
+
+            const stoppable = proxy.as(Stoppable);
+
+            return {
+                name: "Stop",
+
+                isEnabled: true,
+
+                perform: (): void => stoppable.stop()
+            }
+        }
+        else {
+            return null;
+        }
+    }
+}
+
 export function ojActions() {
 
-    return [new RunnableActionFactory(), 
+    return [new RunActionFactory(),
+        new SoftResetActionFactory(), 
+        new HardResetActionFactory(), 
+        new StopActionFactory(),
         new DesignActionFactory()]
 }
