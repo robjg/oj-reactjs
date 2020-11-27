@@ -1,9 +1,7 @@
 import React, { ReactNode } from 'react';
-import { DesignActionFactory } from '../design/designAction';
 import { Action } from '../menu/actions';
 import { JobMenu } from '../menu/menu';
 import { ImageData, ojRemoteSession } from '../remote/ojremotes';
-import { RemoteConnection, RemoteSession } from '../remote/remote';
 import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController, SessionNodeFactory } from './model';
 
 
@@ -39,7 +37,6 @@ type ProxyTreeState = {
 
     actions: Action[] | null;
 }
-
 
 export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
@@ -122,7 +119,8 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         nodeUnselected: (): void => {
 
             this.setState({
-                selected: false
+                selected: false,
+                actions: null
             });
         }
     }
