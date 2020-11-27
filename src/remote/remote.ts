@@ -57,6 +57,10 @@ export class RemoteConnection {
                 listener: NotificationListener<T>): void {
                 notifier.removeNotificationListener(remoteId, notificationType, listener);
             }
+
+            close(): void {
+                notifier.close();
+            }
         }
     }
 

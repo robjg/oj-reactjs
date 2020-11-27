@@ -78,6 +78,10 @@ test('Iconic Handler', async () => {
             else {
                 throw new Error("Unexpected.");
             }
+        },
+
+        close(): void {
+            throw new Error("Unexpected - but we should test this!");
         }
     }
 

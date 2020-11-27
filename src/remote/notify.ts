@@ -1,7 +1,6 @@
 
-import { map } from 'jquery';
 import { Logger, LoggerFactory } from '../logging';
-import { JavaClass, javaClasses, JavaObject } from './java';
+import { JavaClass, javaClasses, JavaObject, JAVA_VOID } from './java';
 
 export class NotificationType<T> {
 
@@ -56,11 +55,20 @@ export interface Notifier {
     removeNotificationListener<T>(remoteId: number,
         notificationType: NotificationType<T>,
         listener: NotificationListener<T>): void;
+
+    close(): void;
 }
+
+enum RequestAction {
+    ADD = "ADD",
+    REMOVE = "REMOVE",
+    HEARTBEAT = "HEARTBEAT",
+}
+
 
 class SubscriptionRequest<T> {
 
-    constructor(readonly action: string,
+    constructor(readonly action: RequestAction,
         readonly remoteId: number,
         readonly type: NotificationType<T>) {
     }
@@ -192,12 +200,37 @@ class ListenerManager {
     }
 }
 
+/** A function that takes a command function and an interval and return a method of stopping it */
+export type Timer = (fn: () => void, interval: number) => () => void; 
+
+export type Clock = () => number;
+
 export interface Channel {
 
     send(message: string): void
 
     setReceive(callback: (message: string) => void): void;
+
+    close(): void;
 }
+
+export type NotifierOptions = {
+    timer: Timer;
+    clock: Clock;
+}
+
+const SYSTEM_REMOTE_ID: number = -1;
+
+/** 10 second heartbeat */
+export const HEARTBEAT_MILLIS: number = 10 * 1000;
+
+const HEARTBEAT_TYPE: NotificationType<void> =
+    NotificationType.ofName("heartbeat")
+        .andDataType(JAVA_VOID);
+
+const HEARTBEAT_REQUEST = new SubscriptionRequest(
+    RequestAction.HEARTBEAT, SYSTEM_REMOTE_ID, HEARTBEAT_TYPE
+);
 
 export class RemoteNotifier implements Notifier {
 
@@ -205,21 +238,58 @@ export class RemoteNotifier implements Notifier {
 
     private readonly listeners: ListenerManager = new ListenerManager();
 
-    constructor(private readonly channel: Channel) {
+    private readonly timerStop: () => void;
+
+    private readonly clock: Clock;
+
+    private lastMessageTime: number;
+
+    constructor(private readonly channel: Channel, options?: NotifierOptions) {
+
+        if (!options) {
+            const timer = function(fn: () => void, interval: number): () => void {
+
+                const id = setInterval(fn, interval);
+
+                return () => {
+                    clearInterval(id);
+                }
+            }
+            const clock = Date.now;
+
+            options = {
+                timer: timer,
+                clock: clock
+            }
+        }
+
+        const clock: Clock = options.clock;
+        this.lastMessageTime = clock();
+
         this.channel.setReceive((message: string) => {
 
             this.logger.debug("Received: " + message);
 
             const notification = JSON.parse(message) as Notification<any>;
+            this.lastMessageTime = clock();
             this.listeners.dispatch(notification);
         });
+
+        this.timerStop = options.timer(() => {
+            const timeNow = clock();
+            if (timeNow > this.lastMessageTime + HEARTBEAT_MILLIS) {
+                this.channel.send(JSON.stringify(HEARTBEAT_REQUEST));
+            }
+        }, HEARTBEAT_MILLIS);
+
+        this.clock = clock;
     }
 
-    static fromWebSocket(url: string): RemoteNotifier {
+    static fromWebSocket(url: string, options?: NotifierOptions): RemoteNotifier {
 
         const ws: WebSocket = new WebSocket(url);
 
-        return new RemoteNotifier({
+        const wsChannel: Channel = {
             send: (message: string) => ws.send(message),
             setReceive: (callback: (message: string) => void) => {
                 const wsCallback = (event: any) => {
@@ -227,12 +297,17 @@ export class RemoteNotifier implements Notifier {
                     callback(data);
                 }
                 ws.onmessage = wsCallback;
+            },
+            close: (): void => {
+                ws.close();
             }
-        })
+        };
+
+        return new RemoteNotifier(wsChannel, options);
     }
 
-    static fromChannel(channel: Channel): RemoteNotifier {
-        return new RemoteNotifier(channel);
+    static fromChannel(channel: Channel, options?: NotifierOptions): RemoteNotifier {
+        return new RemoteNotifier(channel, options);
     }
 
     addNotificationListener<T>(remoteId: number,
@@ -242,7 +317,7 @@ export class RemoteNotifier implements Notifier {
         if (this.listeners.addNotificationListener(
             remoteId, notificationType, listener)) {
 
-            const request = new SubscriptionRequest<T>("ADD", remoteId, notificationType);
+            const request = new SubscriptionRequest<T>(RequestAction.ADD, remoteId, notificationType);
 
             this.sendRequest(request);
         }
@@ -255,7 +330,7 @@ export class RemoteNotifier implements Notifier {
         if (this.listeners.removeNotificationListener(
             remoteId, notificationType, listener)) {
 
-            const request = new SubscriptionRequest<T>("REMOVE", remoteId, notificationType);
+            const request = new SubscriptionRequest<T>(RequestAction.REMOVE, remoteId, notificationType);
 
             this.sendRequest(request);
         }
@@ -268,5 +343,10 @@ export class RemoteNotifier implements Notifier {
         this.logger.debug("Sending: " + message);
 
         this.channel.send(message);
+    }
+
+    close(): void {
+        this.timerStop();
+        this.channel.close();
     }
 }

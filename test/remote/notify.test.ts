@@ -1,6 +1,7 @@
+import { mock } from "jest-mock-extended";
 import { checkServerIdentity } from "tls";
 import { JAVA_STRING } from "../../src/remote/java";
-import { Channel, RemoteNotifier, Notification, NotificationType } from "../../src/remote/notify";
+import { Channel, RemoteNotifier, Notification, NotificationType, Timer, NotifierOptions } from "../../src/remote/notify";
 
 test('Listener Management', () => {
 
@@ -17,6 +18,8 @@ test('Listener Management', () => {
         setReceive(callback: (message: string) => void): void {
             this.callback = callback;
         }
+
+        close(): void {}
     }
 
     const channel = new ourChannel();
@@ -144,4 +147,52 @@ test('Listener Management', () => {
     test.addNotificationListener(1, type2, handler4);
 
     expect(channel.sent.length).toBe(9);
+
+    test.close();
 });
+
+test("Heartbeat", () => {
+
+    const channel = mock<Channel>();
+
+    let stopped: boolean = false;
+    let action: (() => void) | null = null;
+
+    const timer = jest.fn((_action: () => void, interval: number) => {
+        action = _action;
+        return () => {
+            stopped = true;
+        }
+    });
+
+    const times: number[] = [ 10000, 30000, 31000 ];
+    const clock = function(): number {
+        const next: number | undefined = times.shift();        
+        if (next) {
+            return next;
+        }
+        else {
+            throw new Error("Clock invoked more times than expected");
+        }
+    }
+
+    const options: NotifierOptions = {
+        timer: timer,
+        clock: clock
+    }
+
+    const test: RemoteNotifier = RemoteNotifier.fromChannel(channel, options);
+
+    expect(action).not.toBeNull();
+
+    if (action) {
+        const trickCompilerButWhy: () => void = action;
+        trickCompilerButWhy();
+    }
+
+    const callback: (message: string) => void = channel.setReceive.mock.calls[0][0];    
+
+    expect(channel.send).toBeCalled();
+
+    callback('{"remoteId": 2, "type": { "name": "type1", "type": "java.lang.String" }, "data": "foo2" }');
+})
