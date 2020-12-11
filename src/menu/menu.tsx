@@ -8,6 +8,9 @@ type MenuItemProps = {
     onMenuSelected: () => void
 };
 
+/**
+ * Create a Menu Item Button for a Context Menu.
+ */
 class MenuItem extends React.Component<MenuItemProps, {}> {
 
     constructor(props: MenuItemProps) {
@@ -30,6 +33,9 @@ type JobMenuProps = {
     onMenuSelected: () => void
 };
 
+/**
+ * Generates Menu Buttons from an Array of {@link Action}s.
+ */
 export class JobMenu extends React.Component<JobMenuProps, {}> {
 
     render() {

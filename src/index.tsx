@@ -17,12 +17,16 @@ import { SessionNodeFactory } from './tree/model';
 import { TreeRoot } from './tree/view';
 import { TreeSelectionBridge } from './tree/bridge';
 import { ojActions } from './menu/ojactions';
+import { NavigatorClipboard } from './clipboard';
 
 const remote = RemoteConnection.fromHost(location.host);
 
 const session = ojRemoteSession(remote);
 
-const nodeFactory = new SessionNodeFactory(session, ojActions());
+const nodeFactory = new SessionNodeFactory(session,
+    { actionFactories: ojActions(),
+        clipboard: new NavigatorClipboard() 
+    });
 
 const bridge = new TreeSelectionBridge(nodeFactory);
 

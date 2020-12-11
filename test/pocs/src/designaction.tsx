@@ -2,12 +2,22 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { sequentialForm } from './data/SequentialForm';
+import { Clipboard } from '../../../src/clipboard';
 import { AvailableActions, Action, ActionContext } from '../../../src/menu/actions';
 import { MenuProvider } from '../../../src/menu/menu';
 import { RemoteProxy } from '../../../src/remote/remote';
 import { ConfigurationOwner } from '../../../src/remote/ojremotes'
 import { DesignActionFactory } from '../../../src/design/designAction';
 
+class MockClipboard implements Clipboard {
+    copy(text: string): Promise<void> {
+        throw new Error("Unsupported");
+    }
+
+    paste(): Promise<string> {
+        throw new Error("Unsupported");
+    }    
+}
 
 type ExampleMenuProps = {
     jobId: number,
@@ -65,7 +75,8 @@ const context1: ActionContext = {
             }
         }
         destroy(): void {}
-    }
+    }, 
+    clipboard: new MockClipboard()
 }
 
 const context2: ActionContext = {
@@ -79,7 +90,8 @@ const context2: ActionContext = {
             return null as T;
         }
         destroy(): void {}
-    }
+    }, 
+    clipboard: new MockClipboard()
 }
 
 class OurActions implements AvailableActions {

@@ -1,4 +1,5 @@
 import { Logger, LoggerFactory } from "../logging";
+import { Clipboard } from "../clipboard";
 import { Action, ActionContext, ActionFactory } from "../menu/actions";
 import { IconEvent, Iconic, IconListener, ImageData, ObjectProxy, Structural, StructuralEvent } from "../remote/ojremotes";
 import { RemoteProxy, RemoteSession } from "../remote/remote";
@@ -121,21 +122,36 @@ export interface NodeActionFactory extends NodeFactory {
     nodeRemoved(node: NodeModelController): void;
 }
 
+/**
+ * Things required to create {@link Action}s.
+ */
+export type ActionSettings = {
 
+    readonly actionFactories: ActionFactory[];
+
+    readonly clipboard: Clipboard;
+}
+
+/**
+ * Helps the {@link SessionNodeFactory} create nodes that can provide actions by maintaning an
+ * hierarchical {@link ActionContext}.
+ */
 class ProxyNodeHelperImpl implements NodeActionFactory {
 
     private actionContext: ActionContext;
 
     constructor(readonly proxy: RemoteProxy, 
             readonly factory: SessionNodeFactory,
-            readonly actionFactories: ActionFactory[],
+            readonly actionSettings: ActionSettings,
             readonly parent?: ProxyNodeHelperImpl) {
 
                 this.actionContext = {
 
                     proxy: proxy,
 
-                    parent: parent ? parent.actionContext : null
+                    parent: parent ? parent.actionContext : null,
+
+                    clipboard: actionSettings.clipboard
                 }
             }
 
@@ -145,7 +161,7 @@ class ProxyNodeHelperImpl implements NodeActionFactory {
     }
 
     provideActions(): Promise<Action[]> {
-        const actions: Action[] = this.actionFactories.map(f => f.createAction(this.actionContext))
+        const actions: Action[] = this.actionSettings.actionFactories.map(f => f.createAction(this.actionContext))
         .filter((e): e is Action => e != null )
         return Promise.resolve(actions);
     }
@@ -160,7 +176,7 @@ export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
     private readonly lifecycleListeners: NodeLifecycleListener[] = [];
 
     constructor(readonly session: RemoteSession,
-        readonly actionFactories: ActionFactory[]) {
+        readonly actionSettings: ActionSettings) {
     }
 
     addLifecycleListener(listener: NodeLifecycleListener):void {
@@ -177,7 +193,7 @@ export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
 
         const proxy = await this.session.getOrCreate(nodeId);
 
-        const helper = new ProxyNodeHelperImpl(proxy, this, this.actionFactories, parentHelper);
+        const helper = new ProxyNodeHelperImpl(proxy, this, this.actionSettings, parentHelper);
 
         const newNode =  new ProxyNodeModelController(proxy, helper);
     
@@ -191,7 +207,9 @@ export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
     }
 }
 
-
+/**
+ * This is the main implementation class for Node Model and Controller.
+ */
 export class ProxyNodeModelController implements NodeModelController {
 
     private static nodeCount = 0; 

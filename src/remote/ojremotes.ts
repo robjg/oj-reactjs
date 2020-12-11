@@ -1,4 +1,4 @@
-import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOLEAN, JAVA_VOID } from './java';
+import { JavaClass, javaClasses, JAVA_STRING, JavaObject, JAVA_OBJECT, JAVA_BOOLEAN, JAVA_VOID, JAVA_INT } from './java';
 import { RemoteHandlerFactory, ClientToolkit, RemoteProxy, Initialisation, Destroyable, RemoteConnection, RemoteSessionFactory, RemoteSession, } from './remote'
 import { OperationType } from './invoke'
 import { NotificationType, Notification, NotificationListener } from './notify'
@@ -218,7 +218,7 @@ export class IconicHandler implements RemoteHandlerFactory<Iconic> {
                         });
                 }
                 else {
-                    listener.iconEvent(lastEvent);                    
+                    listener.iconEvent(lastEvent);
                 }
 
                 listeners.push(listener);
@@ -359,7 +359,7 @@ export class StructuralHandler implements RemoteHandlerFactory<Structural> {
                         });
                 }
                 else {
-                    listener.childEvent(lastEvent);                    
+                    listener.childEvent(lastEvent);
                 }
 
                 listeners.push(listener);
@@ -458,12 +458,12 @@ export class ResettableHandler implements RemoteHandlerFactory<Resettable> {
             .andDataType(JAVA_VOID)
             .withSignature();
 
-            static HARD_RESET: OperationType<void> =
-            OperationType.ofName("hardReset")
-                .andDataType(JAVA_VOID)
-                .withSignature();
+    static HARD_RESET: OperationType<void> =
+        OperationType.ofName("hardReset")
+            .andDataType(JAVA_VOID)
+            .withSignature();
 
-                readonly interfaceClass = Resettable.javaClass;
+    readonly interfaceClass = Resettable.javaClass;
 
     createHandler(toolkit: ClientToolkit): Resettable {
 
@@ -532,6 +532,14 @@ export class StoppableHandler implements RemoteHandlerFactory<Stoppable> {
 
 export interface ConfigurationOwner {
 
+    cut(proxy: RemoteProxy): Promise<string>;
+
+    copy(proxy: RemoteProxy): Promise<string>;
+
+    paste(proxy: RemoteProxy, index: number, configXml: string): Promise<void>;
+
+    delete(proxy: RemoteProxy): Promise<void>;
+
     formFor(proxy: RemoteProxy): Promise<string>;
 
     blankForm(isComponent: boolean,
@@ -552,6 +560,19 @@ export class ConfigurationOwner implements JavaObject<ConfigurationOwner> {
 
 export class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwner> {
 
+    static CUT: OperationType<string> =
+        new OperationType("configCut", JAVA_STRING.name, [JAVA_OBJECT.name]);
+
+    static COPY: OperationType<string> =
+        new OperationType("configCopy", JAVA_STRING.name, [JAVA_OBJECT.name]);
+
+    static PASTE: OperationType<void> =
+        new OperationType("configPaste", JAVA_VOID.name, 
+        [JAVA_OBJECT.name, JAVA_INT.name, JAVA_STRING.name]);
+
+    static DELETE: OperationType<void> =
+        new OperationType("configDelete", JAVA_VOID.name, [JAVA_OBJECT.name]);
+
     static formFor: OperationType<string> =
         new OperationType("formFor", JAVA_STRING.name, [JAVA_OBJECT.name]);
 
@@ -569,6 +590,22 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
 
         class Impl extends ConfigurationOwner {
 
+            cut(proxy: RemoteProxy): Promise<string> {
+                return toolkit.invoke(ConfigurationOwnerHandler.CUT, proxy);
+            }
+
+            copy(proxy: RemoteProxy): Promise<string> {
+                return toolkit.invoke(ConfigurationOwnerHandler.COPY, proxy);
+            }
+        
+            paste(proxy: RemoteProxy, index: number, configXml: string): Promise<void> {
+                return toolkit.invoke(ConfigurationOwnerHandler.PASTE, proxy, index, configXml)
+            }
+        
+            delete(proxy: RemoteProxy): Promise<void> {
+                return toolkit.invoke(ConfigurationOwnerHandler.DELETE, proxy);
+            }
+        
             formFor(proxy: RemoteProxy): Promise<string> {
 
                 return toolkit.invoke(ConfigurationOwnerHandler.formFor, proxy);
@@ -596,13 +633,13 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
 export function ojRemoteSession(remote: RemoteConnection): RemoteSession {
 
     return RemoteSessionFactory.from(remote)
-    .register(new ObjectHandler())
-    .register(new IconicHandler())
-    .register(new StructuralHandler())
-    .register(new ConfigurationOwnerHandler())
-    .register(new RunnableHandler())
-    .register(new ResettableHandler())
-    .register(new StoppableHandler())
-    .createRemoteSession();
+        .register(new ObjectHandler())
+        .register(new IconicHandler())
+        .register(new StructuralHandler())
+        .register(new ConfigurationOwnerHandler())
+        .register(new RunnableHandler())
+        .register(new ResettableHandler())
+        .register(new StoppableHandler())
+        .createRemoteSession();
 
 }

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Copy Paste</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="form"></div>
+
+    <script src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        requirejs.config({
+            paths: {
+                'react': "../../node_modules/react/umd/react.development",
+                'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
+                'test/pocs/src/copypaste': "./main"
+            }
+        });
+
+        require(["test/pocs/src/copypaste"], 
+        function(app) {
+            app.start();
+        }, 
+        function(err) {
+            console.log("Error: " + err);
+        });
+
+    </script>
+
+</body>
+</html>

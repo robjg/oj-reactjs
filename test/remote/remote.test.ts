@@ -44,6 +44,10 @@ test('Session With ConfigurationOwner', async () => {
             notificationType: NotificationType<T>,
             listener: NotificationListener<T>): void {
             throw Error("Unexpected");
+        },
+        
+        close() {
+            throw Error("Unexpected");
         }
     }
 

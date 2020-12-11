@@ -189,7 +189,9 @@ export class RemoteSessionFactory {
     readonly factories = new Map<JavaClass<any>, RemoteHandlerFactory<any>>();
 
     constructor(readonly remote: RemoteConnection) {
-
+        if (!this.remote) {
+            throw new Error("No Remote Connection provided");
+        }
     }
 
     static from(remote: RemoteConnection): RemoteSessionFactory {

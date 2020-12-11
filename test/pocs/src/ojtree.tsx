@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavigatorClipboard } from '../../../src/clipboard';
 import { TreeSelectionEvent, TreeSelectionModel } from '../../../src/main/ojTreeModel';
 import { ojActions } from '../../../src/menu/ojactions';
 import { ojRemoteSession } from '../../../src/remote/ojremotes';
@@ -27,7 +28,10 @@ export class OjRoot extends React.Component<OjRootProps, OjRootState> {
 
         const session: RemoteSession = ojRemoteSession(props.remote);
 
-        const nodeFactory = new SessionNodeFactory(session, ojActions());
+        const nodeFactory = new SessionNodeFactory(session, 
+            { actionFactories: ojActions(),
+                clipboard: new NavigatorClipboard() 
+            });
 
         this.bridge = new TreeSelectionBridge(nodeFactory);
 

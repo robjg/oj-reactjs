@@ -3,6 +3,7 @@ import { RemoteProxy, RemoteSession } from '../remote/remote'
 import { TreeChangeListener } from '../main/ojTreeModel';
 
 import { NodeInfo } from '../main/ojDao';
+import { Clipboard, NavigatorClipboard } from '../clipboard';
 
 
 /**
@@ -13,6 +14,8 @@ export type ActionContext = {
     parent: ActionContext | null;
 
     proxy: RemoteProxy;
+
+    clipboard: Clipboard;
 }
 
 /**
@@ -79,7 +82,10 @@ export class ContextManager implements TreeChangeListener, AvailableActions {
 
         const contextPromise: Promise<ActionContext> =
             this.remoteSession.getOrCreate(nodeId)
-                .then(proxy => ({ proxy: proxy, parent: null }));
+                .then(proxy => ({ 
+                    proxy: proxy, 
+                    parent: null,
+                    clipboard: new NavigatorClipboard() }));
 
         this.contexts.set(nodeId, contextPromise);
     }
@@ -95,7 +101,10 @@ export class ContextManager implements TreeChangeListener, AvailableActions {
                     parentContextPromise
                         .then(parent =>
                             this.remoteSession.getOrCreate(nodeId)
-                                .then(proxy => ({ proxy: proxy, parent: parent }))
+                                .then(proxy => ({ 
+                                    proxy: proxy, 
+                                    parent: parent,
+                                    clipboard: parent.clipboard }))
                         )
                 this.contexts.set(nodeId, contextPromise);
             });

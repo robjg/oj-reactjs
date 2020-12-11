@@ -1,6 +1,6 @@
 import { DesignActionFactory } from "../design/designAction";
-import { Resettable, Runnable, Stoppable } from "../remote/ojremotes";
-import { Action, ActionContext, ActionFactory } from "./actions";
+import { ConfigurationOwner, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
+import { Action, ActionContext, ActionFactory, contextSearch } from "./actions";
 
 export class RunActionFactory implements ActionFactory {
 
@@ -98,9 +98,122 @@ export class StopActionFactory implements ActionFactory {
     }
 }
 
-export function ojActions() {
+export class CutActionFactory implements ActionFactory {
 
-    return [new RunActionFactory(),
+    createAction(actionContext: ActionContext): Action | null {
+ 
+        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
+
+        if (configOwner == null) {
+            return null;
+        }
+
+        const proxy = actionContext.proxy;
+
+        return {
+            name: "Cut",
+
+            isEnabled: true,
+
+            perform: (): void => {
+                configOwner.cut(proxy)
+                .then(config => actionContext.clipboard.copy(config));
+            }
+        }
+    }
+}
+
+export class CopyActionFactory implements ActionFactory {
+
+    createAction(actionContext: ActionContext): Action | null {
+ 
+        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
+
+        if (configOwner == null) {
+            return null;
+        }
+
+        const proxy = actionContext.proxy;
+
+        return {
+            name: "Copy",
+
+            isEnabled: true,
+
+            perform: (): void => {
+                configOwner.copy(proxy)
+                .then(config => actionContext.clipboard.copy(config));
+            }
+        }
+    }
+}
+
+export class PasteActionFactory implements ActionFactory {
+
+    createAction(actionContext: ActionContext): Action | null {
+ 
+        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
+
+        if (configOwner == null) {
+            return null;
+        }
+
+        const proxy = actionContext.proxy;
+
+        return {
+            name: "Paste",
+
+            isEnabled: true,
+
+            perform: (): void => {
+
+                actionContext.clipboard.paste()
+                .then(contents => {
+                    if (contents) {
+                        configOwner.paste(proxy, -1, contents);
+                    }
+                });
+            }
+        }
+    }
+}
+
+export class DeleteActionFactory implements ActionFactory {
+
+    createAction(actionContext: ActionContext): Action | null {
+ 
+        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
+
+        if (configOwner == null) {
+            return null;
+        }
+
+        const proxy = actionContext.proxy;
+
+        return {
+            name: "Delete",
+
+            isEnabled: true,
+
+            perform: (): void => {
+                configOwner.delete(proxy);
+            }
+        }
+    }
+}
+
+
+/**
+ * Provide all Oddjobs Actions factories.
+ */
+export function ojActions(): ActionFactory[] {
+
+    return [
+        new CutActionFactory(),
+        new CopyActionFactory(),
+        new PasteActionFactory(),
+        new DeleteActionFactory(),
+        new RunActionFactory(),
         new SoftResetActionFactory(), 
         new HardResetActionFactory(), 
         new StopActionFactory(),

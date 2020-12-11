@@ -1,7 +1,7 @@
 import { mock } from 'jest-mock-extended';
 import { InvokeRequest, InvokeResponse, OperationType } from '../../src/remote/invoke';
 import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
-import { IconData, IconEvent, Iconic, IconicHandler, ImageData, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
+import { ConfigurationOwner, ConfigurationOwnerHandler, IconData, IconEvent, Iconic, IconicHandler, ImageData, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
 import { ClientToolkit, Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { Latch } from '../testutil';
 
@@ -176,4 +176,74 @@ test("Stoppable inovkes stop", () => {
 
     expect(toolkit.invoke).toBeCalledWith(StoppableHandler.STOP);
 
+})
+
+test("Stoppable inovkes stop", () => {
+
+    const toolkit: ClientToolkit = mock<ClientToolkit>();
+
+    const stoppable: Stoppable = new StoppableHandler().createHandler(toolkit);
+
+    stoppable.stop();
+
+    expect(toolkit.invoke).toBeCalledWith(StoppableHandler.STOP);
+
+})
+
+
+test("Cut Invokes cut", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const toolkit = mock<ClientToolkit>();
+    toolkit.invoke.calledWith(ConfigurationOwnerHandler.CUT, proxy)
+        .mockReturnValue(Promise.resolve("YOU CUT ME"));
+
+    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
+
+    const result: string = await configurationOwner.cut(proxy);
+
+    expect(result).toBe("YOU CUT ME");
+})
+
+test("Copy Invokes copy", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const toolkit = mock<ClientToolkit>();
+    toolkit.invoke.calledWith(ConfigurationOwnerHandler.COPY, proxy)
+        .mockReturnValue(Promise.resolve("YOU COPIED ME"));
+
+    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
+
+    const result: string = await configurationOwner.copy(proxy);
+
+    expect(result).toBe("YOU COPIED ME");
+
+})
+
+test("Paste Invokes paste", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const toolkit = mock<ClientToolkit>();
+
+    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
+
+    await configurationOwner.paste(proxy, 1, "PASTE ME");
+
+    expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.PASTE, proxy, 1, "PASTE ME");
+})
+
+test("Delete Invokes delete", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const toolkit = mock<ClientToolkit>();
+
+    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
+
+    await configurationOwner.delete(proxy);
+
+    expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.DELETE, proxy);
 })
