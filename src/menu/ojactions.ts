@@ -4,7 +4,7 @@ import { Action, ActionContext, ActionFactory, contextSearch } from "./actions";
 
 export class RunActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const proxy = actionContext.proxy;
 
@@ -12,23 +12,23 @@ export class RunActionFactory implements ActionFactory {
 
             const runnable = proxy.as(Runnable);
 
-            return {
+            return Promise.resolve({
                 name: "Start",
 
                 isEnabled: true,
 
                 perform: (): void => runnable.run()
-            }
+            });
         }
         else {
-            return null;
+            return Promise.resolve(null);
         }
     }
 }
 
 export class SoftResetActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const proxy = actionContext.proxy;
 
@@ -36,23 +36,23 @@ export class SoftResetActionFactory implements ActionFactory {
 
             const resettable = proxy.as(Resettable);
 
-            return {
+            return Promise.resolve({
                 name: "Soft Reset",
 
                 isEnabled: true,
 
                 perform: (): void => resettable.softReset()
-            }
+            });
         }
         else {
-            return null;
+            return Promise.resolve(null);
         }
     }
 }
 
 export class HardResetActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const proxy = actionContext.proxy;
 
@@ -60,23 +60,23 @@ export class HardResetActionFactory implements ActionFactory {
 
             const resettable = proxy.as(Resettable);
 
-            return {
+            return Promise.resolve({
                 name: "Hard Reset",
 
                 isEnabled: true,
 
                 perform: (): void => resettable.hardReset()
-            }
+            });
         }
         else {
-            return null;
+            return Promise.resolve(null);
         }
     }
 }
 
 export class StopActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const proxy = actionContext.proxy;
 
@@ -84,23 +84,23 @@ export class StopActionFactory implements ActionFactory {
 
             const stoppable = proxy.as(Stoppable);
 
-            return {
+            return Promise.resolve({
                 name: "Stop",
 
                 isEnabled: true,
 
                 perform: (): void => stoppable.stop()
-            }
+            });
         }
         else {
-            return null;
+            return Promise.resolve(null);
         }
     }
 }
 
 export class CutActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    async createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
@@ -110,22 +110,28 @@ export class CutActionFactory implements ActionFactory {
 
         const proxy = actionContext.proxy;
 
+        const dragPoint = await configOwner.dragPointFor(proxy);
+
+        if (dragPoint == null) {
+            return null;
+        }
+
         return {
             name: "Cut",
 
-            isEnabled: true,
+            isEnabled: dragPoint.isCutSupported,
 
             perform: (): void => {
-                configOwner.cut(proxy)
+                dragPoint.cut()
                 .then(config => actionContext.clipboard.copy(config));
             }
-        }
+        };
     }
 }
 
 export class CopyActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    async createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
@@ -134,6 +140,12 @@ export class CopyActionFactory implements ActionFactory {
         }
 
         const proxy = actionContext.proxy;
+
+        const dragPoint = await configOwner.dragPointFor(proxy);
+
+        if (dragPoint == null) {
+            return null;
+        }
 
         return {
             name: "Copy",
@@ -141,7 +153,7 @@ export class CopyActionFactory implements ActionFactory {
             isEnabled: true,
 
             perform: (): void => {
-                configOwner.copy(proxy)
+                dragPoint.copy()
                 .then(config => actionContext.clipboard.copy(config));
             }
         }
@@ -150,7 +162,7 @@ export class CopyActionFactory implements ActionFactory {
 
 export class PasteActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    async createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
@@ -160,17 +172,23 @@ export class PasteActionFactory implements ActionFactory {
 
         const proxy = actionContext.proxy;
 
+        const dragPoint = await configOwner.dragPointFor(proxy);
+
+        if (dragPoint == null) {
+            return null;
+        }
+
         return {
             name: "Paste",
 
-            isEnabled: true,
+            isEnabled: dragPoint.isPasteSupported,
 
             perform: (): void => {
 
                 actionContext.clipboard.paste()
                 .then(contents => {
                     if (contents) {
-                        configOwner.paste(proxy, -1, contents);
+                        dragPoint.paste(-1, contents);
                     }
                 });
             }
@@ -180,7 +198,7 @@ export class PasteActionFactory implements ActionFactory {
 
 export class DeleteActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    async createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
@@ -190,13 +208,19 @@ export class DeleteActionFactory implements ActionFactory {
 
         const proxy = actionContext.proxy;
 
+        const dragPoint = await configOwner.dragPointFor(proxy);
+
+        if (dragPoint == null) {
+            return null;
+        }
+
         return {
             name: "Delete",
 
-            isEnabled: true,
+            isEnabled: dragPoint.isCutSupported,
 
             perform: (): void => {
-                configOwner.delete(proxy);
+                dragPoint.delete();
             }
         }
     }

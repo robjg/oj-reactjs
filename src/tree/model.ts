@@ -1,6 +1,6 @@
 import { Logger, LoggerFactory } from "../logging";
 import { Clipboard } from "../clipboard";
-import { Action, ActionContext, ActionFactory } from "../menu/actions";
+import { Action, ActionContext, ActionFactories, ActionFactory } from "../menu/actions";
 import { IconEvent, Iconic, IconListener, ImageData, ObjectProxy, Structural, StructuralEvent } from "../remote/ojremotes";
 import { RemoteProxy, RemoteSession } from "../remote/remote";
 import { arrayDiff, DiffOp, Op } from "./util";
@@ -106,7 +106,7 @@ export interface NodeLifecycleListener {
 
 export interface NodeLifecycleSupport {
 
-    addLifecycleListener(listener: NodeLifecycleListener): void;    
+    addLifecycleListener(listener: NodeLifecycleListener): void;
 }
 
 export interface NodeFactory {
@@ -140,20 +140,20 @@ class ProxyNodeHelperImpl implements NodeActionFactory {
 
     private actionContext: ActionContext;
 
-    constructor(readonly proxy: RemoteProxy, 
-            readonly factory: SessionNodeFactory,
-            readonly actionSettings: ActionSettings,
-            readonly parent?: ProxyNodeHelperImpl) {
+    constructor(readonly proxy: RemoteProxy,
+        readonly factory: SessionNodeFactory,
+        readonly actionSettings: ActionSettings,
+        readonly parent?: ProxyNodeHelperImpl) {
 
-                this.actionContext = {
+        this.actionContext = {
 
-                    proxy: proxy,
+            proxy: proxy,
 
-                    parent: parent ? parent.actionContext : null,
+            parent: parent ? parent.actionContext : null,
 
-                    clipboard: actionSettings.clipboard
-                }
-            }
+            clipboard: actionSettings.clipboard
+        }
+    }
 
     createNode(childId: number): Promise<NodeModelController> {
 
@@ -161,9 +161,9 @@ class ProxyNodeHelperImpl implements NodeActionFactory {
     }
 
     provideActions(): Promise<Action[]> {
-        const actions: Action[] = this.actionSettings.actionFactories.map(f => f.createAction(this.actionContext))
-        .filter((e): e is Action => e != null )
-        return Promise.resolve(actions);
+
+        return new ActionFactories(this.actionSettings.actionFactories)
+            .actionsFor(this.actionContext);
     }
 
     nodeRemoved(node: NodeModelController): void {
@@ -179,7 +179,7 @@ export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
         readonly actionSettings: ActionSettings) {
     }
 
-    addLifecycleListener(listener: NodeLifecycleListener):void {
+    addLifecycleListener(listener: NodeLifecycleListener): void {
         this.lifecycleListeners.push(listener);
     }
 
@@ -188,18 +188,18 @@ export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
         return this.createNodeWithHelper(nodeId);
     }
 
-    async createNodeWithHelper(nodeId: number, 
+    async createNodeWithHelper(nodeId: number,
         parentHelper?: ProxyNodeHelperImpl): Promise<NodeModelController> {
 
         const proxy = await this.session.getOrCreate(nodeId);
 
         const helper = new ProxyNodeHelperImpl(proxy, this, this.actionSettings, parentHelper);
 
-        const newNode =  new ProxyNodeModelController(proxy, helper);
-    
+        const newNode = new ProxyNodeModelController(proxy, helper);
+
         this.lifecycleListeners.forEach(l => l.nodeAdded({ node: newNode }));
 
-        return newNode;    
+        return newNode;
     }
 
     nodeRemoved(node: NodeModelController): void {
@@ -212,7 +212,7 @@ export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
  */
 export class ProxyNodeModelController implements NodeModelController {
 
-    private static nodeCount = 0; 
+    private static nodeCount = 0;
 
     private readonly logger: Logger = LoggerFactory.getLogger(ProxyNodeModelController);
 
@@ -240,7 +240,7 @@ export class ProxyNodeModelController implements NodeModelController {
 
     private selected: boolean = false;
 
-    constructor(readonly proxy: RemoteProxy, 
+    constructor(readonly proxy: RemoteProxy,
         readonly nodeFactory: NodeActionFactory) {
 
         if (proxy.isA(ObjectProxy)) {
@@ -471,7 +471,7 @@ export class ProxyNodeModelController implements NodeModelController {
             if (this.childIds.length == 0) {
                 listener.childrenChanged({
                     children: []
-                })                
+                })
             }
             else {
                 listener.nodeCollapsed();
@@ -496,7 +496,7 @@ export class ProxyNodeModelController implements NodeModelController {
     destroy(): void {
         if (this.childNodes) {
             // should we fire collapse?
-            this.childNodes.forEach(child => child.destroy());            
+            this.childNodes.forEach(child => child.destroy());
         }
         if (this.selected) {
             this.unselect();

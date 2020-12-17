@@ -2,7 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Clipboard, NavigatorClipboard } from '../../../src/clipboard';
-import { Action, ActionContext, ActionFactory } from '../../../src/menu/actions';
+import { Action, ActionContext, ActionFactories, ActionFactory } from '../../../src/menu/actions';
 import { JobMenu } from '../../../src/menu/menu';
 import { CopyActionFactory, CutActionFactory, PasteActionFactory } from '../../../src/menu/ojactions';
 import { ojRemoteSession } from '../../../src/remote/ojremotes';
@@ -62,14 +62,15 @@ class ClipboardComponent extends React.Component<clipboardComponentProps, Clipbo
 
         root.then(async r => {
             const c = await child;
-    
+
             const context = new ChildActionContext(new ParentActionContext(r), c);
-    
-            const actions = this.props.actionFactories.map(f => f.createAction(context));
+
+            const actions: Action[] = await new ActionFactories(this.props.actionFactories)
+                .actionsFor(context);
 
             this.setState({
-                actions: actions 
-             });
+                actions: actions
+            });
         });
     }
 

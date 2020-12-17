@@ -1,12 +1,12 @@
 import { mock } from "jest-mock-extended";
 import { Clipboard } from "../../src/clipboard";
-import { ConfigurationOwner, Resettable, Runnable, Stoppable } from "../../src/remote/ojremotes";
+import { ConfigurationOwner, DragPoint, Resettable, Runnable, Stoppable } from "../../src/remote/ojremotes";
 import { RemoteProxy } from "../../src/remote/remote";
 import { CopyActionFactory, CutActionFactory, DeleteActionFactory, HardResetActionFactory, PasteActionFactory, RunActionFactory, SoftResetActionFactory, StopActionFactory } from "../../src/menu/ojactions";
 import { Action, ActionContext } from "../../src/menu/actions";
 import { Latch } from "../testutil";
 
-test("Runnable Runs", () => {
+test("Runnable Runs", async () => {
 
     const runnable = mock<Runnable>();
 
@@ -23,7 +23,7 @@ test("Runnable Runs", () => {
 
     const actionFactory = new RunActionFactory();
 
-    const action = actionFactory.createAction(actionContext);
+    const action = await actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -32,7 +32,7 @@ test("Runnable Runs", () => {
     expect(runnable.run).toBeCalled();
 });
 
-test("Soft Reset Resets", () => {
+test("Soft Reset Resets", async () => {
 
     const resettable = mock<Resettable>();
 
@@ -49,7 +49,7 @@ test("Soft Reset Resets", () => {
 
     const actionFactory = new SoftResetActionFactory();
 
-    const action = actionFactory.createAction(actionContext);
+    const action = await actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -58,7 +58,7 @@ test("Soft Reset Resets", () => {
     expect(resettable.softReset).toBeCalled();
 });
 
-test("Hard Reset Resets", () => {
+test("Hard Reset Resets", async () => {
 
     const resettable = mock<Resettable>();
 
@@ -75,7 +75,7 @@ test("Hard Reset Resets", () => {
 
     const actionFactory = new HardResetActionFactory();
 
-    const action = actionFactory.createAction(actionContext);
+    const action = await actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -84,7 +84,7 @@ test("Hard Reset Resets", () => {
     expect(resettable.hardReset).toBeCalled();
 });
 
-test("Stoppable stops", () => {
+test("Stoppable stops", async () => {
 
     const stoppable = mock<Stoppable>();
 
@@ -101,7 +101,7 @@ test("Stoppable stops", () => {
 
     const actionFactory = new StopActionFactory();
 
-    const action = actionFactory.createAction(actionContext);
+    const action = await actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -110,7 +110,7 @@ test("Stoppable stops", () => {
     expect(stoppable.stop).toBeCalled();
 });
 
-test("Stoppable stops", () => {
+test("Stoppable stops", async () => {
 
     const stoppable = mock<Stoppable>();
 
@@ -127,7 +127,7 @@ test("Stoppable stops", () => {
 
     const actionFactory = new StopActionFactory();
 
-    const action = actionFactory.createAction(actionContext);
+    const action = await actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -142,13 +142,18 @@ test("Cut cuts", async () => {
 
     const latch: Latch = new Latch();
 
-    const configOwner = mock<ConfigurationOwner>();
-
-    configOwner.cut.calledWith(proxy)
-    .mockImplementation((p) => {
+    const dragPoint = mock<DragPoint>();
+    dragPoint.isCutSupported = true;
+    dragPoint.cut.calledWith()
+    .mockImplementation(() => {
         latch.countDown();
         return Promise.resolve("SOME CONFIG")
     });
+
+    const configOwner = mock<ConfigurationOwner>();
+
+    configOwner.dragPointFor.calledWith(proxy)
+    .mockImplementation((p) => Promise.resolve(dragPoint));
 
     const proxyOwner = mock<RemoteProxy>();
     
@@ -171,18 +176,61 @@ test("Cut cuts", async () => {
 
     const actionFactory = new CutActionFactory();
 
-    const action = actionFactory.createAction(childContext);
+    const action = await actionFactory.createAction(childContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(true);
 
     (action as Action).perform();
 
-    expect(configOwner.cut).toBeCalled();
+    expect(dragPoint.cut).toBeCalled();
 
     await latch.promise;
 
     expect(clipboard.copy).toBeCalledWith("SOME CONFIG");
+});
+
+test("Cut disabled", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const latch: Latch = new Latch();
+
+    const configOwner = mock<ConfigurationOwner>();
+
+    const dragPoint = mock<DragPoint>();
+    dragPoint.isCutSupported = false;
+
+    configOwner.dragPointFor.calledWith(proxy)
+    .mockImplementation((p) => {
+        latch.countDown();
+        return Promise.resolve(dragPoint);
+    });
+
+    const proxyOwner = mock<RemoteProxy>();
+    
+    proxyOwner.isA.calledWith(ConfigurationOwner).mockReturnValue(true);
+    proxyOwner.as.calledWith(ConfigurationOwner).mockReturnValue(configOwner);
+
+    const ownerContext: ActionContext = {
+        parent: null,
+        proxy: proxyOwner,
+        clipboard: mock<Clipboard>()
+    };
+
+    const childContext: ActionContext = {
+        parent: ownerContext,
+        proxy: proxy,
+        clipboard:  mock<Clipboard>()
+    };
+
+    const actionFactory = new CutActionFactory();
+
+    const action = await actionFactory.createAction(childContext);
+
+    expect(action).not.toBeNull();
+    expect((action as Action).isEnabled).toBe(false);
+
 });
 
 test("Copy copies", async () => {
@@ -191,13 +239,17 @@ test("Copy copies", async () => {
 
     const latch: Latch = new Latch();
 
+    const dragPoint = mock<DragPoint>();
+    dragPoint.copy.calledWith()
+    .mockImplementation( () => {
+        latch.countDown();
+        return Promise.resolve("SOME CONFIG");
+    })
+
     const configOwner = mock<ConfigurationOwner>();
 
-    configOwner.copy.calledWith(proxy)
-    .mockImplementation((p) => {
-        latch.countDown();
-        return Promise.resolve("SOME CONFIG")
-    });
+    configOwner.dragPointFor.calledWith(proxy)
+    .mockImplementation((p) => Promise.resolve(dragPoint));
 
     const proxyOwner = mock<RemoteProxy>();
     
@@ -220,14 +272,14 @@ test("Copy copies", async () => {
 
     const actionFactory = new CopyActionFactory();
 
-    const action = actionFactory.createAction(childContext);
+    const action = await actionFactory.createAction(childContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(true);
 
     (action as Action).perform();
 
-    expect(configOwner.copy).toBeCalled();
+    expect(dragPoint.copy).toBeCalled();
 
     await latch.promise;
 
@@ -240,12 +292,16 @@ test("Paste pastes", async () => {
 
     const latch: Latch = new Latch();
 
-    const configOwner = mock<ConfigurationOwner>();
-    configOwner.paste
-    .mockImplementation((p, i, c) => {
+    const dragPoint = mock<DragPoint>();
+    dragPoint.isPasteSupported = true;
+    dragPoint.paste.mockImplementation((i, c) => {
         latch.countDown();
         return Promise.resolve();
     });
+
+    const configOwner = mock<ConfigurationOwner>();
+    configOwner.dragPointFor.calledWith(proxy)
+    .mockImplementation((p) => Promise.resolve(dragPoint));
 
     const proxyOwner = mock<RemoteProxy>();
     
@@ -269,7 +325,7 @@ test("Paste pastes", async () => {
 
     const actionFactory = new PasteActionFactory();
 
-    const action = actionFactory.createAction(childContext);
+    const action = await actionFactory.createAction(childContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(true);
@@ -278,14 +334,19 @@ test("Paste pastes", async () => {
 
     await latch.promise;
 
-    expect(configOwner.paste).toBeCalledWith(proxy, -1, "SOME CONFIG");
+    expect(dragPoint.paste).toBeCalledWith(-1, "SOME CONFIG");
 });
 
-test("Delete deletes", () => {
+test("Delete deletes", async () => {
 
     const proxy = mock<RemoteProxy>();
 
+    const dragPoint = mock<DragPoint>();
+    dragPoint.isCutSupported = true;
+
     const configOwner = mock<ConfigurationOwner>();
+    configOwner.dragPointFor.calledWith(proxy)
+    .mockImplementation((p) => Promise.resolve(dragPoint));
 
     const proxyOwner = mock<RemoteProxy>();
     
@@ -306,12 +367,12 @@ test("Delete deletes", () => {
 
     const actionFactory = new DeleteActionFactory();
 
-    const action = actionFactory.createAction(childContext);
+    const action = await actionFactory.createAction(childContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(true);
 
     (action as Action).perform();
 
-    expect(configOwner.delete).toBeCalled();
+    expect(dragPoint.delete).toBeCalled();
 });

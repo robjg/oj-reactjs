@@ -98,7 +98,7 @@ class OurActions implements AvailableActions {
 
     actionsFor(nodeId: number): Promise<Action[]> {
 
-        return Promise.resolve([
+        return Promise.all([
             new DesignActionFactory().createAction(context2)
         ]);
     }

@@ -528,17 +528,40 @@ export class StoppableHandler implements RemoteHandlerFactory<Stoppable> {
     }
 }
 
-// Configuraiton Owner
+// Configuration Owner
+
+export interface DragPoint {
+
+    isCutSupported: boolean;
+
+    isPasteSupported: boolean;
+
+    cut(): Promise<string>;
+
+    copy(): Promise<string>;
+
+    paste(index: number, configXml: string): Promise<void>;
+
+    delete(): Promise<void>;
+
+}
+
+export class DragPointInfo implements JavaObject<DragPointInfo> {
+    static readonly javaClass = javaClasses.register(
+        DragPointInfo, "org.oddjob.jmx.handlers.DragPointInfo");
+
+    constructor(readonly supportsCut: boolean, 
+        readonly supportsPaste: boolean) {
+    }
+
+    getJavaClass(): JavaClass<DragPointInfo> {
+        return DragPointInfo.javaClass;
+    }
+}
 
 export interface ConfigurationOwner {
 
-    cut(proxy: RemoteProxy): Promise<string>;
-
-    copy(proxy: RemoteProxy): Promise<string>;
-
-    paste(proxy: RemoteProxy, index: number, configXml: string): Promise<void>;
-
-    delete(proxy: RemoteProxy): Promise<void>;
+    dragPointFor(proxy: RemoteProxy): Promise<DragPoint | null >
 
     formFor(proxy: RemoteProxy): Promise<string>;
 
@@ -559,6 +582,11 @@ export class ConfigurationOwner implements JavaObject<ConfigurationOwner> {
 }
 
 export class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwner> {
+
+    static DRAG_POINT_INFO: OperationType<DragPointInfo> =
+            OperationType.ofName("dragPointInfo")
+            .andDataType(javaClasses.forType(DragPointInfo))
+            .withSignature(JAVA_OBJECT);
 
     static CUT: OperationType<string> =
         new OperationType("configCut", JAVA_STRING.name, [JAVA_OBJECT.name]);
@@ -588,22 +616,56 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
 
     createHandler(toolkit: ClientToolkit): ConfigurationOwner {
 
+        class DragPointImpl implements DragPoint {
+
+            readonly isCutSupported: boolean;
+
+            readonly isPasteSupported: boolean;
+
+            constructor(readonly proxy: RemoteProxy, 
+                dragPointInfo: DragPointInfo) {
+
+                this.isCutSupported = dragPointInfo.supportsCut;
+                this.isPasteSupported = dragPointInfo.supportsPaste;
+            }
+
+            cut(): Promise<string> {
+                return toolkit.invoke(ConfigurationOwnerHandler.CUT, this.proxy);
+            }
+
+            copy(): Promise<string> {
+                return toolkit.invoke(ConfigurationOwnerHandler.COPY, this.proxy);
+            }
+        
+            paste(index: number, configXml: string): Promise<void> {
+                return toolkit.invoke(ConfigurationOwnerHandler.PASTE, this.proxy, index, configXml)
+            }
+        
+            delete(): Promise<void> {
+                return toolkit.invoke(ConfigurationOwnerHandler.DELETE, this.proxy);
+            }
+        
+        }
+
         class Impl extends ConfigurationOwner {
 
-            cut(proxy: RemoteProxy): Promise<string> {
-                return toolkit.invoke(ConfigurationOwnerHandler.CUT, proxy);
-            }
+            private lastDragPoint: DragPointImpl | null = null;
 
-            copy(proxy: RemoteProxy): Promise<string> {
-                return toolkit.invoke(ConfigurationOwnerHandler.COPY, proxy);
-            }
-        
-            paste(proxy: RemoteProxy, index: number, configXml: string): Promise<void> {
-                return toolkit.invoke(ConfigurationOwnerHandler.PASTE, proxy, index, configXml)
-            }
-        
-            delete(proxy: RemoteProxy): Promise<void> {
-                return toolkit.invoke(ConfigurationOwnerHandler.DELETE, proxy);
+            async dragPointFor(proxy: RemoteProxy): Promise<DragPoint | null> {
+                if (proxy == this.lastDragPoint?.proxy) {
+                    return Promise.resolve(this.lastDragPoint);
+                }
+         
+                const dragPointInfo : Promise< DragPointInfo | null > 
+                    = toolkit.invoke(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy);
+    
+                const dpi = await dragPointInfo;
+                if (dpi) {
+                    return new DragPointImpl(proxy, dpi);
+                }
+                else {
+                    return null;
+                }
             }
         
             formFor(proxy: RemoteProxy): Promise<string> {

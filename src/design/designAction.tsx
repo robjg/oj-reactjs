@@ -9,7 +9,7 @@ import { definedOrError } from '../main/util';
 
 export class DesignActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Action | null {
+    async createAction(actionContext: ActionContext): Promise<Action | null> {
  
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 

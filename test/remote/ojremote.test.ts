@@ -1,7 +1,7 @@
 import { mock } from 'jest-mock-extended';
 import { InvokeRequest, InvokeResponse, OperationType } from '../../src/remote/invoke';
 import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
-import { ConfigurationOwner, ConfigurationOwnerHandler, IconData, IconEvent, Iconic, IconicHandler, ImageData, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
+import { ConfigurationOwner, ConfigurationOwnerHandler, DragPoint, IconData, IconEvent, Iconic, IconicHandler, ImageData, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
 import { ClientToolkit, Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { Latch } from '../testutil';
 
@@ -195,13 +195,19 @@ test("Cut Invokes cut", async () => {
 
     const proxy = mock<RemoteProxy>();
 
-    const toolkit = mock<ClientToolkit>();
+    const toolkit = mock<ClientToolkit>();    
     toolkit.invoke.calledWith(ConfigurationOwnerHandler.CUT, proxy)
         .mockReturnValue(Promise.resolve("YOU CUT ME"));
+    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
+        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
 
     const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
 
-    const result: string = await configurationOwner.cut(proxy);
+    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+
+    expect(dragPoint).not.toBeNull();
+
+    const result: string = await (dragPoint as DragPoint).cut();
 
     expect(result).toBe("YOU CUT ME");
 })
@@ -213,10 +219,16 @@ test("Copy Invokes copy", async () => {
     const toolkit = mock<ClientToolkit>();
     toolkit.invoke.calledWith(ConfigurationOwnerHandler.COPY, proxy)
         .mockReturnValue(Promise.resolve("YOU COPIED ME"));
+    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
+    .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
 
     const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
 
-    const result: string = await configurationOwner.copy(proxy);
+    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+
+    expect(dragPoint).not.toBeNull();
+
+    const result: string = await (dragPoint as DragPoint).copy();
 
     expect(result).toBe("YOU COPIED ME");
 
@@ -230,9 +242,16 @@ test("Paste Invokes paste", async () => {
 
     const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
 
-    await configurationOwner.paste(proxy, 1, "PASTE ME");
+    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
+        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
 
-    expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.PASTE, proxy, 1, "PASTE ME");
+    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+
+    expect(dragPoint).not.toBeNull();
+
+    await (dragPoint as DragPoint).paste(-1, "PASTE ME");
+
+    expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.PASTE, proxy, -1, "PASTE ME");
 })
 
 test("Delete Invokes delete", async () => {
@@ -240,10 +259,16 @@ test("Delete Invokes delete", async () => {
     const proxy = mock<RemoteProxy>();
 
     const toolkit = mock<ClientToolkit>();
+    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
+        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
 
     const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
 
-    await configurationOwner.delete(proxy);
+    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+
+    expect(dragPoint).not.toBeNull();
+
+    await (dragPoint as DragPoint).delete();
 
     expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.DELETE, proxy);
 })

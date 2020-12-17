@@ -23,7 +23,7 @@ export type ActionContext = {
  */
 export type ActionFactory = {
 
-    createAction(actionContext: ActionContext): Action | null;
+    createAction(actionContext: ActionContext): Promise<Action | null>;
 }
 
 
@@ -40,7 +40,20 @@ export interface Action {
 
 }
 
+export class ActionFactories {
 
+    constructor(private readonly actionFactories: ActionFactory[]) { }
+
+    async actionsFor(context: ActionContext): Promise<Action[]> {
+
+        const actionPromises: Promise<Action | null>[] = this.actionFactories.map(f => f.createAction(context));
+
+        const actions = await Promise.all(actionPromises);
+
+        return actions.filter(action => action != null)
+            .map(action_1 => action_1 as Action);
+    }
+}
 
 export function contextSearch<T>(context: ActionContext | null, cntor: ({ new(...args: any[]): T })): T | null {
     if (context == null) {
@@ -82,10 +95,11 @@ export class ContextManager implements TreeChangeListener, AvailableActions {
 
         const contextPromise: Promise<ActionContext> =
             this.remoteSession.getOrCreate(nodeId)
-                .then(proxy => ({ 
-                    proxy: proxy, 
+                .then(proxy => ({
+                    proxy: proxy,
                     parent: null,
-                    clipboard: new NavigatorClipboard() }));
+                    clipboard: new NavigatorClipboard()
+                }));
 
         this.contexts.set(nodeId, contextPromise);
     }
@@ -101,10 +115,11 @@ export class ContextManager implements TreeChangeListener, AvailableActions {
                     parentContextPromise
                         .then(parent =>
                             this.remoteSession.getOrCreate(nodeId)
-                                .then(proxy => ({ 
-                                    proxy: proxy, 
+                                .then(proxy => ({
+                                    proxy: proxy,
                                     parent: parent,
-                                    clipboard: parent.clipboard }))
+                                    clipboard: parent.clipboard
+                                }))
                         )
                 this.contexts.set(nodeId, contextPromise);
             });
@@ -144,9 +159,9 @@ export class ContextManager implements TreeChangeListener, AvailableActions {
 
         if (contextPromise) {
             const context = await contextPromise;
-            return this.actionFactories.map(f => f.createAction(context))
-                .filter(action => action != null)
-                .map(action_1 => action_1 as Action);
+
+            return new ActionFactories(this.actionFactories)
+                .actionsFor(context);
         }
         else {
             return Promise.resolve([]);

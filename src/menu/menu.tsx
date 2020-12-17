@@ -24,7 +24,7 @@ class MenuItem extends React.Component<MenuItemProps, {}> {
     }
 
     render() {
-        return <button onClick={this.doAction}>{this.props.action.name}</button>
+        return <button disabled={!this.props.action.isEnabled} onClick={this.doAction}>{this.props.action.name}</button>
     }
 }
 
