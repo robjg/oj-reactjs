@@ -1,11 +1,11 @@
-import { DesignActionFactory } from "../design/designAction";
+import { AddJobActionFactory, DesignActionFactory } from "../design/designAction";
 import { ConfigurationOwner, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
 import { Action, ActionContext, ActionFactory, contextSearch } from "./actions";
 
 export class RunActionFactory implements ActionFactory {
 
     createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const proxy = actionContext.proxy;
 
         if (proxy.isA(Runnable)) {
@@ -29,7 +29,7 @@ export class RunActionFactory implements ActionFactory {
 export class SoftResetActionFactory implements ActionFactory {
 
     createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const proxy = actionContext.proxy;
 
         if (proxy.isA(Resettable)) {
@@ -53,7 +53,7 @@ export class SoftResetActionFactory implements ActionFactory {
 export class HardResetActionFactory implements ActionFactory {
 
     createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const proxy = actionContext.proxy;
 
         if (proxy.isA(Resettable)) {
@@ -77,7 +77,7 @@ export class HardResetActionFactory implements ActionFactory {
 export class StopActionFactory implements ActionFactory {
 
     createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const proxy = actionContext.proxy;
 
         if (proxy.isA(Stoppable)) {
@@ -101,7 +101,7 @@ export class StopActionFactory implements ActionFactory {
 export class CutActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
         if (configOwner == null) {
@@ -123,7 +123,7 @@ export class CutActionFactory implements ActionFactory {
 
             perform: (): void => {
                 dragPoint.cut()
-                .then(config => actionContext.clipboard.copy(config));
+                    .then(config => actionContext.clipboard.copy(config));
             }
         };
     }
@@ -132,7 +132,7 @@ export class CutActionFactory implements ActionFactory {
 export class CopyActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
         if (configOwner == null) {
@@ -154,7 +154,7 @@ export class CopyActionFactory implements ActionFactory {
 
             perform: (): void => {
                 dragPoint.copy()
-                .then(config => actionContext.clipboard.copy(config));
+                    .then(config => actionContext.clipboard.copy(config));
             }
         }
     }
@@ -163,7 +163,7 @@ export class CopyActionFactory implements ActionFactory {
 export class PasteActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
         if (configOwner == null) {
@@ -186,11 +186,11 @@ export class PasteActionFactory implements ActionFactory {
             perform: (): void => {
 
                 actionContext.clipboard.paste()
-                .then(contents => {
-                    if (contents) {
-                        dragPoint.paste(-1, contents);
-                    }
-                });
+                    .then(contents => {
+                        if (contents) {
+                            dragPoint.paste(-1, contents);
+                        }
+                    });
             }
         }
     }
@@ -199,7 +199,7 @@ export class PasteActionFactory implements ActionFactory {
 export class DeleteActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
- 
+
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
         if (configOwner == null) {
@@ -238,8 +238,9 @@ export function ojActions(): ActionFactory[] {
         new PasteActionFactory(),
         new DeleteActionFactory(),
         new RunActionFactory(),
-        new SoftResetActionFactory(), 
-        new HardResetActionFactory(), 
+        new SoftResetActionFactory(),
+        new HardResetActionFactory(),
         new StopActionFactory(),
-        new DesignActionFactory()]
+        new DesignActionFactory(),
+        new AddJobActionFactory()]
 }

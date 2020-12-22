@@ -544,13 +544,14 @@ export interface DragPoint {
 
     delete(): Promise<void>;
 
+    possibleChildren(): Promise<string[]>;
 }
 
 export class DragPointInfo implements JavaObject<DragPointInfo> {
     static readonly javaClass = javaClasses.register(
         DragPointInfo, "org.oddjob.jmx.handlers.DragPointInfo");
 
-    constructor(readonly supportsCut: boolean, 
+    constructor(readonly supportsCut: boolean,
         readonly supportsPaste: boolean) {
     }
 
@@ -559,9 +560,21 @@ export class DragPointInfo implements JavaObject<DragPointInfo> {
     }
 }
 
+export class PossibleChildren implements JavaObject<PossibleChildren> {
+    static readonly javaClass = javaClasses.register(
+        PossibleChildren, "org.oddjob.jmx.handlers.PossibleChildren");
+
+    constructor(readonly tags: string[]) {
+    }
+
+    getJavaClass(): JavaClass<PossibleChildren> {
+        return PossibleChildren.javaClass;
+    }
+}
+
 export interface ConfigurationOwner {
 
-    dragPointFor(proxy: RemoteProxy): Promise<DragPoint | null >
+    dragPointFor(proxy: RemoteProxy): Promise<DragPoint | null>
 
     formFor(proxy: RemoteProxy): Promise<string>;
 
@@ -584,7 +597,7 @@ export class ConfigurationOwner implements JavaObject<ConfigurationOwner> {
 export class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwner> {
 
     static DRAG_POINT_INFO: OperationType<DragPointInfo> =
-            OperationType.ofName("dragPointInfo")
+        OperationType.ofName("dragPointInfo")
             .andDataType(javaClasses.forType(DragPointInfo))
             .withSignature(JAVA_OBJECT);
 
@@ -595,11 +608,16 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
         new OperationType("configCopy", JAVA_STRING.name, [JAVA_OBJECT.name]);
 
     static PASTE: OperationType<void> =
-        new OperationType("configPaste", JAVA_VOID.name, 
-        [JAVA_OBJECT.name, JAVA_INT.name, JAVA_STRING.name]);
+        new OperationType("configPaste", JAVA_VOID.name,
+            [JAVA_OBJECT.name, JAVA_INT.name, JAVA_STRING.name]);
 
     static DELETE: OperationType<void> =
         new OperationType("configDelete", JAVA_VOID.name, [JAVA_OBJECT.name]);
+
+    static POSSIBLE_CHILDREN: OperationType<PossibleChildren> =
+        OperationType.ofName("possibleChildren")
+            .andDataType(PossibleChildren.javaClass)
+            .withSignature(JAVA_OBJECT);
 
     static formFor: OperationType<string> =
         new OperationType("formFor", JAVA_STRING.name, [JAVA_OBJECT.name]);
@@ -622,7 +640,7 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
 
             readonly isPasteSupported: boolean;
 
-            constructor(readonly proxy: RemoteProxy, 
+            constructor(readonly proxy: RemoteProxy,
                 dragPointInfo: DragPointInfo) {
 
                 this.isCutSupported = dragPointInfo.supportsCut;
@@ -636,15 +654,21 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
             copy(): Promise<string> {
                 return toolkit.invoke(ConfigurationOwnerHandler.COPY, this.proxy);
             }
-        
+
             paste(index: number, configXml: string): Promise<void> {
                 return toolkit.invoke(ConfigurationOwnerHandler.PASTE, this.proxy, index, configXml)
             }
-        
+
             delete(): Promise<void> {
                 return toolkit.invoke(ConfigurationOwnerHandler.DELETE, this.proxy);
             }
-        
+
+            async possibleChildren(): Promise<string[]> {
+                const possibleChildren : PossibleChildren 
+                    = await toolkit.invoke(ConfigurationOwnerHandler.POSSIBLE_CHILDREN, this.proxy)
+                    
+                return possibleChildren.tags;
+            }
         }
 
         class Impl extends ConfigurationOwner {
@@ -655,10 +679,10 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
                 if (proxy == this.lastDragPoint?.proxy) {
                     return Promise.resolve(this.lastDragPoint);
                 }
-         
-                const dragPointInfo : Promise< DragPointInfo | null > 
+
+                const dragPointInfo: Promise<DragPointInfo | null>
                     = toolkit.invoke(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy);
-    
+
                 const dpi = await dragPointInfo;
                 if (dpi) {
                     return new DragPointImpl(proxy, dpi);
@@ -667,7 +691,7 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
                     return null;
                 }
             }
-        
+
             formFor(proxy: RemoteProxy): Promise<string> {
 
                 return toolkit.invoke(ConfigurationOwnerHandler.formFor, proxy);

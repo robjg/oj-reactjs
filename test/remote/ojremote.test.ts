@@ -1,7 +1,7 @@
 import { mock } from 'jest-mock-extended';
 import { InvokeRequest, InvokeResponse, OperationType } from '../../src/remote/invoke';
 import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
-import { ConfigurationOwner, ConfigurationOwnerHandler, DragPoint, IconData, IconEvent, Iconic, IconicHandler, ImageData, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
+import { ConfigurationOwner, ConfigurationOwnerHandler, DragPoint, IconData, IconEvent, Iconic, IconicHandler, ImageData, PossibleChildren, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
 import { ClientToolkit, Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { Latch } from '../testutil';
 
@@ -272,3 +272,25 @@ test("Delete Invokes delete", async () => {
 
     expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.DELETE, proxy);
 })
+
+test("Possbile Children", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const toolkit = mock<ClientToolkit>();
+    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
+        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
+        toolkit.invoke.calledWith(ConfigurationOwnerHandler.POSSIBLE_CHILDREN, proxy)
+        .mockReturnValue(Promise.resolve(new PossibleChildren(["foo", "bar"])));
+
+    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
+
+    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+
+    expect(dragPoint).not.toBeNull();
+
+    const tags: string[] = await (dragPoint as DragPoint).possibleChildren();
+
+    expect(tags).toEqual(["foo", "bar"]);
+})
+

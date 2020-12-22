@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Clipboard, NavigatorClipboard } from '../../../src/clipboard';
+import { AddJobActionFactory } from '../../../src/design/designAction';
 import { Action, ActionContext, ActionFactories, ActionFactory } from '../../../src/menu/actions';
 import { JobMenu } from '../../../src/menu/menu';
 import { CopyActionFactory, CutActionFactory, PasteActionFactory } from '../../../src/menu/ojactions';
@@ -102,12 +103,12 @@ export function start() {
     const factories: ActionFactory[] = [
         new CutActionFactory(),
         new CopyActionFactory(),
-        new PasteActionFactory()
+        new PasteActionFactory(),
+        new AddJobActionFactory()
     ];
 
     ReactDOM.render(
         <ClipboardComponent remote={remote} actionFactories={factories} />,
         document.getElementById('root')
     );
-
 }
