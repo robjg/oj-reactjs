@@ -1,5 +1,3 @@
-import { ResolvePlugin } from "webpack";
-
 
 export class Latch {
 
@@ -39,7 +37,7 @@ export class Phaser {
 
     private promises: Promise<void>[] = [];
 
-    private resolvers: (() => any)[] = [];
+    private resolvers: ((value : any) => void)[] = [];
 
     next(): Promise<void> {
         const promise: Promise<any> = new Promise(resolve => {
@@ -55,6 +53,6 @@ export class Phaser {
             throw new Error("Phaser is out of step as phase " + 
             this.releaseCount + " not started yet.");
         }
-        this.resolvers[this.releaseCount++]();
+        this.resolvers[this.releaseCount++](null);
     }
 }
