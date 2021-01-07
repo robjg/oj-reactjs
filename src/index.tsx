@@ -18,6 +18,7 @@ import { TreeRoot } from './tree/view';
 import { TreeSelectionBridge } from './tree/bridge';
 import { ojActions } from './menu/ojactions';
 import { NavigatorClipboard } from './clipboard';
+import { App } from './app';
 
 const remote = RemoteConnection.fromHost(location.host);
 
@@ -30,17 +31,20 @@ const nodeFactory = new SessionNodeFactory(session,
 
 const bridge = new TreeSelectionBridge(nodeFactory);
 
+function start(): void {
+    const main = new OjMain({
+        treeSelectionModel: bridge
+    });
 
-const main = new OjMain({
-    treeSelectionModel: bridge
-});
-
+    main.start();
+}
 
 ReactDOM.render(
-    React.createElement(TreeRoot,
-        { nodeFactory: nodeFactory }, null),
-    document.getElementById('ojNodeRoot')
+    React.createElement(App,
+        { nodeFactory: nodeFactory,
+        onStart: start }, null),
+    document.getElementById('split-pane')
 );
 
 
-main.start();
+

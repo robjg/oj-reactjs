@@ -1,5 +1,4 @@
 const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -18,7 +17,7 @@ module.exports = {
 
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx"]
+        extensions: [".ts", ".tsx", ".js"]
     },
 
     module: {
@@ -56,11 +55,6 @@ module.exports = {
 
     plugins: [
         new MiniCssExtractPlugin(),
-        new CopyWebpackPlugin({
-            patterns: [
-                { from: 'src/scripts', to: 'scripts'}
-            ]
-        }),
         new HtmlWebpackPlugin({
             template: 'src/index.html',
             favicon: 'src/favicon.ico'

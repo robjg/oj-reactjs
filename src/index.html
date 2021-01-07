@@ -10,99 +10,14 @@
 <div id="ojForm" class="form-box">
 </div>
 
-<div class="split-pane vertical-percent">
-    <div class="split-pane-component" id="left-component">
-        <div class="control">
-            <div class="action-set" id="ojJobActions">
-            </div>
-        </div>
-        <div id='ojNodeRoot' class='tree global-font'>
-            <ul>
-            </ul>
-        </div>
-    </div>
-    <div class="split-pane-divider" id="my-divider"></div>
-    <div class="split-pane-component" id="right-component">
-        <div class="control">
-            <div class="refresh-set">
-                <label for="refresh">Refresh Interval</label>
-                <input id="refresh" type="text"/>
-                <button id="refreshSubmit">Change</button>
-            </div>
-        </div>
-        <div id="oj-detail-tabs" class="tabbed-pane">
-
-            <div class="tabs global-font">
-                <ul>
-                    <li class="state selected"><a href="#">State</a></li>
-                    <li class="console notSelected"><a href="#">Console</a></li>
-                    <li class="log notSelected"><a href="#">Log</a></li>
-                    <li class="properties notSelected"><a href="#">Properties</a></li>
-                </ul>
-            </div>
-
-            <div class="tab-content">
-                <div class="state selected">
-                    <table class="state-content global-font">
-                        <colgroup>
-                            <col class="title-col">
-                            <col class="value-col">
-                        </colgroup>
-                        <tbody>
-                        <tr>
-                            <td>State</td>
-                            <td class="state-state-cell">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td>Time</td>
-                            <td class="state-time-cell">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td>Exception</td>
-                            <td ><pre class="state-exception-cell"></pre></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="console notSelected">
-                <pre class="console-content text-area">
-                </pre>
-                </div>
-
-                <div class="log notSelected">
-                <pre class="log-content text-area">
-                </pre>
-                </div>
-
-                <div class="properties notSelected">
-                    <table class="global-font">
-                        <colgroup>
-                            <col class="title-col">
-                            <col class="value-col">
-                        </colgroup>
-                        <tbody class="properties-content">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
+<div id="split-pane">
+</div>
 
 <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="./scripts/split-pane.js"></script>
 
-<script>
-
-$(function() {
-    $('div.split-pane').splitPane();
-});
-
-</script>
 
 </body>
 </html>

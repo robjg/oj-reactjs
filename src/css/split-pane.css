@@ -1,100 +1,50 @@
-/*!
-
-Split Pane v0.4.0
-
-Copyright (c) 2014 Simon Hagström
-
-Released under the MIT license
-https://raw.github.com/shagstrom/split-pane/master/LICENSE
-
-*/
-.split-pane {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-}
-
-.split-pane.fixed-top > .split-pane-component,
-.split-pane.fixed-bottom > .split-pane-component,
-.split-pane.horizontal-percent > .split-pane-component {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    overflow: auto;
-    top: auto;
-    bottom: 0;
+.Resizer {
+    background: #000;
+    opacity: 0.2;
     z-index: 1;
-}
-
-.split-pane.fixed-top > .split-pane-component:first-child,
-.split-pane.fixed-bottom > .split-pane-component:first-child,
-.split-pane.horizontal-percent > .split-pane-component:first-child {
-    top: 0;
-    bottom: auto;
-}
-
-.split-pane.fixed-top > .split-pane-divider,
-.split-pane.fixed-bottom > .split-pane-divider,
-.split-pane.horizontal-percent > .split-pane-divider {
-    position: absolute;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding;
+    background-clip: padding-box;
+  }
+   
+  .Resizer:hover {
+    -webkit-transition: all 2s ease;
+    transition: all 2s ease;
+  }
+   
+  .Resizer.horizontal {
+    height: 11px;
+    margin: -5px 0;
+    border-top: 5px solid rgba(255, 255, 255, 0);
+    border-bottom: 5px solid rgba(255, 255, 255, 0);
+    cursor: row-resize;
     width: 100%;
-    left: 0;
-    cursor: ns-resize;
-    cursor: n-resize\9;
-    z-index: 2;
-}
-
-.split-pane.fixed-left > .split-pane-component,
-.split-pane.fixed-right > .split-pane-component,
-.split-pane.vertical-percent > .split-pane-component {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    overflow: auto;
-    left: auto;
-    right: 0;
-    z-index: 1;
-}
-
-.split-pane.fixed-left > .split-pane-component:first-child,
-.split-pane.fixed-right > .split-pane-component:first-child,
-.split-pane.vertical-percent > .split-pane-component:first-child {
-    left: 0;
-    right: auto;
-}
-
-.split-pane.fixed-left > .split-pane-divider,
-.split-pane.fixed-right > .split-pane-divider,
-.split-pane.vertical-percent > .split-pane-divider {
-    position: absolute;
-    height: 100%;
-    top: 0;
-    cursor: ew-resize;
-    cursor: w-resize\9;
-    z-index: 2;
-}
-
-.split-pane-resize-shim {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10000;
-    display: none;
-}
-
-.split-pane.fixed-left > .split-pane-resize-shim,
-.split-pane.fixed-right > .split-pane-resize-shim,
-.split-pane.vertical-percent > .split-pane-resize-shim {
-    cursor: ew-resize;
-    cursor: w-resize\9;
-}
-
-.split-pane.fixed-top > .split-pane-resize-shim,
-.split-pane.fixed-bottom > .split-pane-resize-shim,
-.split-pane.horizontal-percent > .split-pane-resize-shim {
-    cursor: ns-resize;
-    cursor: n-resize\9;
-}
+  }
+   
+  .Resizer.horizontal:hover {
+    border-top: 5px solid rgba(0, 0, 0, 0.5);
+    border-bottom: 5px solid rgba(0, 0, 0, 0.5);
+  }
+   
+  .Resizer.vertical {
+    width: 11px;
+    margin: 0 -5px;
+    border-left: 5px solid rgba(255, 255, 255, 0);
+    border-right: 5px solid rgba(255, 255, 255, 0);
+    cursor: col-resize;
+  }
+   
+  .Resizer.vertical:hover {
+    border-left: 5px solid rgba(0, 0, 0, 0.5);
+    border-right: 5px solid rgba(0, 0, 0, 0.5);
+  }
+  .Resizer.disabled {
+    cursor: not-allowed;
+  }
+  .Resizer.disabled:hover {
+    border-color: transparent;
+  }
+  
