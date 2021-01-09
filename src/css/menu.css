@@ -1,0 +1,38 @@
+.contextMenu{
+    border: 1px solid rgb(150, 150, 150);
+    width:fit-content;
+    background-color: rgb(230,230,230);
+    position:top;
+    position:absolute;
+    display:inline-block;
+    border-radius: 2px;
+}
+
+
+.menuItem li{
+    margin-left: 0;
+    text-align: left;
+}
+    
+
+.btn{
+    border: none;
+    background-color: rgb(230, 230, 230);
+    border-radius: 2px;
+}
+
+.btn:hover{
+background-color: rgb(200,200,200);
+}
+
+.threeDots{
+    background-color: rgb(230, 230, 230);
+    margin-left: 10px;
+    border: 1px solid rgb(150,150,150);
+    height: 20px;
+    border-radius: 5px;
+}
+
+.threeDots:hover{
+    background-color: rgb(200,200,200);
+}

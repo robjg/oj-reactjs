@@ -1,8 +1,10 @@
-.tree {
+/*.tree {
 	overflow: auto;
 	white-space: nowrap;
 	padding: 2px;
 }
+*/
+
 
 .tree ul {
 	list-style-type: none;
@@ -23,12 +25,13 @@
 .tree li a {
 	color: black;
 	text-decoration: none;
+	margin-right: 5px;
 }
 
 .tree li a:hover {
-	background-color: #FF4000;
+	background-color: #ff4800e0;
 }
 
 .tree .selected a {
-	background-color: #A5DF00;
+	background-color: #a8df44;
 }
