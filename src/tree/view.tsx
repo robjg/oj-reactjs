@@ -165,7 +165,8 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
         else {
             if (this.state.selected) {
-                return <button onClick={this.findActions}>...</button>
+                return <button className="threeDots"onClick={this.findActions}>...</button>
+
             }
             else {
                 return <></>

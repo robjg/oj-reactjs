@@ -6,6 +6,8 @@ import './css/detail.css';
 import './css/control.css';
 import './css/form.css';
 import './css/split-pane.css';
+import './css/menu.css';
+
 
 import ReactDOM from 'react-dom';
 import React from 'react';

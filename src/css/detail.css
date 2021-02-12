@@ -10,10 +10,6 @@
 	-moz-border-radius: 5px;
 }
 
-.control {
-	float: right;
-}
-
 .tabbed-pane {
 	position: absolute;
 	left: 0;

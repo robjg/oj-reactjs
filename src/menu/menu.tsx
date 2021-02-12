@@ -24,7 +24,7 @@ class MenuItem extends React.Component<MenuItemProps, {}> {
     }
 
     render() {
-        return <button disabled={!this.props.action.isEnabled} onClick={this.doAction}>{this.props.action.name}</button>
+        return <button className='btn' disabled={!this.props.action.isEnabled} onClick={this.doAction}>{this.props.action.name}</button>
     }
 }
 
@@ -44,7 +44,7 @@ export class JobMenu extends React.Component<JobMenuProps, {}> {
             actions = [new NoopAction()];
         }
 
-        return <ul>
+        return <ul className="contextMenu">
             {actions.map((action, index) =>
                 <li key={index} className='menuItem'>
                     <MenuItem action={action} onMenuSelected={this.props.onMenuSelected} />
