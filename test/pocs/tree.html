@@ -41,13 +41,11 @@
                     .setLogger("RemoteNotifier", { level: 0 })
                     .setLogger("RemoteInvoker", { level: 0 });
 
-                var remote = remote.RemoteConnection.fromHost('localhost:8080')
-
-                ReactDOM.render(
+                remote.RemoteConnection.fromHost('localhost:8080')
+                    .then(remote => ReactDOM.render(
                     React.createElement(tree.OjRoot,
                         { remote: remote }, null),
-                    document.getElementById('ojNodeRoot')
-                );
+                    document.getElementById('ojNodeRoot')));
             });
 
     </script>

@@ -528,9 +528,13 @@ export class StoppableHandler implements RemoteHandlerFactory<Stoppable> {
     }
 }
 
-// Configuration Owner
+// Drag Point
 
-export interface DragPoint {
+export interface ConfigPoint {
+
+    isConifgurationSupported: boolean;
+
+    isCopySupported: boolean;
 
     isCutSupported: boolean;
 
@@ -547,16 +551,12 @@ export interface DragPoint {
     possibleChildren(): Promise<string[]>;
 }
 
-export class DragPointInfo implements JavaObject<DragPointInfo> {
+export class ConfigPoint implements JavaObject<ConfigPoint> {
     static readonly javaClass = javaClasses.register(
-        DragPointInfo, "org.oddjob.jmx.handlers.DragPointInfo");
+        ConfigPoint, "org.oddjob.remote.things.ConfigPoint");
 
-    constructor(readonly supportsCut: boolean,
-        readonly supportsPaste: boolean) {
-    }
-
-    getJavaClass(): JavaClass<DragPointInfo> {
-        return DragPointInfo.javaClass;
+    getJavaClass(): JavaClass<ConfigPoint> {
+        return ConfigPoint.javaClass;
     }
 }
 
@@ -572,9 +572,110 @@ export class PossibleChildren implements JavaObject<PossibleChildren> {
     }
 }
 
-export interface ConfigurationOwner {
+export class ConfigPointHandler implements RemoteHandlerFactory<ConfigPoint> {
 
-    dragPointFor(proxy: RemoteProxy): Promise<DragPoint | null>
+    static readonly SUPPORTS_CONFIGURATION = 1;
+    static readonly SUPPORTS_COPY = 2;
+    static readonly SUPPORTS_CUT = 4;
+    static readonly SUPPORTS_PASTE = 8;
+
+    static CONFIG_POINT_NOTIF_TYPE: NotificationType<number> =
+        NotificationType.ofName("org.oddjob.config")
+            .andDataType(JAVA_INT);
+
+    static readonly CUT: OperationType<string> =
+        OperationType.ofName("configPointCut")
+            .andDataType(JAVA_STRING)
+            .withSignature();
+
+    static readonly COPY: OperationType<string> =
+        OperationType.ofName("configPointCopy")
+        .andDataType(JAVA_STRING)
+        .withSignature();
+
+    static readonly PASTE: OperationType<void> =
+        OperationType.ofName("configPointPaste")
+        .andDataType(JAVA_VOID)
+        .withSignature(JAVA_INT, JAVA_STRING);
+
+    static readonly DELETE: OperationType<void> =
+        OperationType.ofName("configPointDelete")
+        .andDataType(JAVA_VOID)
+        .withSignature();
+
+    static readonly POSSIBLE_CHILDREN: OperationType<PossibleChildren> =
+        OperationType.ofName("configPointPossibleChildren")
+            .andDataType(PossibleChildren.javaClass)
+            .withSignature();
+
+    readonly interfaceClass = ConfigPoint.javaClass;
+
+    createHandler(toolkit: ClientToolkit): ConfigPoint {
+
+        let flags: number = 0;
+
+        const notificationListener: NotificationListener<number> = {
+            handleNotification: (notification: Notification<number>) => {
+                flags = notification.data || 0;
+            }
+        }
+
+        toolkit.addNotificationListener(ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, notificationListener);
+
+        class Impl extends ConfigPoint implements Destroyable {
+
+            get isConfigurationSupported(): boolean {
+                return (flags & ConfigPointHandler.SUPPORTS_CONFIGURATION) != 0;
+            }
+        
+            get isCopySupported(): boolean {
+                return (flags & ConfigPointHandler.SUPPORTS_COPY) != 0;
+            }
+        
+            get isCutSupported(): boolean {
+                return (flags & ConfigPointHandler.SUPPORTS_CUT) != 0;
+            }
+        
+            get isPasteSupported(): boolean {
+                return (flags & ConfigPointHandler.SUPPORTS_PASTE) != 0;
+            }
+        
+            cut(): Promise<string> {
+                return toolkit.invoke(ConfigPointHandler.CUT);
+            }
+
+            copy(): Promise<string> {
+                return toolkit.invoke(ConfigPointHandler.COPY);
+            }
+
+            paste(index: number, configXml: string): Promise<void> {
+                return toolkit.invoke(ConfigPointHandler.PASTE, index, configXml)
+            }
+
+            delete(): Promise<void> {
+                return toolkit.invoke(ConfigPointHandler.DELETE);
+            }
+
+            async possibleChildren(): Promise<string[]> {
+                const possibleChildren : PossibleChildren 
+                    = await toolkit.invoke(ConfigPointHandler.POSSIBLE_CHILDREN)
+                    
+                return possibleChildren.tags;
+            }
+
+            destroy() {
+                toolkit.removeNotificationListener(ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, notificationListener);
+            }
+        }
+
+        return new Impl();
+    }
+}
+
+
+// Configuration Owner
+
+export interface ConfigurationOwner {
 
     formFor(proxy: RemoteProxy): Promise<string>;
 
@@ -596,29 +697,6 @@ export class ConfigurationOwner implements JavaObject<ConfigurationOwner> {
 
 export class ConfigurationOwnerHandler implements RemoteHandlerFactory<ConfigurationOwner> {
 
-    static DRAG_POINT_INFO: OperationType<DragPointInfo> =
-        OperationType.ofName("dragPointInfo")
-            .andDataType(javaClasses.forType(DragPointInfo))
-            .withSignature(JAVA_OBJECT);
-
-    static CUT: OperationType<string> =
-        new OperationType("configCut", JAVA_STRING.name, [JAVA_OBJECT.name]);
-
-    static COPY: OperationType<string> =
-        new OperationType("configCopy", JAVA_STRING.name, [JAVA_OBJECT.name]);
-
-    static PASTE: OperationType<void> =
-        new OperationType("configPaste", JAVA_VOID.name,
-            [JAVA_OBJECT.name, JAVA_INT.name, JAVA_STRING.name]);
-
-    static DELETE: OperationType<void> =
-        new OperationType("configDelete", JAVA_VOID.name, [JAVA_OBJECT.name]);
-
-    static POSSIBLE_CHILDREN: OperationType<PossibleChildren> =
-        OperationType.ofName("possibleChildren")
-            .andDataType(PossibleChildren.javaClass)
-            .withSignature(JAVA_OBJECT);
-
     static formFor: OperationType<string> =
         new OperationType("formFor", JAVA_STRING.name, [JAVA_OBJECT.name]);
 
@@ -634,63 +712,8 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
 
     createHandler(toolkit: ClientToolkit): ConfigurationOwner {
 
-        class DragPointImpl implements DragPoint {
-
-            readonly isCutSupported: boolean;
-
-            readonly isPasteSupported: boolean;
-
-            constructor(readonly proxy: RemoteProxy,
-                dragPointInfo: DragPointInfo) {
-
-                this.isCutSupported = dragPointInfo.supportsCut;
-                this.isPasteSupported = dragPointInfo.supportsPaste;
-            }
-
-            cut(): Promise<string> {
-                return toolkit.invoke(ConfigurationOwnerHandler.CUT, this.proxy);
-            }
-
-            copy(): Promise<string> {
-                return toolkit.invoke(ConfigurationOwnerHandler.COPY, this.proxy);
-            }
-
-            paste(index: number, configXml: string): Promise<void> {
-                return toolkit.invoke(ConfigurationOwnerHandler.PASTE, this.proxy, index, configXml)
-            }
-
-            delete(): Promise<void> {
-                return toolkit.invoke(ConfigurationOwnerHandler.DELETE, this.proxy);
-            }
-
-            async possibleChildren(): Promise<string[]> {
-                const possibleChildren : PossibleChildren 
-                    = await toolkit.invoke(ConfigurationOwnerHandler.POSSIBLE_CHILDREN, this.proxy)
-                    
-                return possibleChildren.tags;
-            }
-        }
 
         class Impl extends ConfigurationOwner {
-
-            private lastDragPoint: DragPointImpl | null = null;
-
-            async dragPointFor(proxy: RemoteProxy): Promise<DragPoint | null> {
-                if (proxy == this.lastDragPoint?.proxy) {
-                    return Promise.resolve(this.lastDragPoint);
-                }
-
-                const dragPointInfo: Promise<DragPointInfo | null>
-                    = toolkit.invoke(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy);
-
-                const dpi = await dragPointInfo;
-                if (dpi) {
-                    return new DragPointImpl(proxy, dpi);
-                }
-                else {
-                    return null;
-                }
-            }
 
             formFor(proxy: RemoteProxy): Promise<string> {
 
@@ -716,6 +739,8 @@ export class ConfigurationOwnerHandler implements RemoteHandlerFactory<Configura
     }
 }
 
+// All Handlers
+
 export function ojRemoteSession(remote: RemoteConnection): RemoteSession {
 
     return RemoteSessionFactory.from(remote)
@@ -723,6 +748,7 @@ export function ojRemoteSession(remote: RemoteConnection): RemoteSession {
         .register(new IconicHandler())
         .register(new StructuralHandler())
         .register(new ConfigurationOwnerHandler())
+        .register(new ConfigPointHandler())
         .register(new RunnableHandler())
         .register(new ResettableHandler())
         .register(new StoppableHandler())

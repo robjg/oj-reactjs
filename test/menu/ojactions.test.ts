@@ -1,6 +1,6 @@
 import { mock } from "jest-mock-extended";
 import { Clipboard } from "../../src/clipboard";
-import { ConfigurationOwner, DragPoint, Resettable, Runnable, Stoppable } from "../../src/remote/ojremotes";
+import { ConfigurationOwner, ConfigPoint, Resettable, Runnable, Stoppable } from "../../src/remote/ojremotes";
 import { RemoteProxy } from "../../src/remote/remote";
 import { CopyActionFactory, CutActionFactory, DeleteActionFactory, HardResetActionFactory, PasteActionFactory, RunActionFactory, SoftResetActionFactory, StopActionFactory } from "../../src/menu/ojactions";
 import { Action, ActionContext } from "../../src/menu/actions";
@@ -142,7 +142,7 @@ test("Cut cuts", async () => {
 
     const latch: Latch = new Latch();
 
-    const dragPoint = mock<DragPoint>();
+    const dragPoint = mock<ConfigPoint>();
     dragPoint.isCutSupported = true;
     dragPoint.cut.calledWith()
     .mockImplementation(() => {
@@ -150,26 +150,13 @@ test("Cut cuts", async () => {
         return Promise.resolve("SOME CONFIG")
     });
 
-    const configOwner = mock<ConfigurationOwner>();
-
-    configOwner.dragPointFor.calledWith(proxy)
-    .mockImplementation((p) => Promise.resolve(dragPoint));
-
-    const proxyOwner = mock<RemoteProxy>();
-    
-    proxyOwner.isA.calledWith(ConfigurationOwner).mockReturnValue(true);
-    proxyOwner.as.calledWith(ConfigurationOwner).mockReturnValue(configOwner);
-
-    const ownerContext: ActionContext = {
-        parent: null,
-        proxy: proxyOwner,
-        clipboard: mock<Clipboard>()
-    };
+    proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
     const clipboard = mock<Clipboard>();
 
     const childContext: ActionContext = {
-        parent: ownerContext,
+        parent: null,
         proxy: proxy,
         clipboard: clipboard
     };
@@ -194,39 +181,21 @@ test("Cut disabled", async () => {
 
     const proxy = mock<RemoteProxy>();
 
-    const latch: Latch = new Latch();
-
-    const configOwner = mock<ConfigurationOwner>();
-
-    const dragPoint = mock<DragPoint>();
+    const dragPoint = mock<ConfigPoint>();
     dragPoint.isCutSupported = false;
 
-    configOwner.dragPointFor.calledWith(proxy)
-    .mockImplementation((p) => {
-        latch.countDown();
-        return Promise.resolve(dragPoint);
-    });
+    proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
-    const proxyOwner = mock<RemoteProxy>();
-    
-    proxyOwner.isA.calledWith(ConfigurationOwner).mockReturnValue(true);
-    proxyOwner.as.calledWith(ConfigurationOwner).mockReturnValue(configOwner);
-
-    const ownerContext: ActionContext = {
+    const actionContext: ActionContext = {
         parent: null,
-        proxy: proxyOwner,
-        clipboard: mock<Clipboard>()
-    };
-
-    const childContext: ActionContext = {
-        parent: ownerContext,
         proxy: proxy,
         clipboard:  mock<Clipboard>()
     };
 
     const actionFactory = new CutActionFactory();
 
-    const action = await actionFactory.createAction(childContext);
+    const action = await actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(false);
@@ -239,33 +208,20 @@ test("Copy copies", async () => {
 
     const latch: Latch = new Latch();
 
-    const dragPoint = mock<DragPoint>();
+    const dragPoint = mock<ConfigPoint>();
     dragPoint.copy.calledWith()
     .mockImplementation( () => {
         latch.countDown();
         return Promise.resolve("SOME CONFIG");
     })
-
-    const configOwner = mock<ConfigurationOwner>();
-
-    configOwner.dragPointFor.calledWith(proxy)
-    .mockImplementation((p) => Promise.resolve(dragPoint));
-
-    const proxyOwner = mock<RemoteProxy>();
     
-    proxyOwner.isA.calledWith(ConfigurationOwner).mockReturnValue(true);
-    proxyOwner.as.calledWith(ConfigurationOwner).mockReturnValue(configOwner);
-
-    const ownerContext: ActionContext = {
-        parent: null,
-        proxy: proxyOwner,
-        clipboard: mock<Clipboard>()
-    };
+    proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
     const clipboard = mock<Clipboard>();
 
     const childContext: ActionContext = {
-        parent: ownerContext,
+        parent: null,
         proxy: proxy,
         clipboard: clipboard
     };
@@ -292,33 +248,21 @@ test("Paste pastes", async () => {
 
     const latch: Latch = new Latch();
 
-    const dragPoint = mock<DragPoint>();
+    const dragPoint = mock<ConfigPoint>();
     dragPoint.isPasteSupported = true;
     dragPoint.paste.mockImplementation((i, c) => {
         latch.countDown();
         return Promise.resolve();
     });
 
-    const configOwner = mock<ConfigurationOwner>();
-    configOwner.dragPointFor.calledWith(proxy)
-    .mockImplementation((p) => Promise.resolve(dragPoint));
-
-    const proxyOwner = mock<RemoteProxy>();
-    
-    proxyOwner.isA.calledWith(ConfigurationOwner).mockReturnValue(true);
-    proxyOwner.as.calledWith(ConfigurationOwner).mockReturnValue(configOwner);
-
-    const ownerContext: ActionContext = {
-        parent: null,
-        proxy: proxyOwner,
-        clipboard: mock<Clipboard>()
-    };
+    proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
     const clipboard = mock<Clipboard>();
     clipboard.paste.mockReturnValue(Promise.resolve("SOME CONFIG"));
 
     const childContext: ActionContext = {
-        parent: ownerContext,
+        parent: null,
         proxy: proxy,
         clipboard: clipboard
     };
@@ -341,33 +285,21 @@ test("Delete deletes", async () => {
 
     const proxy = mock<RemoteProxy>();
 
-    const dragPoint = mock<DragPoint>();
+    const dragPoint = mock<ConfigPoint>();
     dragPoint.isCutSupported = true;
 
-    const configOwner = mock<ConfigurationOwner>();
-    configOwner.dragPointFor.calledWith(proxy)
-    .mockImplementation((p) => Promise.resolve(dragPoint));
+    proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
-    const proxyOwner = mock<RemoteProxy>();
-    
-    proxyOwner.isA.calledWith(ConfigurationOwner).mockReturnValue(true);
-    proxyOwner.as.calledWith(ConfigurationOwner).mockReturnValue(configOwner);
-
-    const ownerContext: ActionContext = {
+    const actionContext: ActionContext = {
         parent: null,
-        proxy: proxyOwner,
-        clipboard: mock<Clipboard>()
-    };
-
-    const childContext: ActionContext = {
-        parent: ownerContext,
         proxy: proxy,
         clipboard: mock<Clipboard>()
     };
 
     const actionFactory = new DeleteActionFactory();
 
-    const action = await actionFactory.createAction(childContext);
+    const action = await actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(true);

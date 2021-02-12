@@ -98,8 +98,6 @@ class ClipboardComponent extends React.Component<clipboardComponentProps, Clipbo
 
 export function start() {
 
-    const remote = RemoteConnection.fromHost('localhost:8080')
-
     const factories: ActionFactory[] = [
         new CutActionFactory(),
         new CopyActionFactory(),
@@ -107,8 +105,9 @@ export function start() {
         new AddJobActionFactory()
     ];
 
-    ReactDOM.render(
-        <ClipboardComponent remote={remote} actionFactories={factories} />,
-        document.getElementById('root')
-    );
+    RemoteConnection.fromHost('localhost:8080')
+        .then(remote => ReactDOM.render(
+            <ClipboardComponent remote={remote} actionFactories={factories} />,
+            document.getElementById('root'))
+        )
 }

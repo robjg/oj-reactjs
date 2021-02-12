@@ -1,8 +1,8 @@
 import { mock } from 'jest-mock-extended';
 import { InvokeRequest, InvokeResponse, OperationType } from '../../src/remote/invoke';
 import { Notification, NotificationListener, NotificationType } from '../../src/remote/notify';
-import { ConfigurationOwner, ConfigurationOwnerHandler, DragPoint, IconData, IconEvent, Iconic, IconicHandler, ImageData, PossibleChildren, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
-import { ClientToolkit, Implementation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
+import { ConfigurationOwner, ConfigurationOwnerHandler, ConfigPoint, ConfigPointHandler, IconData, IconEvent, Iconic, IconicHandler, ImageData, PossibleChildren, Resettable, ResettableHandler, Runnable, RunnableHandler, StateData, StateFlag, Stoppable, StoppableHandler } from '../../src/remote/ojremotes';
+import { ClientToolkit, Destroyable, Implementation, Initialisation, RemoteConnection, RemoteProxy, RemoteSession, RemoteSessionFactory, ServerInfo } from '../../src/remote/remote';
 import { Latch } from '../testutil';
 
 test('StateData', () => {
@@ -187,7 +187,24 @@ test("Stoppable inovkes stop", () => {
     stoppable.stop();
 
     expect(toolkit.invoke).toBeCalledWith(StoppableHandler.STOP);
+})
 
+
+test("Create Destroy Handler", () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const toolkit = mock<ClientToolkit>();
+
+    const dragPoint: any = new ConfigPointHandler().createHandler(toolkit);
+
+    expect(toolkit.addNotificationListener).toBeCalledTimes(1);
+
+    expect(dragPoint).not.toBeNull();
+
+    (dragPoint as Destroyable).destroy();
+
+    expect(toolkit.removeNotificationListener).toBeCalledTimes(1);
 })
 
 
@@ -195,19 +212,21 @@ test("Cut Invokes cut", async () => {
 
     const proxy = mock<RemoteProxy>();
 
-    const toolkit = mock<ClientToolkit>();    
-    toolkit.invoke.calledWith(ConfigurationOwnerHandler.CUT, proxy)
+    const toolkit = mock<ClientToolkit>();
+    toolkit.invoke.calledWith(ConfigPointHandler.CUT)
         .mockReturnValue(Promise.resolve("YOU CUT ME"));
-    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
-        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
 
-    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
-
-    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+    const dragPoint: ConfigPoint | null = new ConfigPointHandler().createHandler(toolkit);
 
     expect(dragPoint).not.toBeNull();
 
-    const result: string = await (dragPoint as DragPoint).cut();
+    const listener: NotificationListener<number> =
+        toolkit.addNotificationListener.mock.calls[0][1] as NotificationListener<number>
+
+    listener.handleNotification(Notification.from(50, ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, 1000,
+        ConfigPointHandler.SUPPORTS_CUT));
+
+    const result: string = await (dragPoint as ConfigPoint).cut();
 
     expect(result).toBe("YOU CUT ME");
 })
@@ -217,21 +236,22 @@ test("Copy Invokes copy", async () => {
     const proxy = mock<RemoteProxy>();
 
     const toolkit = mock<ClientToolkit>();
-    toolkit.invoke.calledWith(ConfigurationOwnerHandler.COPY, proxy)
+    toolkit.invoke.calledWith(ConfigPointHandler.COPY)
         .mockReturnValue(Promise.resolve("YOU COPIED ME"));
-    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
-    .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
 
-    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
-
-    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+    const dragPoint: ConfigPoint | null = new ConfigPointHandler().createHandler(toolkit);
 
     expect(dragPoint).not.toBeNull();
 
-    const result: string = await (dragPoint as DragPoint).copy();
+    const listener: NotificationListener<number> =
+        toolkit.addNotificationListener.mock.calls[0][1] as NotificationListener<number>
+
+    listener.handleNotification(Notification.from(50, ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, 1000,
+        ConfigPointHandler.SUPPORTS_COPY));
+
+    const result: string = await (dragPoint as ConfigPoint).copy();
 
     expect(result).toBe("YOU COPIED ME");
-
 })
 
 test("Paste Invokes paste", async () => {
@@ -240,18 +260,19 @@ test("Paste Invokes paste", async () => {
 
     const toolkit = mock<ClientToolkit>();
 
-    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
-
-    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
-        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
-
-    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+    const dragPoint: ConfigPoint | null = new ConfigPointHandler().createHandler(toolkit);
 
     expect(dragPoint).not.toBeNull();
 
-    await (dragPoint as DragPoint).paste(-1, "PASTE ME");
+    const listener: NotificationListener<number> =
+        toolkit.addNotificationListener.mock.calls[0][1] as NotificationListener<number>
 
-    expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.PASTE, proxy, -1, "PASTE ME");
+    listener.handleNotification(Notification.from(50, ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, 1000,
+        ConfigPointHandler.SUPPORTS_PASTE));
+
+    await (dragPoint as ConfigPoint).paste(-1, "PASTE ME");
+
+    expect(toolkit.invoke).toBeCalledWith(ConfigPointHandler.PASTE, -1, "PASTE ME");
 })
 
 test("Delete Invokes delete", async () => {
@@ -259,18 +280,20 @@ test("Delete Invokes delete", async () => {
     const proxy = mock<RemoteProxy>();
 
     const toolkit = mock<ClientToolkit>();
-    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
-        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
 
-    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
-
-    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+    const dragPoint: ConfigPoint | null = new ConfigPointHandler().createHandler(toolkit);
 
     expect(dragPoint).not.toBeNull();
 
-    await (dragPoint as DragPoint).delete();
+    const listener: NotificationListener<number> =
+        toolkit.addNotificationListener.mock.calls[0][1] as NotificationListener<number>
 
-    expect(toolkit.invoke).toBeCalledWith(ConfigurationOwnerHandler.DELETE, proxy);
+    listener.handleNotification(Notification.from(50, ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, 1000,
+        ConfigPointHandler.SUPPORTS_CUT));
+
+    await (dragPoint as ConfigPoint).delete();
+
+    expect(toolkit.invoke).toBeCalledWith(ConfigPointHandler.DELETE);
 })
 
 test("Possbile Children", async () => {
@@ -278,19 +301,21 @@ test("Possbile Children", async () => {
     const proxy = mock<RemoteProxy>();
 
     const toolkit = mock<ClientToolkit>();
-    toolkit.invoke.calledWith(ConfigurationOwnerHandler.DRAG_POINT_INFO, proxy)
-        .mockReturnValue(Promise.resolve({ isCutSupported: true, isPasteSupported: true}));
-        toolkit.invoke.calledWith(ConfigurationOwnerHandler.POSSIBLE_CHILDREN, proxy)
+    toolkit.invoke.calledWith(ConfigPointHandler.POSSIBLE_CHILDREN)
         .mockReturnValue(Promise.resolve(new PossibleChildren(["foo", "bar"])));
 
-    const configurationOwner: ConfigurationOwner = new ConfigurationOwnerHandler().createHandler(toolkit);
-
-    const dragPoint: DragPoint | null = await configurationOwner.dragPointFor(proxy);
+    const dragPoint: ConfigPoint | null = new ConfigPointHandler().createHandler(toolkit);;
 
     expect(dragPoint).not.toBeNull();
 
-    const tags: string[] = await (dragPoint as DragPoint).possibleChildren();
+    const listener: NotificationListener<number> =
+        toolkit.addNotificationListener.mock.calls[0][1] as NotificationListener<number>
+
+    listener.handleNotification(Notification.from(50, ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, 1000,
+        ConfigPointHandler.SUPPORTS_PASTE));
+
+    const tags: string[] = await (dragPoint as ConfigPoint).possibleChildren();
 
     expect(tags).toEqual(["foo", "bar"]);
-})
+});
 

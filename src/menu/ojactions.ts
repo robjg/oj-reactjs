@@ -1,5 +1,5 @@
 import { AddJobActionFactory, DesignActionFactory } from "../design/designAction";
-import { ConfigurationOwner, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
+import { ConfigurationOwner, ConfigPoint, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
 import { Action, ActionContext, ActionFactory, contextSearch } from "./actions";
 
 export class RunActionFactory implements ActionFactory {
@@ -102,19 +102,11 @@ export class CutActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
 
-        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
-
-        if (configOwner == null) {
-            return null;
+        if (!actionContext.proxy.isA(ConfigPoint)) {
+            return Promise.resolve(null);            
         }
 
-        const proxy = actionContext.proxy;
-
-        const dragPoint = await configOwner.dragPointFor(proxy);
-
-        if (dragPoint == null) {
-            return null;
-        }
+        const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
         return {
             name: "Cut",
@@ -133,19 +125,11 @@ export class CopyActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
 
-        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
-
-        if (configOwner == null) {
-            return null;
+        if (!actionContext.proxy.isA(ConfigPoint)) {
+            return Promise.resolve(null);            
         }
 
-        const proxy = actionContext.proxy;
-
-        const dragPoint = await configOwner.dragPointFor(proxy);
-
-        if (dragPoint == null) {
-            return null;
-        }
+        const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
         return {
             name: "Copy",
@@ -164,19 +148,11 @@ export class PasteActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
 
-        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
-
-        if (configOwner == null) {
-            return null;
+        if (!actionContext.proxy.isA(ConfigPoint)) {
+            return Promise.resolve(null);            
         }
 
-        const proxy = actionContext.proxy;
-
-        const dragPoint = await configOwner.dragPointFor(proxy);
-
-        if (dragPoint == null) {
-            return null;
-        }
+        const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
         return {
             name: "Paste",
@@ -200,19 +176,11 @@ export class DeleteActionFactory implements ActionFactory {
 
     async createAction(actionContext: ActionContext): Promise<Action | null> {
 
-        const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
-
-        if (configOwner == null) {
-            return null;
+        if (!actionContext.proxy.isA(ConfigPoint)) {
+            return Promise.resolve(null);            
         }
 
-        const proxy = actionContext.proxy;
-
-        const dragPoint = await configOwner.dragPointFor(proxy);
-
-        if (dragPoint == null) {
-            return null;
-        }
+        const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
         return {
             name: "Delete",

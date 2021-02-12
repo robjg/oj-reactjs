@@ -285,25 +285,33 @@ export class RemoteNotifier implements Notifier {
         this.clock = clock;
     }
 
-    static fromWebSocket(url: string, options?: NotifierOptions): RemoteNotifier {
+    static fromWebSocket(url: string, options?: NotifierOptions): Promise<RemoteNotifier> {
 
         const ws: WebSocket = new WebSocket(url);
 
-        const wsChannel: Channel = {
-            send: (message: string) => ws.send(message),
-            setReceive: (callback: (message: string) => void) => {
-                const wsCallback = (event: any) => {
-                    const data = event.data as string;
-                    callback(data);
-                }
-                ws.onmessage = wsCallback;
-            },
-            close: (): void => {
-                ws.close();
-            }
-        };
+        return new Promise((promise, reject) => {
 
-        return new RemoteNotifier(wsChannel, options);
+            ws.onerror = (ev) => reject("Failed to open WS:" + ev);
+
+            ws.onopen = (ev) => {
+
+                const wsChannel: Channel = {
+                    send: (message: string) => ws.send(message),
+                    setReceive: (callback: (message: string) => void) => {
+                        const wsCallback = (event: any) => {
+                            const data = event.data as string;
+                            callback(data);
+                        }
+                        ws.onmessage = wsCallback;
+                    },
+                    close: (): void => {
+                        ws.close();
+                    }
+                };
+        
+                promise(new RemoteNotifier(wsChannel, options));
+            }
+        });
     }
 
     static fromChannel(channel: Channel, options?: NotifierOptions): RemoteNotifier {

@@ -20,31 +20,33 @@ import { ojActions } from './menu/ojactions';
 import { NavigatorClipboard } from './clipboard';
 import { App } from './app';
 
-const remote = RemoteConnection.fromHost(location.host);
+RemoteConnection.fromHost(location.host)
+.then(remote => {
 
-const session = ojRemoteSession(remote);
+    const session = ojRemoteSession(remote);
 
-const nodeFactory = new SessionNodeFactory(session,
-    { actionFactories: ojActions(),
-        clipboard: new NavigatorClipboard() 
-    });
-
-const bridge = new TreeSelectionBridge(nodeFactory);
-
-function start(): void {
-    const main = new OjMain({
-        treeSelectionModel: bridge
-    });
-
-    main.start();
-}
-
-ReactDOM.render(
-    React.createElement(App,
-        { nodeFactory: nodeFactory,
-        onStart: start }, null),
-    document.getElementById('split-pane')
-);
+    const nodeFactory = new SessionNodeFactory(session,
+        { actionFactories: ojActions(),
+            clipboard: new NavigatorClipboard() 
+        });
+    
+    const bridge = new TreeSelectionBridge(nodeFactory);
+    
+    function start(): void {
+        const main = new OjMain({
+            treeSelectionModel: bridge
+        });
+    
+        main.start();
+    }
+    
+    ReactDOM.render(
+        React.createElement(App,
+            { nodeFactory: nodeFactory,
+            onStart: start }, null),
+        document.getElementById('split-pane')
+    );    
+})
 
 
 

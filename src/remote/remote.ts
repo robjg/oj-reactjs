@@ -64,9 +64,10 @@ export class RemoteConnection {
         }
     }
 
-    static fromHost(host: string): RemoteConnection {
+    static async fromHost(host: string): Promise<RemoteConnection> {
+        const notifer = await RemoteNotifier.fromWebSocket(`ws://${host}/notifier`);
         return RemoteConnection.of(new RemoteInvoker(`http://${host}/invoke`),
-            RemoteNotifier.fromWebSocket(`ws://${host}/notifier`));
+            notifer);
     }
 }
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ActionFactory, ActionContext, Action, contextSearch } from '../menu/actions';
-import { ConfigurationOwner } from '../remote/ojremotes';
+import { ConfigurationOwner, ConfigPoint } from '../remote/ojremotes';
 import { AddJobForm as AddJobForm } from './addjob';
 import { ParserDesignModel } from './design';
 import { DesignForm } from './designForm';
@@ -70,14 +70,13 @@ export class AddJobActionFactory implements ActionFactory {
         if (configOwner == null) {
             return null;
         }
-
         const proxy = actionContext.proxy;
 
-        const dragPoint = await configOwner.dragPointFor(proxy);
-
-        if (dragPoint == null) {
-            return null;
+        if (!proxy.isA(ConfigPoint)) {
+            return Promise.resolve(null);
         }
+
+        const dragPoint: ConfigPoint = proxy.as(ConfigPoint);
 
         if (!dragPoint.isPasteSupported) {
             return null;
