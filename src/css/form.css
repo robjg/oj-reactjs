@@ -1,6 +1,6 @@
 
 .form-box {
-    background-color: #FFFFFF;
+    background-color: rgb(240, 240, 240);
     border: 1px solid #999999;
     cursor: default;
     display: none;
@@ -9,13 +9,76 @@
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: left;
-    z-index: 50;
-    padding: 25px 25px 20px;
+    z-index: 1;
+    padding-left: 20px;
+    overflow-y: scroll;
+    height:calc(61vh - 40px);
 }
 
 .form-box label {
-    margin-bottom: 3px;
+    margin-bottom: 2px;
     padding-left: 15px;
     padding-right: 15px;
-    text-indent: -15px;
+}
+
+input[type=text] {
+    margin: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    outline: none;
+  }
+  
+  input[type=text]:focus {
+    border: 1px solid rgb(114, 114, 114);
+  }
+
+  ul{
+      list-style-type: none;
+      margin: 0px;
+      padding: 0px;
+  }
+
+  .buttn{
+    background-color: rgb(230, 230, 230);
+    border: 1px solid rgb(150,150,150);
+    height: 20px;
+    border-radius: 5px;
+}
+
+.buttn:hover{
+    background-color: rgb(200,200,200);
+}
+
+.btns{
+    margin-top: 5px;
+}
+
+h4{
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+select{
+    margin: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+select:hover{
+    border: 1px solid rgb(114, 114, 114);
+}
+
+option{
+    border: none;
+    background-color: rgb(247, 247, 247);
+    border-radius: 2px;
+}
+
+#output{
+    margin-bottom: -10px;
+}
+
+#lines{
+    margin-bottom: -10px;
 }
