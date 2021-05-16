@@ -11,7 +11,7 @@ import { JAVA_OBJECT } from '../remote/java';
 
 export class DesignActionFactory implements ActionFactory {
 
-    async createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
@@ -63,7 +63,7 @@ export class DesignActionFactory implements ActionFactory {
 
 export class AddJobActionFactory implements ActionFactory {
 
-    async createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         const configOwner: ConfigurationOwner | null = contextSearch(actionContext, ConfigurationOwner);
 
@@ -73,7 +73,7 @@ export class AddJobActionFactory implements ActionFactory {
         const proxy = actionContext.proxy;
 
         if (!proxy.isA(ConfigPoint)) {
-            return Promise.resolve(null);
+            return null;
         }
 
         const dragPoint: ConfigPoint = proxy.as(ConfigPoint);

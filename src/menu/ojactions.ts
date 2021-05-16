@@ -1,10 +1,11 @@
 import { AddJobActionFactory, DesignActionFactory } from "../design/designAction";
 import { ConfigurationOwner, ConfigPoint, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
-import { Action, ActionContext, ActionFactory, contextSearch } from "./actions";
+import { Implementation } from "../remote/remote";
+import { Action, ActionContext, ActionFactory, contextSearch, DragAction, DropAction } from "./actions";
 
 export class RunActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         const proxy = actionContext.proxy;
 
@@ -12,23 +13,23 @@ export class RunActionFactory implements ActionFactory {
 
             const runnable = proxy.as(Runnable);
 
-            return Promise.resolve({
+            return {
                 name: "Start",
 
                 isEnabled: true,
 
                 perform: (): void => runnable.run()
-            });
+            };
         }
         else {
-            return Promise.resolve(null);
+            return null;
         }
     }
 }
 
 export class SoftResetActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         const proxy = actionContext.proxy;
 
@@ -36,23 +37,23 @@ export class SoftResetActionFactory implements ActionFactory {
 
             const resettable = proxy.as(Resettable);
 
-            return Promise.resolve({
+            return {
                 name: "Soft Reset",
 
                 isEnabled: true,
 
                 perform: (): void => resettable.softReset()
-            });
+            };
         }
         else {
-            return Promise.resolve(null);
+            return null;
         }
     }
 }
 
 export class HardResetActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         const proxy = actionContext.proxy;
 
@@ -60,23 +61,23 @@ export class HardResetActionFactory implements ActionFactory {
 
             const resettable = proxy.as(Resettable);
 
-            return Promise.resolve({
+            return {
                 name: "Hard Reset",
 
                 isEnabled: true,
 
                 perform: (): void => resettable.hardReset()
-            });
+            };
         }
         else {
-            return Promise.resolve(null);
+            return null;
         }
     }
 }
 
 export class StopActionFactory implements ActionFactory {
 
-    createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         const proxy = actionContext.proxy;
 
@@ -84,49 +85,66 @@ export class StopActionFactory implements ActionFactory {
 
             const stoppable = proxy.as(Stoppable);
 
-            return Promise.resolve({
+            return {
                 name: "Stop",
 
                 isEnabled: true,
 
                 perform: (): void => stoppable.stop()
-            });
+            };
         }
         else {
-            return Promise.resolve(null);
+            return null;
         }
     }
 }
 
 export class CutActionFactory implements ActionFactory {
 
-    async createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): DragAction | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return Promise.resolve(null);            
+            return null;            
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
-        return {
-            name: "Cut",
+        class Impl implements DragAction {
 
-            isEnabled: dragPoint.isCutSupported,
+            readonly name: string = "Cut";
 
-            perform: (): void => {
+            get isEnabled(): boolean {
+                return dragPoint.isCutSupported;
+            } 
+
+            perform(): void {
                 dragPoint.cut()
                     .then(config => actionContext.clipboard.copy(config));
             }
-        };
+
+            get isDraggable(): boolean {
+                return dragPoint.isCutSupported;
+            }
+
+            dragData(): Promise<string> {
+                return dragPoint.copy();
+            }
+
+            dragComplete(): void {
+                dragPoint.delete();
+            }
+        }
+
+        return new Impl();
     }
 }
 
 export class CopyActionFactory implements ActionFactory {
 
-    async createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return Promise.resolve(null);            
+            return null;            
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
@@ -146,20 +164,23 @@ export class CopyActionFactory implements ActionFactory {
 
 export class PasteActionFactory implements ActionFactory {
 
-    async createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): DropAction | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return Promise.resolve(null);            
+            return null;            
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
-        return {
-            name: "Paste",
+        class Impl implements DropAction {
 
-            isEnabled: dragPoint.isPasteSupported,
+            readonly name: string = "Paste";
 
-            perform: (): void => {
+            get isEnabled(): boolean {
+                return dragPoint.isPasteSupported;
+            }
+
+            perform(): void {
 
                 actionContext.clipboard.paste()
                     .then(contents => {
@@ -168,29 +189,43 @@ export class PasteActionFactory implements ActionFactory {
                         }
                     });
             }
+
+            get isDropTarget(): boolean {
+                return dragPoint.isPasteSupported
+            } 
+
+            drop(data: string): void {
+                dragPoint.paste(-1, data);
+            }
         }
+
+        return new Impl();
     }
 }
 
 export class DeleteActionFactory implements ActionFactory {
 
-    async createAction(actionContext: ActionContext): Promise<Action | null> {
+    createAction(actionContext: ActionContext): Action | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return Promise.resolve(null);            
+            return null;            
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
-        return {
-            name: "Delete",
+        class Impl implements Action {
 
-            isEnabled: dragPoint.isCutSupported,
+            name: string = "Delete";
 
-            perform: (): void => {
+            get isEnabled(): boolean {
+                return dragPoint.isCutSupported;
+            }
+
+            perform(): void {
                 dragPoint.delete();
             }
         }
+        return new Impl();
     }
 }
 

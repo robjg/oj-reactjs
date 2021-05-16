@@ -1,7 +1,9 @@
 import { TreeSelectionEvent, TreeSelectionListener, TreeSelectionModel } from "../main/ojTreeModel";
 import { NodeLifecycleEvent, NodeLifecycleListener, NodeLifecycleSupport, NodeModelController, NodeSelectionListener } from "./model";
 
-
+/**
+ * A Bridge from the new {@link NodeModelController} to the old {@link TreeSelectionModel}.
+ */
 export class TreeSelectionBridge implements TreeSelectionModel {
 
     private readonly listeners: TreeSelectionListener[] = []
@@ -14,6 +16,7 @@ export class TreeSelectionBridge implements TreeSelectionModel {
 
         const self = this;
 
+        // creates a new style listener
         function listenerFor(node: NodeModelController): NodeSelectionListener {
 
             return {
@@ -45,6 +48,7 @@ export class TreeSelectionBridge implements TreeSelectionModel {
                 }
             }
         }
+
 
         const lifecycleListener: NodeLifecycleListener = {
             nodeAdded: (event: NodeLifecycleEvent): void => {

@@ -3,10 +3,10 @@ import { Clipboard } from "../../src/clipboard";
 import { ConfigurationOwner, ConfigPoint, Resettable, Runnable, Stoppable } from "../../src/remote/ojremotes";
 import { RemoteProxy } from "../../src/remote/remote";
 import { CopyActionFactory, CutActionFactory, DeleteActionFactory, HardResetActionFactory, PasteActionFactory, RunActionFactory, SoftResetActionFactory, StopActionFactory } from "../../src/menu/ojactions";
-import { Action, ActionContext } from "../../src/menu/actions";
+import { Action, ActionContext, DragAction, DropAction } from "../../src/menu/actions";
 import { Latch } from "../testutil";
 
-test("Runnable Runs", async () => {
+test("Runnable Runs", () => {
 
     const runnable = mock<Runnable>();
 
@@ -23,7 +23,7 @@ test("Runnable Runs", async () => {
 
     const actionFactory = new RunActionFactory();
 
-    const action = await actionFactory.createAction(actionContext);
+    const action = actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -32,7 +32,7 @@ test("Runnable Runs", async () => {
     expect(runnable.run).toBeCalled();
 });
 
-test("Soft Reset Resets", async () => {
+test("Soft Reset Resets", () => {
 
     const resettable = mock<Resettable>();
 
@@ -49,7 +49,7 @@ test("Soft Reset Resets", async () => {
 
     const actionFactory = new SoftResetActionFactory();
 
-    const action = await actionFactory.createAction(actionContext);
+    const action = actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -58,7 +58,7 @@ test("Soft Reset Resets", async () => {
     expect(resettable.softReset).toBeCalled();
 });
 
-test("Hard Reset Resets", async () => {
+test("Hard Reset Resets", () => {
 
     const resettable = mock<Resettable>();
 
@@ -75,7 +75,7 @@ test("Hard Reset Resets", async () => {
 
     const actionFactory = new HardResetActionFactory();
 
-    const action = await actionFactory.createAction(actionContext);
+    const action = actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -84,7 +84,7 @@ test("Hard Reset Resets", async () => {
     expect(resettable.hardReset).toBeCalled();
 });
 
-test("Stoppable stops", async () => {
+test("Stoppable stops", () => {
 
     const stoppable = mock<Stoppable>();
 
@@ -101,7 +101,7 @@ test("Stoppable stops", async () => {
 
     const actionFactory = new StopActionFactory();
 
-    const action = await actionFactory.createAction(actionContext);
+    const action = actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -110,7 +110,7 @@ test("Stoppable stops", async () => {
     expect(stoppable.stop).toBeCalled();
 });
 
-test("Stoppable stops", async () => {
+test("Stoppable stops", () => {
 
     const stoppable = mock<Stoppable>();
 
@@ -127,7 +127,7 @@ test("Stoppable stops", async () => {
 
     const actionFactory = new StopActionFactory();
 
-    const action = await actionFactory.createAction(actionContext);
+    const action = actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
 
@@ -143,7 +143,7 @@ test("Cut cuts", async () => {
     const latch: Latch = new Latch();
 
     const dragPoint = mock<ConfigPoint>();
-    dragPoint.isCutSupported = true;
+    dragPoint.isCutSupported = false;
     dragPoint.cut.calledWith()
     .mockImplementation(() => {
         latch.countDown();
@@ -163,9 +163,15 @@ test("Cut cuts", async () => {
 
     const actionFactory = new CutActionFactory();
 
-    const action = await actionFactory.createAction(childContext);
+    const action = actionFactory.createAction(childContext);
 
     expect(action).not.toBeNull();
+
+    expect((action as Action).isEnabled).toBe(false);
+
+    // Happens later via notification.
+    dragPoint.isCutSupported = true;
+
     expect((action as Action).isEnabled).toBe(true);
 
     (action as Action).perform();
@@ -175,6 +181,52 @@ test("Cut cuts", async () => {
     await latch.promise;
 
     expect(clipboard.copy).toBeCalledWith("SOME CONFIG");
+});
+
+test("Cut as a DragAction", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const latch: Latch = new Latch();
+
+    const dragPoint = mock<ConfigPoint>();
+    dragPoint.isCutSupported = true;
+    dragPoint.copy.calledWith()
+    .mockImplementation(() => {
+        latch.countDown();
+        return Promise.resolve("SOME CONFIG")
+    });
+
+    proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
+
+    const childContext: ActionContext = {
+        parent: null,
+        proxy: proxy,
+        clipboard: mock<Clipboard>()
+    };
+
+    const actionFactory = new CutActionFactory();
+
+    const action = actionFactory.createAction(childContext);
+
+    if (action == null) {
+        throw new Error("Unexepected null");
+    }
+
+    expect(DragAction.isDragAction(action)).toBe(true);
+    expect(DropAction.isDropAction(action)).toBe(false);
+    expect((action as DragAction).isDraggable).toBe(true);
+
+    const data: string = await (action as DragAction).dragData();
+
+    await latch.promise;
+
+    expect(data).toBe("SOME CONFIG");
+
+    (action as DragAction).dragComplete();
+
+    expect(dragPoint.delete).toBeCalled();
 });
 
 test("Cut disabled", async () => {
@@ -195,7 +247,7 @@ test("Cut disabled", async () => {
 
     const actionFactory = new CutActionFactory();
 
-    const action = await actionFactory.createAction(actionContext);
+    const action = actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(false);
@@ -228,7 +280,7 @@ test("Copy copies", async () => {
 
     const actionFactory = new CopyActionFactory();
 
-    const action = await actionFactory.createAction(childContext);
+    const action = actionFactory.createAction(childContext);
 
     expect(action).not.toBeNull();
     expect((action as Action).isEnabled).toBe(true);
@@ -243,6 +295,51 @@ test("Copy copies", async () => {
 });
 
 test("Paste pastes", async () => {
+
+    const proxy = mock<RemoteProxy>();
+
+    const latch: Latch = new Latch();
+
+    const dragPoint = mock<ConfigPoint>();
+    dragPoint.isPasteSupported = false;
+    dragPoint.paste.mockImplementation((i, c) => {
+        latch.countDown();
+        return Promise.resolve();
+    });
+
+    proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
+
+    const clipboard = mock<Clipboard>();
+    clipboard.paste.mockReturnValue(Promise.resolve("SOME CONFIG"));
+
+    const childContext: ActionContext = {
+        parent: null,
+        proxy: proxy,
+        clipboard: clipboard
+    };
+
+    const actionFactory = new PasteActionFactory();
+
+    const action = actionFactory.createAction(childContext);
+
+    expect(action).not.toBeNull();
+
+    expect((action as Action).isEnabled).toBe(false);
+
+    // happens later via notification
+    dragPoint.isPasteSupported = true;
+
+    expect((action as Action).isEnabled).toBe(true);
+
+    (action as Action).perform();
+
+    await latch.promise;
+
+    expect(dragPoint.paste).toBeCalledWith(-1, "SOME CONFIG");
+});
+
+test("Paste as Drop Action", async () => {
 
     const proxy = mock<RemoteProxy>();
 
@@ -269,24 +366,30 @@ test("Paste pastes", async () => {
 
     const actionFactory = new PasteActionFactory();
 
-    const action = await actionFactory.createAction(childContext);
+    const action = actionFactory.createAction(childContext);
 
-    expect(action).not.toBeNull();
-    expect((action as Action).isEnabled).toBe(true);
+    if (action == null) {
+        throw new Error("Unexepected null");
+    }
 
-    (action as Action).perform();
+    expect(DragAction.isDragAction(action)).toBe(false);
+    expect(DropAction.isDropAction(action)).toBe(true);
+    expect((action as DropAction).isDropTarget).toBe(true);
+
+    (action as DropAction).drop("SOME CONFIG");
 
     await latch.promise;
 
     expect(dragPoint.paste).toBeCalledWith(-1, "SOME CONFIG");
 });
 
+
 test("Delete deletes", async () => {
 
     const proxy = mock<RemoteProxy>();
 
     const dragPoint = mock<ConfigPoint>();
-    dragPoint.isCutSupported = true;
+    dragPoint.isCutSupported = false;
 
     proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
     proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
@@ -299,9 +402,14 @@ test("Delete deletes", async () => {
 
     const actionFactory = new DeleteActionFactory();
 
-    const action = await actionFactory.createAction(actionContext);
+    const action = actionFactory.createAction(actionContext);
 
     expect(action).not.toBeNull();
+    expect((action as Action).isEnabled).toBe(false);
+
+    // happens later via notification
+    dragPoint.isCutSupported = true;
+
     expect((action as Action).isEnabled).toBe(true);
 
     (action as Action).perform();

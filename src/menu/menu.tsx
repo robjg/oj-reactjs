@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { AvailableActions, Action } from './actions';
+import { Action } from './actions';
 
 type MenuItemProps = {
     action: Action;
@@ -61,47 +61,4 @@ class NoopAction implements Action {
     isEnabled: boolean = false;
 
     perform() { }
-}
-
-/**
- * Provides a menu old style.
- */
-export class MenuProvider {
-
-    private lastId: number = -1;
-
-    availableActions?: AvailableActions;
-
-    menuClick(nodeId: number): void {
-
-        const self: MenuProvider = this;
-
-        const menuMount: HTMLElement | null = document.getElementById('contextMenuMount');
-        if (!menuMount) {
-            throw Error("No #contextMenuMount element")
-        }
-
-        function unmount() {
-            ReactDOM.unmountComponentAtNode(menuMount as HTMLElement)
-            self.lastId = -1;
-        }
-
-        if (self.lastId == nodeId) {
-            unmount();
-        }
-        else {
-            self.lastId = nodeId;
-
-            let actions: Promise<Action[]> = self.availableActions ?
-                self.availableActions.actionsFor(nodeId) :
-                Promise.resolve([]);
-
-            actions.then(acts => {
-                ReactDOM.render(
-                    <JobMenu actions={acts} onMenuSelected={unmount} />,
-                    menuMount
-                );
-            })
-        }
-    }
 }

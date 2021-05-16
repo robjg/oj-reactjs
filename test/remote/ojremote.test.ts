@@ -216,17 +216,20 @@ test("Cut Invokes cut", async () => {
     toolkit.invoke.calledWith(ConfigPointHandler.CUT)
         .mockReturnValue(Promise.resolve("YOU CUT ME"));
 
-    const dragPoint: ConfigPoint | null = new ConfigPointHandler().createHandler(toolkit);
+    const configPoint: ConfigPoint | null = new ConfigPointHandler().createHandler(toolkit);
 
-    expect(dragPoint).not.toBeNull();
+    expect(configPoint).not.toBeNull();
+    expect(configPoint.isCutSupported).toBe(false);
 
     const listener: NotificationListener<number> =
         toolkit.addNotificationListener.mock.calls[0][1] as NotificationListener<number>
 
     listener.handleNotification(Notification.from(50, ConfigPointHandler.CONFIG_POINT_NOTIF_TYPE, 1000,
-        ConfigPointHandler.SUPPORTS_CUT));
+        7));
 
-    const result: string = await (dragPoint as ConfigPoint).cut();
+    expect(configPoint.isCutSupported).toBe(true);
+
+    const result: string = await (configPoint as ConfigPoint).cut();
 
     expect(result).toBe("YOU CUT ME");
 })

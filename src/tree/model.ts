@@ -1,6 +1,6 @@
 import { Logger, LoggerFactory } from "../logging";
 import { Clipboard } from "../clipboard";
-import { Action, ActionContext, ActionFactories, ActionFactory } from "../menu/actions";
+import { Action, ActionContext, ActionFactories, ActionFactory, ActionSet } from "../menu/actions";
 import { IconEvent, Iconic, IconListener, ImageData, ObjectProxy, Structural, StructuralEvent } from "../remote/ojremotes";
 import { RemoteProxy, RemoteSession } from "../remote/remote";
 import { arrayDiff, DiffOp, Op } from "./util";
@@ -19,7 +19,7 @@ export interface NodeController {
 
 export interface NodeModelController extends NodeModel, NodeController {
 
-    provideActions(): Promise<Action[]>
+    provideActions(): ActionSet
 }
 
 export type ChildrenChangedEvent = {
@@ -97,6 +97,10 @@ export type NodeLifecycleEvent = {
     node: NodeModelController
 }
 
+/**
+ * Something that wishes to receive notifications when nodes ({@link NodeModelController}) are added or
+ * removed from a tree node.
+ */
 export interface NodeLifecycleListener {
 
     nodeAdded(event: NodeLifecycleEvent): void;
@@ -117,7 +121,7 @@ export interface NodeFactory {
 
 export interface NodeActionFactory extends NodeFactory {
 
-    provideActions(): Promise<Action[]>;
+    provideActions(): ActionSet;
 
     nodeRemoved(node: NodeModelController): void;
 }
@@ -160,7 +164,7 @@ class ProxyNodeHelperImpl implements NodeActionFactory {
         return this.factory.createNodeWithHelper(childId, this);
     }
 
-    provideActions(): Promise<Action[]> {
+    provideActions(): ActionSet {
 
         return new ActionFactories(this.actionSettings.actionFactories)
             .actionsFor(this.actionContext);
@@ -488,7 +492,7 @@ export class ProxyNodeModelController implements NodeModelController {
         this.iconListeners.push(listener);
     }
 
-    provideActions(): Promise<Action[]> {
+    provideActions(): ActionSet {
 
         return this.nodeFactory.provideActions();
     }

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Test OJ Tree</title>
+    <style>
+        .tree {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    <link rel="stylesheet" href="../../src/css/tree.css">
+    <link rel="stylesheet" href="../../src/css/global.css">
+    <link rel="stylesheet" href="../../src/css/form.css">
+    <link rel="stylesheet" href="../../src/css/menu.css">
+
+</head>
+
+<body>
+    <div id="ojForm" class="form-box"></div>
+    <div id="ojNodeRoot" class="tree global-font">
+        <ul>
+            <li><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAASxJREFUeNpi/P//PwMlgImBQkCxASwwRlLLKwYmJqZgRkbGbiBXEYva+0Dvlv7792/tvBoxTAO+fv0MororE6UU9VU5MHRfvP1DsX3+M5DhaxkYsBjw5s0bEKWoq6zA8OvXL7AYKIC/f//O8OPHDwYZIVaQGqjLlDENePfuLZj+/fs3GH/58pXh/fv3YDYIcHBwwtVgDYMvX76B6b9//zIYhezEULhtiglcDVYD/v+HMH/+/MNweqUnhsIPHz7B1WA1gJ2dH+oCZqCf/2IoZGPjhqvBmg4enyxj4OYWuX/2+l+gYk4MfPH2P7A8SB1WF3x+fUbs4+NtEzrmRxUxMH6Vx7Dq/9+HQPmJQHVSQN4zmDAjLC8AExA3kOIDMQkkvs9APZ8xDBi6mQkgwADDMYZH9Ls66AAAAABJRU5ErkJggg=="
+                    class="toggle" alt="collapse" title="collapse"><img
+                    src="data:undefined;base64,R0lGODlhFAAQAJEAAAD/AC6LV7+/vwAAYCH5BAEAAAIALAAAAAAUABAAAAIllI+py8EP3FtxUmlRtQCcjjFdJ4DciIYiumWsOo3wOVt1hudIAQA7"
+                    alt="Complete" title="Complete"><span class="nodeLabel " draggable="false"><a>Oddjob
+                        server-jobs.xml</a></span>
+                <ul>
+                    <li><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAASxJREFUeNpi/P//PwMlgImBQkCxASwwRlLLKwYmJqZgRkbGbiBXEYva+0Dvlv7792/tvBoxTAO+fv0MororE6UU9VU5MHRfvP1DsX3+M5DhaxkYsBjw5s0bEKWoq6zA8OvXL7AYKIC/f//O8OPHDwYZIVaQGqjLlDENePfuLZj+/fs3GH/58pXh/fv3YDYIcHBwwtVgDYMvX76B6b9//zIYhezEULhtiglcDVYD/v+HMH/+/MNweqUnhsIPHz7B1WA1gJ2dH+oCZqCf/2IoZGPjhqvBmg4enyxj4OYWuX/2+l+gYk4MfPH2P7A8SB1WF3x+fUbs4+NtEzrmRxUxMH6Vx7Dq/9+HQPmJQHVSQN4zmDAjLC8AExA3kOIDMQkkvs9APZ8xDBi6mQkgwADDMYZH9Ls66AAAAABJRU5ErkJggg=="
+                            class="toggle" alt="collapse" title="collapse"><img
+                            src="data:undefined;base64,R0lGODlhFAAQAJEAAAD/AC6LV7+/vwAAYCH5BAEAAAIALAAAAAAUABAAAAIllI+py8EP3FtxUmlRtQCcjjFdJ4DciIYiumWsOo3wOVt1hudIAQA7"
+                            alt="Complete" title="Complete"><span class="nodeLabel "
+                            draggable="false"><a>SequentialJob</a></span>
+                        <ul>
+                            <li><img src="data:undefined;base64,R0lGODlhFAAQAJEAAAD/AC6LV7+/vwAAYCH5BAEAAAIALAAAAAAUABAAAAIllI+py8EP3FtxUmlRtQCcjjFdJ4DciIYiumWsOo3wOVt1hudIAQA7"
+                                    alt="Complete" title="Complete"><span class="nodeLabel selected"
+                                    draggable="false"><a>Echo Hello</a></span><button class="threeDots">...</button>
+                            </li>
+                            <li><img src="data:undefined;base64,R0lGODlhFAAQAJEAAAD/AC6LV7+/vwAAYCH5BAEAAAIALAAAAAAUABAAAAIllI+py8EP3FtxUmlRtQCcjjFdJ4DciIYiumWsOo3wOVt1hudIAQA7"
+                                    alt="Complete" title="Complete"><span class="nodeLabel " draggable="true"><a>Echo
+                                        World</a></span></li>
+                            <li><img src="data:undefined;base64,R0lGODlhFAAQAJEAAAD/AC6LV7+/vwAAYCH5BAEAAAIALAAAAAAUABAAAAIllI+py8EP3FtxUmlRtQCcjjFdJ4DciIYiumWsOo3wOVt1hudIAQA7"
+                                    alt="Complete" title="Complete"><span class="nodeLabel draggable"
+                                    draggable="true"><a>Echo
+                                        World</a></span></li>
+                            <li><img src="data:undefined;base64,R0lGODlhFAAQAJEAAAD/AC6LV7+/vwAAYCH5BAEAAAIALAAAAAAUABAAAAIllI+py8EP3FtxUmlRtQCcjjFdJ4DciIYiumWsOo3wOVt1hudIAQA7"
+                                    alt="Complete" title="Complete"><span class="nodeLabel drag-pending"
+                                    draggable="true"><a>Echo
+                                        World</a></span></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+</body>
+
+</html>

@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Clipboard, NavigatorClipboard } from '../../../src/clipboard';
 import { AddJobActionFactory } from '../../../src/design/designAction';
-import { Action, ActionContext, ActionFactories, ActionFactory } from '../../../src/menu/actions';
+import { Action, ActionContext, ActionFactories, ActionFactory, ActionSet } from '../../../src/menu/actions';
 import { JobMenu } from '../../../src/menu/menu';
 import { CopyActionFactory, CutActionFactory, PasteActionFactory } from '../../../src/menu/ojactions';
 import { ojRemoteSession } from '../../../src/remote/ojremotes';
@@ -35,7 +35,7 @@ type clipboardComponentProps = {
 
 type ClipboardComponentState = {
 
-    actions: Action[] | null;
+    actions: ActionSet | null;
 
     output: string;
 }
@@ -66,7 +66,7 @@ class ClipboardComponent extends React.Component<clipboardComponentProps, Clipbo
 
             const context = new ChildActionContext(new ParentActionContext(r), c);
 
-            const actions: Action[] = await new ActionFactories(this.props.actionFactories)
+            const actions: ActionSet = await new ActionFactories(this.props.actionFactories)
                 .actionsFor(context);
 
             this.setState({
@@ -81,7 +81,7 @@ class ClipboardComponent extends React.Component<clipboardComponentProps, Clipbo
             return (
                 <div>
                     <div>
-                        <JobMenu actions={this.state.actions} onMenuSelected={() => { }} />
+                        <JobMenu actions={this.state.actions.actions} onMenuSelected={() => { }} />
                     </div>
                     <div>
                         <h1>: {this.state.output}</h1>

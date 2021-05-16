@@ -1,5 +1,5 @@
 import { mock, mockReset } from 'jest-mock-extended';
-import { Action } from '../../src/menu/actions';
+import { Action, ActionSet } from '../../src/menu/actions';
 import { OperationType } from '../../src/remote/invoke';
 
 import { JavaClass } from '../../src/remote/java';
@@ -495,7 +495,6 @@ test("Tree Selection select deselect", () => {
 
 test("Provide Actions", async () => {
 
-
     const remoteProxy = mock<RemoteProxy>();
 
     const fooAction: Action = {
@@ -504,13 +503,16 @@ test("Provide Actions", async () => {
         perform: () => { }
     }
 
+    const actionSet: ActionSet = mock<ActionSet>();
+    actionSet.actions = [fooAction];
+
     const nodeFactory = mock<NodeActionFactory>();
-    nodeFactory.provideActions.mockReturnValue(Promise.resolve([fooAction]));
+    nodeFactory.provideActions.mockReturnValue(Promise.resolve(actionSet));
 
     const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
 
-    const actions = await proxyMc.provideActions();
+    const actions: ActionSet = await proxyMc.provideActions();
 
-    expect(actions.length).toBe(1);
-    expect(actions[0].name).toBe("Foo");
+    expect(actions.actions.length).toBe(1);
+    expect(actions.actions[0].name).toBe("Foo");
 });

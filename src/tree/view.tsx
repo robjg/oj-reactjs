@@ -1,8 +1,9 @@
-import React, { ReactNode } from 'react';
-import { Action } from '../menu/actions';
+import React, { DragEventHandler, ReactNode } from 'react';
+import { ActionSet } from '../menu/actions';
 import { JobMenu } from '../menu/menu';
 import { ImageData, ojRemoteSession } from '../remote/ojremotes';
 import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController, SessionNodeFactory } from './model';
+import { NodeState, InitialNodeState, SelectedState } from './nodestate';
 
 
 const emptyImageStyle = {
@@ -25,6 +26,7 @@ enum Toggle {
     EXPANDED
 }
 
+
 type ProxyTreeState = {
 
     children: NodeModelController[];
@@ -33,9 +35,7 @@ type ProxyTreeState = {
 
     toggle: Toggle;
 
-    selected: boolean;
-
-    actions: Action[] | null;
+    nodeState: NodeState;
 }
 
 export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
@@ -46,6 +46,8 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
     private readonly nodename: string;
 
+    private actions: ActionSet;
+
     constructor(props: ProxyTreeProps) {
         super(props);
 
@@ -53,17 +55,28 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
         this.nodename = proxy.nodeName;
 
+        this.actions = this.props.model.provideActions();
+
         this.state = {
             children: [],
             icon: emptyImage,
             toggle: Toggle.NONE,
-            selected: false,
-            actions: null
+            nodeState: new InitialNodeState({
+                stateCallback: this.setNodeState,
+                selectCallback: this.props.model.select,
+                unselectCallback: this.props.model.unselect
+            })
         };
 
-        this.toggleSelect = this.toggleSelect.bind(this);
-        this.actionsOff = this.actionsOff.bind(this);
-        this.findActions = this.findActions.bind(this);
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.menuOff = this.menuOff.bind(this);
+        this.showMenu = this.showMenu.bind(this);
+    }
+
+    private setNodeState: (nodeState: NodeState) => void = (nodeState: NodeState) => {
+        this.setState({
+            nodeState: nodeState
+        });
     }
 
     componentDidMount() {
@@ -111,28 +124,96 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
         nodeSelected: (): void => {
 
-            this.setState({
-                selected: true
-            });
+            this.state.nodeState.select();
         },
 
         nodeUnselected: (): void => {
 
-            this.setState({
-                selected: false,
-                actions: null
-            });
+            this.state.nodeState.unselect();
         }
     }
 
-    private toggleSelect(): void {
-        if (this.state.selected) {
-            this.props.model.unselect();
-        }
-        else {
-            this.props.model.select();
+    private onMouseDown(): void {
+
+        this.prepareDrag();
+    }
+
+    private prepareDrag(): void {
+
+        if (this.actions.isDraggable) {
+            this.state.nodeState.enquireDrag(this.actions.dragData);
         }
     }
+
+    private onDrag(): DragEventHandler<Element> | undefined {
+        return event => {
+            console.log("onDrag: " + this.props.model.nodeId + " ");
+        }
+    }
+
+    private onDragStart(): DragEventHandler<Element> | undefined {
+        if (this.state.nodeState.isDraggable) {
+            return event => {
+                console.log("onDragStart: " + this.props.model.nodeId + " " + event);
+                event.dataTransfer.setData("text/plain", this.state.nodeState.dragData);
+            }
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    private dropMaybe(): DragEventHandler<Element> | undefined {
+        if (this.actions.isDropTarget) {
+            return (event) => {
+                const isData = event.dataTransfer.types.includes("text/plain");
+                if (isData) {
+                    event.preventDefault();
+                }
+            }
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    private onDrop(): DragEventHandler<Element> | undefined {
+        if (this.actions.isDropTarget) {
+            return event => {
+                const data = event.dataTransfer.getData("text/plain");
+                if (data) {
+                    this.actions.drop(data);
+                    event.preventDefault();
+                }
+            }
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    onDragEnd(): DragEventHandler<Element> | undefined {
+        if (this.actions.isDraggable) {
+            return event => {
+                console.log("onDragEnd: " + this.props.model.nodeId + " " + event.dataTransfer.dropEffect);
+                this.state.nodeState.unselect();
+            }
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    onDragExit(): DragEventHandler<Element> | undefined {
+        console.log("onDragExit");
+        return undefined;
+    }
+
+    onDragLeave(): DragEventHandler<Element> | undefined {
+        console.log("onDragLeave");
+        return undefined;
+    }
+
 
     renderToggleImage(): ReactNode {
         switch (this.state.toggle) {
@@ -145,43 +226,58 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
-    private actionsOff() {
-        this.setState({
-            actions: null
-        });
+    private menuOff(): void {
+        this.state.nodeState.menuOff();
     }
 
-    private findActions() {
-        this.props.model.provideActions()
-            .then(actions => this.setState({
-                actions: actions
-            }));
+    private showMenu() {
+        this.state.nodeState.menuOn();
     }
 
-    renderConextMenu(): ReactNode {
+    private renderConextMenu(): ReactNode {
 
-        if (this.state.actions) {
-            return <JobMenu actions={this.state.actions} onMenuSelected={this.actionsOff}/>
-        }
-        else {
-            if (this.state.selected) {
-                return <button className="threeDots"onClick={this.findActions}>...</button>
-
-            }
-            else {
+        switch (this.state.nodeState.selectedState) {
+            case SelectedState.MENU:
+                return <JobMenu actions={this.actions.actions} onMenuSelected={this.menuOff} />
+            case SelectedState.SELECTED:
+            case SelectedState.DRAGGABLE:
+                return <button className="threeDots" onClick={this.showMenu}>...</button>
+            default:
                 return <></>
-            }
         }
-    } 
+    }
+
+    private labelClasses(): string {
+        switch (this.state.nodeState.selectedState) {
+            case SelectedState.SELECTED:
+            case SelectedState.MENU:
+                return "nodeLabel selected";
+            case SelectedState.DRAG_PENDING:
+                return "nodeLabel drag-pending";
+            case SelectedState.DRAGGABLE:
+                return "nodeLabel draggable";
+            default:
+                return "nodeLabel";
+        }
+    }
 
     render() {
 
-        const selected = this.state.selected ? "selected" : "";
-        const labelClasses= `nodeLabel ${selected}`;
         return (
             <li>{this.renderToggleImage()}
                 {this.state.icon}
-                <span className={labelClasses}><a onClick={this.toggleSelect}>{this.nodename}</a></span>
+                <span className={this.labelClasses()}
+                    draggable={this.state.nodeState.isDraggable}
+                    onDrag={this.onDrag()}
+                    onDragStart={this.onDragStart()}
+                    onDragEnter={this.dropMaybe()}
+                    onDragOver={this.dropMaybe()}
+                    onDrop={this.onDrop()}
+                    onDragEnd={this.onDragEnd()}
+                >
+                    <a onMouseDown={this.onMouseDown}
+                        onMouseUp={this.state.nodeState.toggleSelect}>{this.nodename}</a>
+                </span>
                 {this.renderConextMenu()}
                 {this.state.toggle == Toggle.EXPANDED ?
                     <ul>{this.state.children.map(e => <ProxyTree key={e.uniqueId} model={e} />)}</ul> :

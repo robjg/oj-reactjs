@@ -1,10 +1,6 @@
-import { RemoteProxy, RemoteSession } from '../remote/remote'
+import { RemoteProxy } from '../remote/remote'
 
-import { TreeChangeListener } from '../main/ojTreeModel';
-
-import { NodeInfo } from '../main/ojDao';
-import { Clipboard, NavigatorClipboard } from '../clipboard';
-
+import { Clipboard } from '../clipboard';
 
 /**
  * The context in which an ActionFactory may or may not create an Action.
@@ -23,7 +19,7 @@ export type ActionContext = {
  */
 export type ActionFactory = {
 
-    createAction(actionContext: ActionContext): Promise<Action | null>;
+    createAction(actionContext: ActionContext): Action | null;
 }
 
 
@@ -40,18 +36,125 @@ export interface Action {
 
 }
 
+export interface DragAction extends Action {
+
+    isDraggable: boolean;
+
+    dragData(): Promise<string>;
+
+    dragComplete(): void;
+}
+
+export class DragAction {
+
+    static isDragAction(action: Action): action is DragAction {
+        return typeof (action as DragAction).isDraggable === 'boolean';
+    }
+}
+
+export interface DropAction extends Action {
+
+    isDropTarget: boolean;
+
+    drop(dragData: string): void;
+}
+
+export class DropAction {
+
+    static isDropAction(action: Action): action is DropAction {
+        return typeof (action as DropAction).isDropTarget === 'boolean';
+    }
+}
+
+
+export interface ActionSet {
+
+    readonly actions: Action[];
+
+    readonly isDraggable: boolean;
+
+    readonly isDropTarget: boolean;
+
+    dragData(): Promise<string>;
+
+    drop(dragData: string): void;
+
+    dragComplete(): void;
+}
+
 export class ActionFactories {
 
     constructor(private readonly actionFactories: ActionFactory[]) { }
 
-    async actionsFor(context: ActionContext): Promise<Action[]> {
+    actionsFor(context: ActionContext): ActionSet {
 
-        const actionPromises: Promise<Action | null>[] = this.actionFactories.map(f => f.createAction(context));
+        const actions: (Action | null)[] = this.actionFactories.map(f => f.createAction(context));
 
-        const actions = await Promise.all(actionPromises);
-
-        return actions.filter(action => action != null)
+        const validActions: Action[] = actions.filter(action => action != null)
             .map(action_1 => action_1 as Action);
+
+        var dragAction: DragAction | null = null;
+
+        var dropAction: DropAction | null = null;
+
+        validActions.forEach(a => {
+            if (DragAction.isDragAction(a)) {
+                dragAction = a;
+            }
+            if (DropAction.isDropAction(a)) {
+                dropAction = a;
+            }
+
+        });
+
+        return new ActionSetImpl(validActions, dragAction, dropAction);
+    }
+}
+
+class ActionSetImpl implements ActionSet {
+
+    constructor(readonly actions: Action[],
+        private readonly dragAction: DragAction | null,
+        private readonly dropAction: DropAction | null) {
+
+        this.dragData = this.dragData.bind(this);
+        this.drop = this.drop.bind(this);
+        this.dragComplete = this.dragComplete.bind(this);
+    }
+
+    get isDraggable(): boolean {
+        return this.dragAction?.isDraggable || false;
+    }
+
+    get isDropTarget(): boolean {
+        return this.dropAction?.isDropTarget || false;
+    }
+
+    dragData(): Promise<string> {
+        if (this.dragAction) {
+            return this.dragAction.dragData();
+        }
+        else {
+            throw new Error("Not Draggable");
+        }
+    }
+
+    drop(dragData: string): void {
+        if (this.dropAction) {
+            this.dropAction.drop(dragData);
+        }
+        else {
+            throw new Error("Not Droppable");
+        }
+    }
+
+    dragComplete(): void {
+        if (this.dragAction) {
+            this.dragAction.dragComplete();
+        }
+        else {
+            throw new Error("Not Draggable");
+        }
     }
 }
 
@@ -67,105 +170,5 @@ export function contextSearch<T>(context: ActionContext | null, cntor: ({ new(..
 
 
 
-/**
- * Old way
- */
-export interface AvailableActions {
 
-    actionsFor(nodeId: number): Promise<Action[]>;
-}
-
-
-
-/**
- * Used by the old tree
- */
-export class ContextManager implements TreeChangeListener, AvailableActions {
-
-    contexts: Map<number, Promise<ActionContext>> = new Map();
-
-    constructor(readonly remoteSession: RemoteSession,
-        readonly actionFactories: ActionFactory[]) {
-
-    }
-
-    treeInitialised(event: { rootNode: NodeInfo; }): void {
-
-        const nodeId = event.rootNode.nodeId;
-
-        const contextPromise: Promise<ActionContext> =
-            this.remoteSession.getOrCreate(nodeId)
-                .then(proxy => ({
-                    proxy: proxy,
-                    parent: null,
-                    clipboard: new NavigatorClipboard()
-                }));
-
-        this.contexts.set(nodeId, contextPromise);
-    }
-
-    private createNodes(parentId: number, nodeIds: number[]): void {
-
-        const parentContextPromise: Promise<ActionContext> | undefined = this.contexts.get(parentId)
-
-        if (parentContextPromise) {
-
-            nodeIds.map(nodeId => {
-                const contextPromise: Promise<ActionContext> =
-                    parentContextPromise
-                        .then(parent =>
-                            this.remoteSession.getOrCreate(nodeId)
-                                .then(proxy => ({
-                                    proxy: proxy,
-                                    parent: parent,
-                                    clipboard: parent.clipboard
-                                }))
-                        )
-                this.contexts.set(nodeId, contextPromise);
-            });
-        }
-    }
-
-    nodeInserted(event: { parentId: number; index: number; node: NodeInfo; }): void {
-
-        this.createNodes(event.parentId, [event.node.nodeId]);
-    }
-
-    nodeRemoved(event: { nodeId: number; }): void {
-
-        this.contexts.delete(event.nodeId);
-    }
-
-    nodeExpanded(event: { parentId: number; nodeList: NodeInfo[]; }): void {
-
-        const nodeIds: number[] = event.nodeList.map(nl => nl.nodeId);
-
-        this.createNodes(event.parentId, nodeIds);
-    }
-
-    nodeCollapsed(event: { parentId: number; }): void {
-
-    }
-
-    nodeUpdated(event: { node: NodeInfo; }): void {
-
-    }
-
-    async actionsFor(nodeId: number): Promise<Action[]> {
-
-        const contextPromise: Promise<ActionContext> | undefined = this.contexts.get(nodeId)
-
-        const self = this;
-
-        if (contextPromise) {
-            const context = await contextPromise;
-
-            return new ActionFactories(this.actionFactories)
-                .actionsFor(context);
-        }
-        else {
-            return Promise.resolve([]);
-        }
-    }
-}
 

@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 
 import { sequentialForm } from './data/SequentialForm';
 import { Clipboard } from '../../../src/clipboard';
-import { AvailableActions, Action, ActionContext } from '../../../src/menu/actions';
-import { MenuProvider } from '../../../src/menu/menu';
+import { Action, ActionContext } from '../../../src/menu/actions';
+import { JobMenu } from '../../../src/menu/menu';
 import { RemoteProxy } from '../../../src/remote/remote';
 import { ConfigurationOwner } from '../../../src/remote/ojremotes'
 import { DesignActionFactory } from '../../../src/design/designAction';
@@ -16,24 +16,64 @@ class MockClipboard implements Clipboard {
 
     paste(): Promise<string> {
         throw new Error("Unsupported");
-    }    
+    }
 }
 
 type ExampleMenuProps = {
-    jobId: number,
-    menuProvider: MenuProvider
+    jobId: number;
+    actionFetch: Action[]
 }
 
-class ExampleMenu extends React.Component<ExampleMenuProps> {
+type ExampleMenuState = {
+    menuVisible: boolean;
+    actions?: Action[]
+}
+
+
+class ExampleMenu extends React.Component<ExampleMenuProps, ExampleMenuState> {
 
     constructor(props: ExampleMenuProps) {
         super(props);
+
+        this.state = {
+            menuVisible: false
+        }
+
+        this.toggleMenu = this.toggleMenu.bind(this);
     }
+
+    componentDidMount() {
+
+        Promise.all(this.props.actionFetch).then(a => {
+            this.setState({
+                actions: a
+            })
+        })
+
+    }
+
+    toggleMenu(): void {
+        this.setState({
+            menuVisible: !this.state.menuVisible
+        })
+    }
+
+    renderJobMenu(): ReactNode {
+
+        if (this.state.menuVisible) {
+            return <JobMenu actions={this.state.actions} onMenuSelected={this.toggleMenu} />
+        }
+        else {
+            return <></>
+        }
+    }
+
 
     render() {
 
         return <>
-            <button onClick={() => this.props.menuProvider.menuClick(this.props.jobId)}>...</button>
+            <button onClick={this.toggleMenu}>...</button>
+            { this.renderJobMenu() }
             <div id='contextMenuMount' />
         </>
     }
@@ -74,8 +114,8 @@ const context1: ActionContext = {
                 return null as T;
             }
         }
-        destroy(): void {}
-    }, 
+        destroy(): void { }
+    },
     clipboard: new MockClipboard()
 }
 
@@ -89,26 +129,17 @@ const context2: ActionContext = {
         as<T>(cntor: new (...args: any[]) => T): T {
             return null as T;
         }
-        destroy(): void {}
-    }, 
+        destroy(): void { }
+    },
     clipboard: new MockClipboard()
 }
 
-class OurActions implements AvailableActions {
 
-    actionsFor(nodeId: number): Promise<Action[]> {
+const actionPromises: Action[] = [new DesignActionFactory().createAction(context2)];
 
-        return Promise.all([
-            new DesignActionFactory().createAction(context2)
-        ]);
-    }
-}
-
-const menuProvider = new MenuProvider();
-menuProvider.availableActions = new OurActions();
 
 ReactDOM.render(
-    <ExampleMenu jobId={1} menuProvider={menuProvider} />,
+    <ExampleMenu jobId={1} actionFetch={actionPromises} />,
     document.getElementById('root')
 );
 

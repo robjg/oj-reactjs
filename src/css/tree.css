@@ -26,12 +26,23 @@
 	color: black;
 	text-decoration: none;
 	margin-right: 5px;
+	border-width: 2px;
 }
 
 .tree li a:hover {
-	background-color: #ff4800e0;
+	border: solid;
+	border-color: grey;
 }
 
 .tree .selected a {
 	background-color: #a8df44;
 }
+
+.tree .drag-pending a {
+	background-color: plum;
+}
+
+.tree .draggable a {
+	background-color: #ff4800e0;
+}
+
