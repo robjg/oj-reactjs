@@ -174,9 +174,26 @@ class DraggableNodeState extends BaseNodeState {
 
 class SelectedNodeState extends BaseNodeState {
 
+    private timeout: any;
+
     selectedState: SelectedState = SelectedState.SELECTED;
 
+    enquireDrag(dragDataFn: () => Promise<string>): void {
+
+        const self: SelectedNodeState = this;
+
+        this.timeout = setTimeout(function() {
+            self.callbacks.stateCallback(new DragPending(self.callbacks))
+            dragDataFn().then(data => {
+                self.callbacks.stateCallback(new DraggableNodeState(self.callbacks, data))
+                })
+            }, 500);    
+    }
+
     toggleSelect = () => {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+        }
         this.callbacks.unselectCallback();
     }
 

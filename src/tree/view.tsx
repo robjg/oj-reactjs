@@ -120,6 +120,9 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
+    /**
+     * Listen to events in the Node Model.
+     */
     private selectionListener: NodeSelectionListener = {
 
         nodeSelected: (): void => {
@@ -130,6 +133,18 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         nodeUnselected: (): void => {
 
             this.state.nodeState.unselect();
+        },
+        
+        nodeBeingDragged: (): void => {
+            // ignore at the moment. The bridge needs this not us.
+        },
+
+        dropHappened: (): void => {
+            // ignore at the moment. The bridge needs this not us.
+        },
+
+        nodeDropped: (): void => {
+            this.actions.dragComplete();
         }
     }
 
@@ -147,6 +162,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
     private onDrag(): DragEventHandler<Element> | undefined {
         return event => {
+            this.props.model.beingDragged();
             console.log("onDrag: " + this.props.model.nodeId + " ");
         }
     }
@@ -182,7 +198,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
             return event => {
                 const data = event.dataTransfer.getData("text/plain");
                 if (data) {
-                    this.actions.drop(data);
+                    this.actions.drop(data).then(() => this.props.model.dropHappened());
                     event.preventDefault();
                 }
             }

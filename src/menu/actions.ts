@@ -56,7 +56,7 @@ export interface DropAction extends Action {
 
     isDropTarget: boolean;
 
-    drop(dragData: string): void;
+    drop(dragData: string): Promise<void>;
 }
 
 export class DropAction {
@@ -77,7 +77,7 @@ export interface ActionSet {
 
     dragData(): Promise<string>;
 
-    drop(dragData: string): void;
+    drop(dragData: string): Promise<void>;
 
     dragComplete(): void;
 }
@@ -139,9 +139,9 @@ class ActionSetImpl implements ActionSet {
         }
     }
 
-    drop(dragData: string): void {
+    drop(dragData: string): Promise<void> {
         if (this.dropAction) {
-            this.dropAction.drop(dragData);
+            return this.dropAction.drop(dragData);
         }
         else {
             throw new Error("Not Droppable");

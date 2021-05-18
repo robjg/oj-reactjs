@@ -194,8 +194,8 @@ export class PasteActionFactory implements ActionFactory {
                 return dragPoint.isPasteSupported
             } 
 
-            drop(data: string): void {
-                dragPoint.paste(-1, data);
+            drop(data: string): Promise<void> {
+                return dragPoint.paste(-1, data);
             }
         }
 

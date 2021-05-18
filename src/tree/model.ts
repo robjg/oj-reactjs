@@ -15,6 +15,15 @@ export interface NodeController {
     expand(): void;
 
     collapse(): void;
+
+    // this node is being dragged
+    beingDragged(): void;
+
+    // a drop occured near this node (on/before)
+    dropHappened(): void;
+
+    // this node has been dropped within our tree.
+    dropComplete(): void;
 }
 
 export interface NodeModelController extends NodeModel, NodeController {
@@ -52,18 +61,25 @@ export interface NodeStructureListener {
 }
 
 /**
- * Define callback for when selection is changed.
+ * Define callback for when a node selection is changed.
  */
 export interface NodeSelectionListener {
 
     /**
-     * Called when a user selects node.
-     *
-     * @param event
+     * Called when a node is selected.
      */
     nodeSelected(): void;
 
+    /**
+     * Called when a node is unselected.
+     */
     nodeUnselected(): void;
+
+    nodeBeingDragged(): void;
+    
+    dropHappened(): void;
+
+    nodeDropped(): void;
 }
 
 export interface NodeIconListener {
@@ -433,6 +449,18 @@ export class ProxyNodeModelController implements NodeModelController {
     unselect: () => void = () => {
         this.selected = false;
         this.selectionListeners.forEach(e => e.nodeUnselected());
+    }
+
+    beingDragged: () => void = () => {
+        this.selectionListeners.forEach(e => e.nodeBeingDragged());
+    }
+
+    dropHappened: () => void = () => {
+        this.selectionListeners.forEach(e => e.dropHappened());
+    }
+
+    dropComplete: () => void = () => {
+        this.selectionListeners.forEach(e => e.nodeDropped());
     }
 
     expand: () => void = () => {

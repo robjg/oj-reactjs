@@ -3,6 +3,8 @@ import { NodeLifecycleEvent, NodeLifecycleListener, NodeLifecycleSupport, NodeMo
 
 /**
  * A Bridge from the new {@link NodeModelController} to the old {@link TreeSelectionModel}.
+ * This class is also responsible for tracking selected node state and a node being dragged and 
+ * then dropped.
  */
 export class TreeSelectionBridge implements TreeSelectionModel {
 
@@ -10,6 +12,9 @@ export class TreeSelectionBridge implements TreeSelectionModel {
 
     private lastSelectedNode: NodeModelController | null = null;
 
+    private beingDragged: NodeModelController | null = null;
+
+    // Flag used to tell if we are unselecting a node as we'll get called as a listener.
     private thisIsUs: boolean = false;
 
     constructor(lifecycleSupport: NodeLifecycleSupport) {
@@ -20,6 +25,7 @@ export class TreeSelectionBridge implements TreeSelectionModel {
         function listenerFor(node: NodeModelController): NodeSelectionListener {
 
             return {
+
                 nodeSelected: (): void => {
                     let lastNodeId: number | undefined = undefined;
                     if (self.lastSelectedNode) {                       
@@ -36,6 +42,7 @@ export class TreeSelectionBridge implements TreeSelectionModel {
 
                     self.listeners.forEach(l => l.selectionChanged(selectionEvent))
                 },
+
                 nodeUnselected: (): void => {
                     if (!self.thisIsUs) {
                         const lastNodeId = self.lastSelectedNode?.nodeId;
@@ -45,6 +52,23 @@ export class TreeSelectionBridge implements TreeSelectionModel {
                         self.listeners.forEach(l => l.selectionChanged(selectionEvent))
                         self.lastSelectedNode = null;
                     }
+
+                    self.beingDragged = null;
+                },
+
+                nodeBeingDragged: (): void => {
+                    self.beingDragged = node;
+                },
+
+                dropHappened: (): void => {
+                    if (self.beingDragged) {
+                        self.beingDragged.dropComplete();
+                        self.beingDragged = null;
+                    }
+                },
+
+                nodeDropped: (): void => {
+                    // the view listens to this.     
                 }
             }
         }

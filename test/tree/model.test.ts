@@ -1,4 +1,4 @@
-import { mock, mockReset } from 'jest-mock-extended';
+import { mock, MockProxy, mockReset } from 'jest-mock-extended';
 import { Action, ActionSet } from '../../src/menu/actions';
 import { OperationType } from '../../src/remote/invoke';
 
@@ -468,7 +468,7 @@ test("Iconic Handler Copes if Icon arrives later than cached notification", asyn
     expect((calls[1][0] as ImageData).description).toBe("foo");
 });
 
-test("Tree Selection select deselect", () => {
+test("Tree Node Selection select deselect", () => {
 
     const remoteProxy = mock<RemoteProxy>();
 
@@ -493,7 +493,41 @@ test("Tree Selection select deselect", () => {
     expect(selectionListener.nodeSelected).toBeCalledTimes(1);
 })
 
-test("Provide Actions", async () => {
+test("Tree Node Drag Drop Events Are Sent To Listener", () => {
+
+    const remoteProxy = mock<RemoteProxy>();
+
+    const nodeFactory: NodeActionFactory = mock<NodeActionFactory>();
+
+    const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
+
+    const selectionListener = mock<NodeSelectionListener>();
+
+    proxyMc.addSelectionListener(selectionListener);
+
+    expect(selectionListener.nodeBeingDragged).toBeCalledTimes(0);
+
+    proxyMc.beingDragged();
+
+    expect(selectionListener.nodeBeingDragged).toBeCalledTimes(1);
+    expect(selectionListener.dropHappened).toBeCalledTimes(0);
+    expect(selectionListener.nodeDropped).toBeCalledTimes(0);
+
+    proxyMc.dropHappened();
+
+    expect(selectionListener.nodeBeingDragged).toBeCalledTimes(1);
+    expect(selectionListener.dropHappened).toBeCalledTimes(1);
+    expect(selectionListener.nodeDropped).toBeCalledTimes(0);
+
+    proxyMc.dropComplete();
+
+    expect(selectionListener.nodeBeingDragged).toBeCalledTimes(1);
+    expect(selectionListener.dropHappened).toBeCalledTimes(1);
+    expect(selectionListener.nodeDropped).toBeCalledTimes(1);
+})
+
+
+test("ProxyNodeModelController is able to Provide Actions", () => {
 
     const remoteProxy = mock<RemoteProxy>();
 
@@ -503,15 +537,15 @@ test("Provide Actions", async () => {
         perform: () => { }
     }
 
-    const actionSet: ActionSet = mock<ActionSet>();
-    actionSet.actions = [fooAction];
+    const actionSet: MockProxy<ActionSet> & ActionSet = mock<ActionSet>();
+    Object.defineProperty(actionSet, "actions", { value: [fooAction]});
 
     const nodeFactory = mock<NodeActionFactory>();
-    nodeFactory.provideActions.mockReturnValue(Promise.resolve(actionSet));
+    nodeFactory.provideActions.mockReturnValue(actionSet);
 
     const proxyMc = new ProxyNodeModelController(remoteProxy, nodeFactory);
 
-    const actions: ActionSet = await proxyMc.provideActions();
+    const actions: ActionSet = proxyMc.provideActions();
 
     expect(actions.actions.length).toBe(1);
     expect(actions.actions[0].name).toBe("Foo");
