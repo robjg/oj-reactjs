@@ -5,13 +5,15 @@ import { Clipboard } from '../clipboard';
 /**
  * The context in which an ActionFactory may or may not create an Action.
  */
-export type ActionContext = {
+export interface ActionContext {
 
     parent: ActionContext | null;
 
     proxy: RemoteProxy;
 
     clipboard: Clipboard;
+
+    indexOf(child: ActionContext): number | undefined;
 }
 
 /**
@@ -66,6 +68,20 @@ export class DropAction {
     }
 }
 
+export interface DropBeforeAction extends Action {
+
+    isDropBeforeTarget: boolean;
+
+    dropBefore(dragData: string): Promise<void>;
+}
+
+export class DropBeforeAction {
+
+    static isDropBeforeAction(action: Action): action is DropBeforeAction {
+        return typeof (action as DropBeforeAction).isDropBeforeTarget === 'boolean';
+    }
+}
+
 
 export interface ActionSet {
 
@@ -75,9 +91,13 @@ export interface ActionSet {
 
     readonly isDropTarget: boolean;
 
+    readonly isDropBeforeTarget: boolean;
+
     dragData(): Promise<string>;
 
     drop(dragData: string): Promise<void>;
+
+    dropBefore(dragData: string): Promise<void>
 
     dragComplete(): void;
 }
@@ -97,6 +117,8 @@ export class ActionFactories {
 
         var dropAction: DropAction | null = null;
 
+        var dropBeforeAction: DropBeforeAction | null = null;
+
         validActions.forEach(a => {
             if (DragAction.isDragAction(a)) {
                 dragAction = a;
@@ -104,10 +126,12 @@ export class ActionFactories {
             if (DropAction.isDropAction(a)) {
                 dropAction = a;
             }
-
+            if (DropBeforeAction.isDropBeforeAction(a)) {
+                dropBeforeAction = a;
+            }
         });
 
-        return new ActionSetImpl(validActions, dragAction, dropAction);
+        return new ActionSetImpl(validActions, dragAction, dropAction, dropBeforeAction);
     }
 }
 
@@ -115,7 +139,8 @@ class ActionSetImpl implements ActionSet {
 
     constructor(readonly actions: Action[],
         private readonly dragAction: DragAction | null,
-        private readonly dropAction: DropAction | null) {
+        private readonly dropAction: DropAction | null,
+        private readonly dropBeforeAction: DropBeforeAction | null) {
 
         this.dragData = this.dragData.bind(this);
         this.drop = this.drop.bind(this);
@@ -130,6 +155,10 @@ class ActionSetImpl implements ActionSet {
         return this.dropAction?.isDropTarget || false;
     }
 
+    get isDropBeforeTarget() : boolean {
+        return this.dropBeforeAction?.isDropBeforeTarget || false;
+    }
+
     dragData(): Promise<string> {
         if (this.dragAction) {
             return this.dragAction.dragData();
@@ -142,6 +171,15 @@ class ActionSetImpl implements ActionSet {
     drop(dragData: string): Promise<void> {
         if (this.dropAction) {
             return this.dropAction.drop(dragData);
+        }
+        else {
+            throw new Error("Not Droppable");
+        }
+    }
+
+    dropBefore(dragData: string): Promise<void> {
+        if (this.dropBeforeAction) {
+            return this.dropBeforeAction.dropBefore(dragData);
         }
         else {
             throw new Error("Not Droppable");

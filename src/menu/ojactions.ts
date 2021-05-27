@@ -1,7 +1,7 @@
 import { AddJobActionFactory, DesignActionFactory } from "../design/designAction";
 import { ConfigurationOwner, ConfigPoint, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
 import { Implementation } from "../remote/remote";
-import { Action, ActionContext, ActionFactory, contextSearch, DragAction, DropAction } from "./actions";
+import { Action, ActionContext, ActionFactory, contextSearch, DragAction, DropAction, DropBeforeAction } from "./actions";
 
 export class RunActionFactory implements ActionFactory {
 
@@ -104,7 +104,7 @@ export class CutActionFactory implements ActionFactory {
     createAction(actionContext: ActionContext): DragAction | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return null;            
+            return null;
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
@@ -115,7 +115,7 @@ export class CutActionFactory implements ActionFactory {
 
             get isEnabled(): boolean {
                 return dragPoint.isCutSupported;
-            } 
+            }
 
             perform(): void {
                 dragPoint.cut()
@@ -144,7 +144,7 @@ export class CopyActionFactory implements ActionFactory {
     createAction(actionContext: ActionContext): Action | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return null;            
+            return null;
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
@@ -167,7 +167,7 @@ export class PasteActionFactory implements ActionFactory {
     createAction(actionContext: ActionContext): DropAction | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return null;            
+            return null;
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
@@ -192,10 +192,66 @@ export class PasteActionFactory implements ActionFactory {
 
             get isDropTarget(): boolean {
                 return dragPoint.isPasteSupported
-            } 
+            }
 
             drop(data: string): Promise<void> {
                 return dragPoint.paste(-1, data);
+            }
+        }
+
+        return new Impl();
+    }
+}
+
+export class PasteBeforeActionFactory implements ActionFactory {
+
+    createAction(actionContext: ActionContext): DropBeforeAction | null {
+
+        if (!actionContext.parent) {
+            return null;
+        }
+
+        const parentContext: ActionContext = actionContext.parent;
+
+        if (!parentContext.proxy.isA(ConfigPoint)) {
+            return null;
+        }
+
+        const parentDragPoint: ConfigPoint = parentContext.proxy.as(ConfigPoint);
+
+        class Impl implements DropBeforeAction {
+
+            readonly name: string = "Paste Before";
+
+            get isEnabled(): boolean {
+                return parentDragPoint.isPasteSupported;
+            }
+
+            perform(): void {
+
+                actionContext.clipboard.paste()
+                    .then(contents => {
+                        if (contents) {
+                            const index = parentContext.indexOf(actionContext);
+                            if (index != undefined) {
+                                parentDragPoint.paste(index, contents);
+                            }
+                        }
+                    });
+            }
+
+            get isDropBeforeTarget(): boolean {
+                return parentDragPoint.isPasteSupported;
+            }
+
+            dropBefore(data: string): Promise<void> {
+                const index = parentContext.indexOf(actionContext);
+                if (index) {
+                    return parentDragPoint.paste(index, data);
+                }
+                else {
+                    return Promise.resolve();
+                }
             }
         }
 
@@ -208,7 +264,7 @@ export class DeleteActionFactory implements ActionFactory {
     createAction(actionContext: ActionContext): Action | null {
 
         if (!actionContext.proxy.isA(ConfigPoint)) {
-            return null;            
+            return null;
         }
 
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
@@ -239,6 +295,7 @@ export function ojActions(): ActionFactory[] {
         new CutActionFactory(),
         new CopyActionFactory(),
         new PasteActionFactory(),
+        new PasteBeforeActionFactory(),
         new DeleteActionFactory(),
         new RunActionFactory(),
         new SoftResetActionFactory(),

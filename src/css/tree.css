@@ -27,10 +27,11 @@
 	text-decoration: none;
 	margin-right: 5px;
 	border-width: 2px;
+	border: solid;
+	border-color: transparent;
 }
 
 .tree li a:hover {
-	border: solid;
 	border-color: grey;
 }
 
@@ -46,3 +47,17 @@
 	background-color: #ff4800e0;
 }
 
+
+.tree .drop .before {
+	width: 150px;
+	height: 3px;
+	border: 1px dashed grey;
+	margin: 2px;
+}
+
+.tree .drop-target {
+	width: 150px;
+	height: 3px;
+	border: 2px solid grey;
+	margin: 1px;
+}

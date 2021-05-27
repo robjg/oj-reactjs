@@ -158,20 +158,32 @@ export type ActionSettings = {
  */
 class ProxyNodeHelperImpl implements NodeActionFactory {
 
-    private actionContext: ActionContext;
 
-    constructor(readonly proxy: RemoteProxy,
+    helperFor: ProxyNodeModelController | undefined;
+
+    constructor(readonly actionContext: ActionContext,
         readonly factory: SessionNodeFactory,
         readonly actionSettings: ActionSettings,
         readonly parent?: ProxyNodeHelperImpl) {
+    }
 
-        this.actionContext = {
-
-            proxy: proxy,
-
-            parent: parent ? parent.actionContext : null,
-
-            clipboard: actionSettings.clipboard
+    // Provide the index. Horrible chicken and egg state to protect against.
+    indexOf(child: ProxyNodeHelperImpl) {
+        if (this.helperFor) {
+            if (this.helperFor.childIds) {
+                if (child.helperFor) {
+                    return this.helperFor.childIds.indexOf(child.helperFor.nodeId);
+                }
+                else {
+                    throw new Error("Child Ids not set");
+                }
+            }
+            else {
+                throw new Error("Child Ids not set");
+            }
+        }
+        else {
+            throw new Error("Node not set");
         }
     }
 
@@ -190,6 +202,28 @@ class ProxyNodeHelperImpl implements NodeActionFactory {
         this.factory.nodeRemoved(node);
     }
 }
+
+class ActionContextImpl implements ActionContext {
+
+    owner: ProxyNodeHelperImpl | null = null;
+
+    constructor(readonly proxy: RemoteProxy,
+            readonly parent: ActionContext | null,
+            readonly clipboard: Clipboard) {}
+
+    indexOf(childContext: ActionContext): number | undefined {
+
+        const childOwner: ProxyNodeHelperImpl | null = (childContext as ActionContextImpl).owner;
+        if (childOwner && this.owner) {
+            return this.owner.indexOf(childOwner)
+        }
+        else {
+            return undefined;
+        }
+    }
+}
+
+
 
 export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
 
@@ -213,9 +247,15 @@ export class SessionNodeFactory implements NodeFactory, NodeLifecycleSupport {
 
         const proxy = await this.session.getOrCreate(nodeId);
 
-        const helper = new ProxyNodeHelperImpl(proxy, this, this.actionSettings, parentHelper);
+        const actionContext = new ActionContextImpl(proxy, 
+            parentHelper ? parentHelper.actionContext : null,
+            this.actionSettings.clipboard);
+
+        const helper = new ProxyNodeHelperImpl(actionContext, this, this.actionSettings, parentHelper);
+        actionContext.owner = helper;
 
         const newNode = new ProxyNodeModelController(proxy, helper);
+        helper.helperFor = newNode;
 
         this.lifecycleListeners.forEach(l => l.nodeAdded({ node: newNode }));
 
@@ -247,7 +287,7 @@ export class ProxyNodeModelController implements NodeModelController {
     private iconListeners: NodeIconListener[] = [];
 
     // childIds will only be null during initialisation
-    private childIds: number[] | null = null;
+    childIds: number[] | null = null;
 
     // child nodes will be null when node collapsed.
     private childNodes: NodeModelController[] | null = null;

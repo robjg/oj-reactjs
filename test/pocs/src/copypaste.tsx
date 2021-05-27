@@ -16,6 +16,11 @@ class ParentActionContext implements ActionContext {
     constructor(readonly proxy: RemoteProxy) { }
 
     readonly clipboard = new NavigatorClipboard();
+
+    indexOf(childContext: ActionContext): number | undefined {
+        return undefined;
+    }
+
 }
 
 class ChildActionContext implements ActionContext {
@@ -24,6 +29,10 @@ class ChildActionContext implements ActionContext {
 
     constructor(readonly parent: ActionContext, readonly proxy: RemoteProxy) {
         this.clipboard = parent.clipboard;
+    }
+
+    indexOf(childContext: ActionContext): number | undefined {
+        return undefined;
     }
 }
 

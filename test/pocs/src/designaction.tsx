@@ -79,6 +79,9 @@ class ExampleMenu extends React.Component<ExampleMenuProps, ExampleMenuState> {
     }
 }
 
+
+
+
 const context1: ActionContext = {
     parent: null,
     proxy: new class implements RemoteProxy {
@@ -116,7 +119,11 @@ const context1: ActionContext = {
         }
         destroy(): void { }
     },
-    clipboard: new MockClipboard()
+    clipboard: new MockClipboard(),
+
+    indexOf: (childContext: ActionContext) => {
+        return undefined;
+    }
 }
 
 const context2: ActionContext = {
@@ -131,7 +138,11 @@ const context2: ActionContext = {
         }
         destroy(): void { }
     },
-    clipboard: new MockClipboard()
+    clipboard: new MockClipboard(),
+
+    indexOf: (childContext: ActionContext) => {
+        return undefined;
+    }
 }
 
 

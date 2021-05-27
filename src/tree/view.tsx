@@ -134,7 +134,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
             this.state.nodeState.unselect();
         },
-        
+
         nodeBeingDragged: (): void => {
             // ignore at the moment. The bridge needs this not us.
         },
@@ -148,9 +148,11 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
-    private onMouseDown(): void {
+    private onMouseDown(event: React.MouseEvent): void {
 
-        this.prepareDrag();
+        if (event.button == 0) {
+            this.prepareDrag();
+        }
     }
 
     private prepareDrag(): void {
@@ -179,6 +181,23 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
+    private dropBeforeMaybe(andAlso?: DragEventHandler<Element>): DragEventHandler<Element> | undefined {
+        if (this.actions.isDropBeforeTarget) {
+            return (event) => {
+                const isData = event.dataTransfer.types.includes("text/plain");
+                if (isData) {
+                    if (andAlso) {
+                        andAlso(event);
+                    }
+                    event.preventDefault();
+                }
+            }
+        }
+        else {
+            return undefined;
+        }
+    }
+
     private dropMaybe(): DragEventHandler<Element> | undefined {
         if (this.actions.isDropTarget) {
             return (event) => {
@@ -193,13 +212,29 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
+    private onDropBefore(andAlso: DragEventHandler<Element> | undefined): DragEventHandler<Element> | undefined {
+        if (this.actions.isDropBeforeTarget) {
+            return event => {
+                const data = event.dataTransfer.getData("text/plain");
+                if (data) {
+                    if (andAlso) {
+                        andAlso(event);
+                    }
+                    this.actions.dropBefore(data).then(() => this.props.model.dropHappened());
+                }
+            }
+        }
+        else {
+            return undefined;
+        }
+    }
+
     private onDrop(): DragEventHandler<Element> | undefined {
         if (this.actions.isDropTarget) {
             return event => {
                 const data = event.dataTransfer.getData("text/plain");
                 if (data) {
                     this.actions.drop(data).then(() => this.props.model.dropHappened());
-                    event.preventDefault();
                 }
             }
         }
@@ -218,11 +253,6 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         else {
             return undefined;
         }
-    }
-
-    onDragExit(): DragEventHandler<Element> | undefined {
-        console.log("onDragExit");
-        return undefined;
     }
 
     onDragLeave(): DragEventHandler<Element> | undefined {
@@ -280,21 +310,33 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
     render() {
 
         return (
-            <li>{this.renderToggleImage()}
-                {this.state.icon}
-                <span className={this.labelClasses()}
-                    draggable={this.state.nodeState.isDraggable}
-                    onDrag={this.onDrag()}
-                    onDragStart={this.onDragStart()}
-                    onDragEnter={this.dropMaybe()}
-                    onDragOver={this.dropMaybe()}
-                    onDrop={this.onDrop()}
-                    onDragEnd={this.onDragEnd()}
-                >
-                    <a onMouseDown={this.onMouseDown}
-                        onMouseUp={this.state.nodeState.toggleSelect}>{this.nodename}</a>
-                </span>
-                {this.renderConextMenu()}
+            <li>
+                <div style={{padding: "1px" }}
+                    onDragEnter={this.dropBeforeMaybe(e => e.currentTarget.className = "drop")}
+                    onDragOver={this.dropBeforeMaybe(e => e.currentTarget.className = "drop")}
+                    onDragLeave={e => { if (e.currentTarget === e.target) e.currentTarget.className = "" }}
+                    onDragExit={e => { if (e.currentTarget === e.target) e.currentTarget.className = "" }}
+                    onDrop={e => e.currentTarget.className = ""}>
+                    <div className="before"
+                        onDragEnter={this.dropBeforeMaybe(e => e.currentTarget.className = "drop-target")}
+                        onDragOver={this.dropBeforeMaybe(e => e.currentTarget.className = "drop-target")}
+                        onDragLeave={e => e.currentTarget.className = "before"}
+                        onDrop={this.onDropBefore(e => e.currentTarget.className = "before")} />
+                    {this.renderToggleImage()}
+                    {this.state.icon}
+                    <span className={this.labelClasses()}
+                        draggable={this.state.nodeState.isDraggable}
+                        onDrag={this.onDrag()}
+                        onDragStart={this.onDragStart()}
+                        onDragEnter={this.dropMaybe()}
+                        onDragOver={this.dropMaybe()}
+                        onDrop={this.onDrop()}
+                        onDragEnd={this.onDragEnd()}>
+                        <a onMouseDown={this.onMouseDown}
+                            onMouseUp={this.state.nodeState.toggleSelect}>{this.nodename}</a>
+                    </span>
+                    {this.renderConextMenu()}
+                </div>
                 {this.state.toggle == Toggle.EXPANDED ?
                     <ul>{this.state.children.map(e => <ProxyTree key={e.uniqueId} model={e} />)}</ul> :
                     <></>}

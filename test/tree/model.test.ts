@@ -1,12 +1,12 @@
 import { mock, MockProxy, mockReset } from 'jest-mock-extended';
-import { Action, ActionSet } from '../../src/menu/actions';
+import { Action, ActionContext, ActionFactory, ActionSet } from '../../src/menu/actions';
 import { OperationType } from '../../src/remote/invoke';
 
 import { JavaClass } from '../../src/remote/java';
 import { Notification, NotificationListener } from '../../src/remote/notify';
 import { IconData, IconEvent, Iconic, IconicHandler, IconListener, ImageData, Structural, StructuralListener } from '../../src/remote/ojremotes';
-import { ClientToolkit, RemoteProxy } from '../../src/remote/remote';
-import { ChildrenChangedEvent, NodeActionFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController } from '../../src/tree/model';
+import { ClientToolkit, RemoteProxy, RemoteSession } from '../../src/remote/remote';
+import { ActionSettings, ChildrenChangedEvent, NodeActionFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController, SessionNodeFactory } from '../../src/tree/model';
 import { Latch, Phaser } from '../testutil';
 
 import { Logger, LoggerFactory, LogLevel } from "../../src/logging";
@@ -549,4 +549,75 @@ test("ProxyNodeModelController is able to Provide Actions", () => {
 
     expect(actions.actions.length).toBe(1);
     expect(actions.actions[0].name).toBe("Foo");
+});
+
+test("SessionNodeFactory creates node with correct indexOfChild", async() => {
+
+    const structural14 = mock<Structural>();
+
+    const proxy14 = mock<RemoteProxy>();
+    proxy14.isA.calledWith(Structural).mockReturnValue(true);
+    proxy14.as.calledWith(Structural).mockReturnValue(structural14);
+
+    const proxy27 = mock<RemoteProxy>();
+    Object.defineProperty(proxy27, 'remoteId', {value: 27});
+
+    const session = mock<RemoteSession>();
+    session.getOrCreate.calledWith(14).mockReturnValue(Promise.resolve(proxy14))
+
+    const latchChildCreated = new Latch();
+    session.getOrCreate.calledWith(27).mockImplementation((nodeId: number) => {
+        return Promise.resolve(proxy27) });
+
+    const actionContexts: ActionContext[] = [];
+    
+    const captureActionFactory = mock<ActionFactory>();
+    captureActionFactory.createAction.mockImplementation((actionContext => {
+        actionContexts.push(actionContext);
+        return null;
+    }))
+
+    const actionSettings: ActionSettings = mock<ActionSettings>();
+    Object.defineProperty(actionSettings, 'actionFactories', { value: [captureActionFactory] });
+
+    const sessionNodeFactory : SessionNodeFactory = new SessionNodeFactory(session, actionSettings);
+
+    const node14: NodeModelController = await sessionNodeFactory.createNode(14);
+
+    expect(node14).not.toBeNull();
+
+    const structuralListener: StructuralListener = structural14.addStructuralListener.mock.calls[0][0];
+        
+    const slNode14 = mock<NodeStructureListener>();
+    slNode14.childrenChanged.mockImplementation(() => {
+        latchChildCreated.countDown();
+    });
+
+    node14.addStructureListener(slNode14);
+
+    structuralListener.childEvent({
+        remoteId: 14,
+        children: [27] });
+
+    node14.expand();
+
+    await latchChildCreated.promise
+
+    expect(slNode14.childrenChanged).toBeCalled();
+    expect(slNode14.nodeExpanded).toBeCalled();
+
+    const node27: NodeModelController = slNode14.childrenChanged.mock.calls[0][0].children[0];
+
+    expect(node27).not.toBeNull();
+
+    const actionSet = node27.provideActions();
+
+    expect(actionSet).not.toBeNull();
+    expect(actionContexts.length).toBe(1);
+
+    const actionContext: ActionContext = actionContexts[0];
+
+    const index: number | undefined = actionContext.parent?.indexOf(actionContext);
+
+    expect(index).toBe(0);
 });

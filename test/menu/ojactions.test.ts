@@ -2,8 +2,8 @@ import { mock } from "jest-mock-extended";
 import { Clipboard } from "../../src/clipboard";
 import { ConfigurationOwner, ConfigPoint, Resettable, Runnable, Stoppable } from "../../src/remote/ojremotes";
 import { RemoteProxy } from "../../src/remote/remote";
-import { CopyActionFactory, CutActionFactory, DeleteActionFactory, HardResetActionFactory, PasteActionFactory, RunActionFactory, SoftResetActionFactory, StopActionFactory } from "../../src/menu/ojactions";
-import { Action, ActionContext, DragAction, DropAction } from "../../src/menu/actions";
+import { CopyActionFactory, CutActionFactory, DeleteActionFactory, HardResetActionFactory, PasteActionFactory, PasteBeforeActionFactory, RunActionFactory, SoftResetActionFactory, StopActionFactory } from "../../src/menu/ojactions";
+import { Action, ActionContext, DragAction, DropAction, DropBeforeAction } from "../../src/menu/actions";
 import { Latch } from "../testutil";
 
 test("Runnable Runs", () => {
@@ -15,11 +15,9 @@ test("Runnable Runs", () => {
     proxy.isA.calledWith(Runnable).mockReturnValue(true);
     proxy.as.calledWith(Runnable).mockReturnValue(runnable);
 
-    const actionContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: mock<Clipboard>()
-    };
+    const actionContext = mock<ActionContext>();
+    Object.defineProperty(actionContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(actionContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new RunActionFactory();
 
@@ -41,11 +39,9 @@ test("Soft Reset Resets", () => {
     proxy.isA.calledWith(Resettable).mockReturnValue(true);
     proxy.as.calledWith(Resettable).mockReturnValue(resettable);
 
-    const actionContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: mock<Clipboard>()
-    };
+    const actionContext = mock<ActionContext>();
+    Object.defineProperty(actionContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(actionContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new SoftResetActionFactory();
 
@@ -67,11 +63,9 @@ test("Hard Reset Resets", () => {
     proxy.isA.calledWith(Resettable).mockReturnValue(true);
     proxy.as.calledWith(Resettable).mockReturnValue(resettable);
 
-    const actionContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: mock<Clipboard>()
-    };
+    const actionContext = mock<ActionContext>();
+    Object.defineProperty(actionContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(actionContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new HardResetActionFactory();
 
@@ -93,11 +87,9 @@ test("Stoppable stops", () => {
     proxy.isA.calledWith(Stoppable).mockReturnValue(true);
     proxy.as.calledWith(Stoppable).mockReturnValue(stoppable);
 
-    const actionContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: mock<Clipboard>()
-    };
+    const actionContext = mock<ActionContext>();
+    Object.defineProperty(actionContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(actionContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new StopActionFactory();
 
@@ -119,11 +111,9 @@ test("Stoppable stops", () => {
     proxy.isA.calledWith(Stoppable).mockReturnValue(true);
     proxy.as.calledWith(Stoppable).mockReturnValue(stoppable);
 
-    const actionContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: mock<Clipboard>()
-    };
+    const actionContext = mock<ActionContext>();
+    Object.defineProperty(actionContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(actionContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new StopActionFactory();
 
@@ -155,11 +145,9 @@ test("Cut cuts", async () => {
 
     const clipboard = mock<Clipboard>();
 
-    const childContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: clipboard
-    };
+    const childContext = mock<ActionContext>();
+    Object.defineProperty(childContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(childContext, 'clipboard', { value: clipboard }); 
 
     const actionFactory = new CutActionFactory();
 
@@ -200,11 +188,9 @@ test("Cut as a DragAction", async () => {
     proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
     proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
-    const childContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: mock<Clipboard>()
-    };
+    const childContext = mock<ActionContext>();
+    Object.defineProperty(childContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(childContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new CutActionFactory();
 
@@ -239,11 +225,9 @@ test("Cut disabled", async () => {
     proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
     proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
-    const actionContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard:  mock<Clipboard>()
-    };
+    const actionContext = mock<ActionContext>();
+    Object.defineProperty(actionContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(actionContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new CutActionFactory();
 
@@ -272,11 +256,9 @@ test("Copy copies", async () => {
 
     const clipboard = mock<Clipboard>();
 
-    const childContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: clipboard
-    };
+    const childContext = mock<ActionContext>();
+    Object.defineProperty(childContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(childContext, 'clipboard', { value: clipboard }); 
 
     const actionFactory = new CopyActionFactory();
 
@@ -313,11 +295,9 @@ test("Paste pastes", async () => {
     const clipboard = mock<Clipboard>();
     clipboard.paste.mockReturnValue(Promise.resolve("SOME CONFIG"));
 
-    const childContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: clipboard
-    };
+    const childContext = mock<ActionContext>();
+    Object.defineProperty(childContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(childContext, 'clipboard', { value: clipboard }); 
 
     const actionFactory = new PasteActionFactory();
 
@@ -358,11 +338,9 @@ test("Paste as Drop Action", async () => {
     const clipboard = mock<Clipboard>();
     clipboard.paste.mockReturnValue(Promise.resolve("SOME CONFIG"));
 
-    const childContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: clipboard
-    };
+    const childContext = mock<ActionContext>();
+    Object.defineProperty(childContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(childContext, 'clipboard', { value: clipboard }); 
 
     const actionFactory = new PasteActionFactory();
 
@@ -383,6 +361,99 @@ test("Paste as Drop Action", async () => {
     expect(dragPoint.paste).toBeCalledWith(-1, "SOME CONFIG");
 });
 
+test("Paste Before pastes", async () => {
+
+    const parentProxy = mock<RemoteProxy>();
+
+    const latch: Latch = new Latch();
+
+    const parentDragPoint = mock<ConfigPoint>();
+    parentDragPoint.isPasteSupported = false;
+    parentDragPoint.paste.mockImplementation((i, c) => {
+        latch.countDown();
+        return Promise.resolve();
+    });
+
+    parentProxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    parentProxy.as.calledWith(ConfigPoint).mockReturnValue(parentDragPoint);
+
+    const clipboard = mock<Clipboard>();
+    clipboard.paste.mockReturnValue(Promise.resolve("SOME CONFIG"));
+
+    const parentContext = mock<ActionContext>();
+    Object.defineProperty(parentContext, 'proxy', { value: parentProxy }); 
+    parentContext.indexOf.mockReturnValue(0);
+
+    const childContext = mock<ActionContext>();
+    Object.defineProperty(childContext, 'parent', { value: parentContext }); 
+    Object.defineProperty(childContext, 'clipboard', { value: clipboard }); 
+
+    const actionFactory = new PasteBeforeActionFactory();
+
+    const action = actionFactory.createAction(childContext);
+
+    expect(action).not.toBeNull();
+
+    expect((action as Action).isEnabled).toBe(false);
+
+    // happens later via notification
+    parentDragPoint.isPasteSupported = true;
+
+    expect((action as Action).isEnabled).toBe(true);
+
+    (action as Action).perform();
+
+    await latch.promise;
+
+    expect(parentDragPoint.paste).toBeCalledWith(0, "SOME CONFIG");
+});
+
+test("Paste Before as Drop Before Action", async () => {
+
+    const parentProxy = mock<RemoteProxy>();
+
+    const latch: Latch = new Latch();
+
+    const parentDragPoint = mock<ConfigPoint>();
+    parentDragPoint.isPasteSupported = true;
+    parentDragPoint.paste.mockImplementation((i, c) => {
+        latch.countDown();
+        return Promise.resolve();
+    });
+
+    parentProxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
+    parentProxy.as.calledWith(ConfigPoint).mockReturnValue(parentDragPoint);
+
+    const clipboard = mock<Clipboard>();
+    clipboard.paste.mockReturnValue(Promise.resolve("SOME CONFIG"));
+
+    const parentContext = mock<ActionContext>();
+    Object.defineProperty(parentContext, 'proxy', { value: parentProxy }); 
+    parentContext.indexOf.mockReturnValue(2);
+
+    const childContext = mock<ActionContext>();
+    Object.defineProperty(childContext, 'parent', { value: parentContext }); 
+    Object.defineProperty(childContext, 'clipboard', { value: clipboard }); 
+
+    const actionFactory = new PasteBeforeActionFactory();
+
+    const action = actionFactory.createAction(childContext);
+
+    if (action == null) {
+        throw new Error("Unexepected null");
+    }
+
+    expect(DragAction.isDragAction(action)).toBe(false);
+    expect(DropAction.isDropAction(action)).toBe(false);
+    expect(DropBeforeAction.isDropBeforeAction(action)).toBe(true);
+    expect((action as DropBeforeAction).isDropBeforeTarget).toBe(true);
+
+    (action as DropBeforeAction).dropBefore("SOME CONFIG");
+
+    await latch.promise;
+
+    expect(parentDragPoint.paste).toBeCalledWith(2, "SOME CONFIG");
+});
 
 test("Delete deletes", async () => {
 
@@ -394,11 +465,9 @@ test("Delete deletes", async () => {
     proxy.isA.calledWith(ConfigPoint).mockReturnValue(true);
     proxy.as.calledWith(ConfigPoint).mockReturnValue(dragPoint);
 
-    const actionContext: ActionContext = {
-        parent: null,
-        proxy: proxy,
-        clipboard: mock<Clipboard>()
-    };
+    const actionContext = mock<ActionContext>();
+    Object.defineProperty(actionContext, 'proxy', { value: proxy }); 
+    Object.defineProperty(actionContext, 'clipboard', { value: mock<Clipboard>() }); 
 
     const actionFactory = new DeleteActionFactory();
 
