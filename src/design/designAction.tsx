@@ -78,10 +78,6 @@ export class AddJobActionFactory implements ActionFactory {
 
         const dragPoint: ConfigPoint = proxy.as(ConfigPoint);
 
-        if (!dragPoint.isPasteSupported) {
-            return null;
-        }
-
         function launchDesignForm(tag: string): void {
 
             configOwner?.blankForm(true, tag, JAVA_OBJECT.name)
@@ -114,13 +110,15 @@ export class AddJobActionFactory implements ActionFactory {
                 });
         }
 
-        return {
+        class Impl implements Action {
 
-            name: "Add Job",
+            readonly name = "Add Job";
 
-            isEnabled: true,
+            get isEnabled(): boolean {
+                return dragPoint.isPasteSupported;
+            }
 
-            perform: () => {
+            perform(): void {
 
                 dragPoint.possibleChildren()
                     .then(possibleChildren => {
@@ -142,6 +140,8 @@ export class AddJobActionFactory implements ActionFactory {
             }
 
         }
+
+        return new Impl();
     }
 }
 
