@@ -8,17 +8,19 @@ Object {
       <div
         class="oj-design-form-main"
       >
+        <div
+          class="oj-design-form-title"
+        >
+          <h4>
+            snack
+          </h4>
+        </div>
         <form
           data-testid="design-form"
         >
           <div
             class="oj-design-form"
           >
-            <h4
-              class="oj-design-form-title"
-            >
-              snack
-            </h4>
             <ul
               class="oj-form-group"
             >
@@ -111,16 +113,20 @@ Object {
               </li>
             </ul>
           </div>
-          <button
-            type="submit"
+          <div
+            class="buttns"
           >
-            OK
-          </button>
-          <button
-            type="reset"
-          >
-            Cancel
-          </button>
+            <button
+              type="submit"
+            >
+              OK
+            </button>
+            <button
+              type="reset"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -129,17 +135,19 @@ Object {
     <div
       class="oj-design-form-main"
     >
+      <div
+        class="oj-design-form-title"
+      >
+        <h4>
+          snack
+        </h4>
+      </div>
       <form
         data-testid="design-form"
       >
         <div
           class="oj-design-form"
         >
-          <h4
-            class="oj-design-form-title"
-          >
-            snack
-          </h4>
           <ul
             class="oj-form-group"
           >
@@ -232,16 +240,20 @@ Object {
             </li>
           </ul>
         </div>
-        <button
-          type="submit"
+        <div
+          class="buttns"
         >
-          OK
-        </button>
-        <button
-          type="reset"
-        >
-          Cancel
-        </button>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   </div>,
@@ -307,17 +319,19 @@ Object {
       <div
         class="oj-design-form-main"
       >
+        <div
+          class="oj-design-form-title"
+        >
+          <h4>
+            notes
+          </h4>
+        </div>
         <form
           data-testid="design-form"
         >
           <div
             class="oj-design-form"
           >
-            <h4
-              class="oj-design-form-title"
-            >
-              notes
-            </h4>
             <ul
               class="oj-form-group"
             >
@@ -469,16 +483,20 @@ Object {
               </li>
             </ul>
           </div>
-          <button
-            type="submit"
+          <div
+            class="buttns"
           >
-            OK
-          </button>
-          <button
-            type="reset"
-          >
-            Cancel
-          </button>
+            <button
+              type="submit"
+            >
+              OK
+            </button>
+            <button
+              type="reset"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -487,17 +505,19 @@ Object {
     <div
       class="oj-design-form-main"
     >
+      <div
+        class="oj-design-form-title"
+      >
+        <h4>
+          notes
+        </h4>
+      </div>
       <form
         data-testid="design-form"
       >
         <div
           class="oj-design-form"
         >
-          <h4
-            class="oj-design-form-title"
-          >
-            notes
-          </h4>
           <ul
             class="oj-form-group"
           >
@@ -649,16 +669,20 @@ Object {
             </li>
           </ul>
         </div>
-        <button
-          type="submit"
+        <div
+          class="buttns"
         >
-          OK
-        </button>
-        <button
-          type="reset"
-        >
-          Cancel
-        </button>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   </div>,
@@ -724,17 +748,19 @@ Object {
       <div
         class="oj-design-form-main"
       >
+        <div
+          class="oj-design-form-title"
+        >
+          <h4>
+            notes
+          </h4>
+        </div>
         <form
           data-testid="design-form"
         >
           <div
             class="oj-design-form"
           >
-            <h4
-              class="oj-design-form-title"
-            >
-              notes
-            </h4>
             <ul
               class="oj-form-group"
             >
@@ -905,16 +931,20 @@ Object {
               </li>
             </ul>
           </div>
-          <button
-            type="submit"
+          <div
+            class="buttns"
           >
-            OK
-          </button>
-          <button
-            type="reset"
-          >
-            Cancel
-          </button>
+            <button
+              type="submit"
+            >
+              OK
+            </button>
+            <button
+              type="reset"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -923,17 +953,19 @@ Object {
     <div
       class="oj-design-form-main"
     >
+      <div
+        class="oj-design-form-title"
+      >
+        <h4>
+          notes
+        </h4>
+      </div>
       <form
         data-testid="design-form"
       >
         <div
           class="oj-design-form"
         >
-          <h4
-            class="oj-design-form-title"
-          >
-            notes
-          </h4>
           <ul
             class="oj-form-group"
           >
@@ -1104,16 +1136,20 @@ Object {
             </li>
           </ul>
         </div>
-        <button
-          type="submit"
+        <div
+          class="buttns"
         >
-          OK
-        </button>
-        <button
-          type="reset"
-        >
-          Cancel
-        </button>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   </div>,
@@ -1179,17 +1215,19 @@ Object {
       <div
         class="oj-design-form-main"
       >
+        <div
+          class="oj-design-form-title"
+        >
+          <h4>
+            snack
+          </h4>
+        </div>
         <form
           data-testid="design-form"
         >
           <div
             class="oj-design-form"
           >
-            <h4
-              class="oj-design-form-title"
-            >
-              snack
-            </h4>
             <ul
               class="oj-form-group"
             >
@@ -1263,16 +1301,20 @@ Object {
               </li>
             </ul>
           </div>
-          <button
-            type="submit"
+          <div
+            class="buttns"
           >
-            OK
-          </button>
-          <button
-            type="reset"
-          >
-            Cancel
-          </button>
+            <button
+              type="submit"
+            >
+              OK
+            </button>
+            <button
+              type="reset"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -1281,17 +1323,19 @@ Object {
     <div
       class="oj-design-form-main"
     >
+      <div
+        class="oj-design-form-title"
+      >
+        <h4>
+          snack
+        </h4>
+      </div>
       <form
         data-testid="design-form"
       >
         <div
           class="oj-design-form"
         >
-          <h4
-            class="oj-design-form-title"
-          >
-            snack
-          </h4>
           <ul
             class="oj-form-group"
           >
@@ -1365,16 +1409,20 @@ Object {
             </li>
           </ul>
         </div>
-        <button
-          type="submit"
+        <div
+          class="buttns"
         >
-          OK
-        </button>
-        <button
-          type="reset"
-        >
-          Cancel
-        </button>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   </div>,
@@ -1440,17 +1488,19 @@ Object {
       <div
         class="oj-design-form-main"
       >
+        <div
+          class="oj-design-form-title"
+        >
+          <h4>
+            snack
+          </h4>
+        </div>
         <form
           data-testid="design-form"
         >
           <div
             class="oj-design-form"
           >
-            <h4
-              class="oj-design-form-title"
-            >
-              snack
-            </h4>
             <ul
               class="oj-form-group"
             >
@@ -1569,16 +1619,20 @@ Object {
               </li>
             </ul>
           </div>
-          <button
-            type="submit"
+          <div
+            class="buttns"
           >
-            OK
-          </button>
-          <button
-            type="reset"
-          >
-            Cancel
-          </button>
+            <button
+              type="submit"
+            >
+              OK
+            </button>
+            <button
+              type="reset"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -1587,17 +1641,19 @@ Object {
     <div
       class="oj-design-form-main"
     >
+      <div
+        class="oj-design-form-title"
+      >
+        <h4>
+          snack
+        </h4>
+      </div>
       <form
         data-testid="design-form"
       >
         <div
           class="oj-design-form"
         >
-          <h4
-            class="oj-design-form-title"
-          >
-            snack
-          </h4>
           <ul
             class="oj-form-group"
           >
@@ -1716,16 +1772,20 @@ Object {
             </li>
           </ul>
         </div>
-        <button
-          type="submit"
+        <div
+          class="buttns"
         >
-          OK
-        </button>
-        <button
-          type="reset"
-        >
-          Cancel
-        </button>
+          <button
+            type="submit"
+          >
+            OK
+          </button>
+          <button
+            type="reset"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   </div>,

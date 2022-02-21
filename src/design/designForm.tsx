@@ -513,14 +513,18 @@ export class DesignForm extends React.Component<DesignFormProps> {
 
         return (
             <div className="oj-design-form-main">
+                <div className="oj-design-form-title">
+                    <h4 >{mainForm.instance.element}</h4>
+                </div>
                 <form data-testid="design-form" onReset={this.props.hideForm} onSubmit={saveFn}>
                     <div className="oj-design-form">
-                        <h4 className="oj-design-form-title">{mainForm.instance.element}</h4>
                         <FormGroup formItems={mainForm.instance.items}
                             formBuilder={formBuilder} />
                     </div>
-                    <button type="submit">OK</button>
-                    <button type="reset">Cancel</button>
+                    <div className="buttns">
+                        <button type="submit">OK</button>
+                        <button type="reset">Cancel</button>
+                    </div>
                 </form>
             </div>
         )

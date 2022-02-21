@@ -1,7 +1,7 @@
 
 .form-box {
-    background-color: rgb(240, 240, 240);
-    border: 1px solid #999999;
+    background-color: #f1f1f1;
+    border: 1px solid #404040;
     cursor: default;
     display: none;
     position: fixed;
@@ -9,9 +9,9 @@
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: left;
-    z-index: 1;
+    z-index: 2;
     padding-left: 20px;
-    overflow-y: scroll;
+    overflow: auto;
     height:calc(61vh - 40px);
 }
 
@@ -42,6 +42,7 @@ input[type=text] {
     background-color: rgb(230, 230, 230);
     border: 1px solid rgb(150,150,150);
     height: 20px;
+    margin: 2px;
     border-radius: 5px;
 }
 
@@ -49,11 +50,14 @@ input[type=text] {
     background-color: rgb(200,200,200);
 }
 
-.btns{
+.bttns{
+    text-align: center;
     margin-top: 5px;
 }
 
-h4{
+.oj-design-form-title {
+    text-align: center;
+    border-bottom: 1px solid #404040;
     margin-top: 20px;
     margin-bottom: 10px;
 }
