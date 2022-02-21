@@ -1,0 +1,164 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant"
+		default="jar" basedir="." name="OJ React">
+	
+	<taskdef resource="org/apache/ivy/ant/antlib.xml"
+	                 uri="antlib:org.apache.ivy.ant" 
+		classpath="../oj-assembly/antlibs/ivy-2.5.0.jar"/>
+
+	<!-- From https://gist.github.com/waghcwb/5833ab5534c912683eabfeadd1ca999f -->
+	<macrodef name="nodejs">
+		<attribute name="module" description="The name of the NodeJS module to execute" />
+		<attribute name="failonerror" default="true" description="Fail if the exit code is not 0" />
+		<attribute name="dir" description="Directory to execute task" />
+		
+		<element name="args" optional="yes" description="Argument to pass to the exec task" />
+		
+		<sequential>
+			<exec executable="cmd.exe" dir="@{dir}" failonerror="@{failonerror}" osfamily="winnt">
+				<arg line="/c  @{module}" />
+				<args />
+			</exec>
+		
+			<exec executable="@{module}" dir="@{dir}" failonerror="@{failonerror}" osfamily="unix" logError="true">
+				<args />
+			</exec>
+		</sequential>
+	</macrodef>
+	
+	<!-- =================================================================== -->
+	<!-- Initialization target                                               -->
+	<!-- =================================================================== -->
+	<target name="init">
+
+		<tstamp/>
+
+		<!-- =================================================================== -->
+		<!-- Properties                                                          -->
+		<!-- =================================================================== -->
+
+		<property file="../oj-assembly/version.properties"/>
+			
+		<property name="Name"     value="Oddjob React JS UI"/>
+		<property name="name"     value="oj-reactjs"/>
+		<property name="build.version"  value="${project.version}"/>
+
+		<echo message="--------------------------------------------------------------"/>
+		<echo message="            ${Name} ${build.version}                                "/>
+		<echo message="--------------------------------------------------------------"/>
+		<echo message="Building with ${ant.version}"/>
+		<echo message="using build file ${ant.file}"/>
+		<echo message="--------------------------------------------------------------"/>
+		
+		<property name="build.dir"       	value="./build"/>
+		<property name="dist.dir"       	value="./dist"/>
+
+		<property name="jar.name"        	value="${name}-${build.version}.jar"/>
+
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Prepare for the build                                               -->
+	<!-- =================================================================== -->
+	<target name="prepare" depends="init">
+
+		<ivy:resolve/>
+
+		<mkdir dir="${build.dir}"/>
+
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Compiles the source directory                                       -->
+	<!-- =================================================================== -->
+
+	<target name="compile" depends="prepare"
+          description="Compiles the source code">
+
+		<!-- Run Webpack -->
+	    <nodejs module="webpack" dir="." failonerror="true"/>
+		
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Creates the jar file                                                -->
+	<!-- =================================================================== -->
+	<target name="jar"  depends="compile" description="Generates the jar packages">
+
+		<zip destfile="${build.dir}/${jar.name}">
+			<zipfileset dir="${dist.dir}" prefix="dist"/>
+		</zip>
+
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Run Tests                                                           -->
+	<!-- =================================================================== -->
+	
+	<target name="all-tests" description="Perform Jest Tests">
+
+		<!-- Run Jest -->
+	    <nodejs module="jest" dir="." failonerror="true"/>
+
+	</target>
+
+	
+	<!-- =================================================================== -->
+	<!-- Publish the jars in local ivy                                       -->
+	<!-- =================================================================== -->
+	<target name="install" depends="jar" description="Install Jar in Ivy Repo">
+
+		<ivy:publish resolver="local" pubrevision="${build.version}" overwrite="true">
+			<artifacts pattern="${build.dir}/[artifact]-[revision].[ext]" />
+		</ivy:publish>
+
+	</target>
+		
+	<!-- =================================================================== -->
+	<!-- Prepares the source distribution                                    -->
+	<!-- =================================================================== -->
+	<target name="dist-src" 
+          description="Prepares the source distribution">
+
+		<!-- Here for Oddjob app build -->
+
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Prepares the binary distribution                                    -->
+	<!-- =================================================================== -->
+	<target name="dist-bin" 
+			description="Not Implemented">
+		
+		<!-- Here for Oddjob app build -->
+
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- Maven Targets			                                     -->
+	<!-- =================================================================== -->
+		
+	<target name="maven-install"
+			description="Not implemented">
+	</target>
+	
+    <target name="maven-deploy" 
+    	description="Not implemented">
+    </target>
+	
+	<target name="maven-stage" 
+		description="Not implemented">
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- Clean targets                                                       -->
+	<!-- =================================================================== -->
+	
+	<target name="clean" depends="init" description="Cleans the build directories">
+		<delete dir="${build.dir}"/>
+		<delete dir="${dist.dir}"/>
+	</target>
+
+</project>
+
+<!-- End of file -->

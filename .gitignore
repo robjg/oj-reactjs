@@ -1,6 +1,7 @@
 package-lock.json
 /node_modules
 /dist
+/build
 /.vscode
 test/pocs/main.js
 test/pocs/main.js.map

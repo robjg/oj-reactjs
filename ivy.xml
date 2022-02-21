@@ -1,0 +1,8 @@
+<ivy-module version="2.0">
+  <info organisation="uk.co.rgordon" module="oj-reactjs"/>
+
+	<configurations>
+        <conf name="default" visibility="public"></conf>
+	</configurations>  
+          
+</ivy-module>
