@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Split Messing</title>
+    <!-- Understanding how to size all the divs in a split screen -->
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .a {
+            border: solid 3px blue;
+            height: inherit;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .b {
+            border: solid 2px red;
+            padding: 5px;
+            height: inherit;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        .gutter {
+            background: rgba(80, 80, 80, 0.75);
+        }
+
+        .gutter-horizontal {
+            cursor: ew-resize;
+        }
+
+        .d {
+            border: solid 2px purple;
+            padding: 5px;
+            height: inherit;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        .e {
+            border: solid 5px lightseagreen;
+            height: inherit;
+            box-sizing: border-box;
+            width: 100%;
+            overflow: auto;
+        }
+
+        .f {
+            border: solid 2px black;
+            background-color: brown;
+            width: 800px;
+            height: 1000px;
+            box-sizing: border-box;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
+    <script>
+        window.onload = function () {
+            Split(['#left', '#right'], {
+                sizes: [25, 75],
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="a">
+        <div id="left" class="b"></div>
+        <div id="right" class="d">
+            <div class="e">
+                <div class="f"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
