@@ -21,24 +21,24 @@
     padding-right: 15px;
 }
 
-input[type=text] {
+.form-box input[type=text] {
     margin: 5px 5px;
     box-sizing: border-box;
     border: 1px solid #ccc;
     outline: none;
   }
   
-  input[type=text]:focus {
+.form-box input[type=text]:focus {
     border: 1px solid rgb(114, 114, 114);
   }
 
-  ul{
+ .form-box ul{
       list-style-type: none;
       margin: 0px;
       padding: 0px;
   }
 
-  .buttn{
+  .buttn {
     background-color: rgb(230, 230, 230);
     border: 1px solid rgb(150,150,150);
     height: 20px;
@@ -46,11 +46,11 @@ input[type=text] {
     border-radius: 5px;
 }
 
-.buttn:hover{
+.buttn:hover {
     background-color: rgb(200,200,200);
 }
 
-.bttns{
+.bttns {
     text-align: center;
     margin-top: 5px;
 }

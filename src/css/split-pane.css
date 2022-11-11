@@ -1,23 +1,14 @@
-.Resizer {
-    background: #000;
-    opacity: 0.2;
-    z-index: 1;
-    margin-left: 5px;
-    margin-right: 5px;
-    width:1px;
-  }
-   
-  .Resizer.vertical {
-    border-left: 2px solid rgba(255,255,255,0);
-    border-right: 2px solid rgba(255,255,255,0);
-    cursor: col-resize;
-  }
-   
-  .Resizer.disabled {
-    cursor: not-allowed;
-  }
+.split-control {
+  display: flex;
+  flex-direction: row;
+}
 
- .Resizer.disabled:hover {
-    border-color: transparent;
-  }
-  
+.gutter {
+  background: rgba(80, 80, 80, 0.75);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.gutter-horizontal {
+  cursor: ew-resize;
+}

@@ -4,31 +4,27 @@
 
 html, body {
     height: 100%;
-    min-height: 100%;
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-.split-pane-divider {
-    background: #aaa;
+#app {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+#split-pane {
+    position: absolute;
+    top: 25px;
+    height: calc(100% - 25px);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #left-component {
-    right: 50%;
-    margin-right: 5px;
+    overflow: auto;
 }
 
-#my-divider {
-    right: 50%;
-    width: 5px;
-}
 
-#right-component {
-    width: 50%;
-}
 
-#ojNodeRoot {
-    position: absolute;
-    top: 25px;
-    margin: 2px 2px 2px 2px;
-}

@@ -3,8 +3,8 @@
 	border-radius: 2px;
 	background-color:rgb(230,230,230);
 	font-size: 0.8em;
-	float: left;
 	width:100%;
+	box-sizing: border-box;
 }
 
 .action-set > button{
