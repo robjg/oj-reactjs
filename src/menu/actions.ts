@@ -196,6 +196,13 @@ class ActionSetImpl implements ActionSet {
     }
 }
 
+/**
+ * Searches the hierarchical ActionContexts for a object of a Type.
+ * 
+ * @param context The Context
+ * @param cntor The type as defined by its constructor.
+ * @returns The thing we're searching for or null.
+ */
 export function contextSearch<T>(context: ActionContext | null, cntor: ({ new(...args: any[]): T })): T | null {
     if (context == null) {
         return null;

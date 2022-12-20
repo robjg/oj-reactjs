@@ -1,6 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { ActionFactory, ActionContext, Action, contextSearch } from '../menu/actions';
 import { ConfigurationOwner, ConfigPoint } from '../remote/ojremotes';
 import { AddJobForm as AddJobForm } from './addjob';
@@ -48,10 +49,11 @@ export class DesignActionFactory implements ActionFactory {
 
                         const formDiv = definedOrError(document.getElementById('ojForm'), "No form div.");
 
-                        ReactDOM.render(
+                        const root = createRoot(formDiv);
+
+                        root.render(
                             <DesignForm designModel={designModel}
-                                hideForm={hide} />,
-                            formDiv);
+                                hideForm={hide} />);
 
                         formDiv.style.display = 'block';
                     });
@@ -101,10 +103,11 @@ export class AddJobActionFactory implements ActionFactory {
 
                     const formDiv = definedOrError(document.getElementById('ojForm'), "No form div.");
 
-                    ReactDOM.render(
+                    const root = createRoot(formDiv);
+
+                    root.render(
                         <DesignForm designModel={designModel}
-                            hideForm={hide} />,
-                        formDiv);
+                            hideForm={hide} />);
 
                     formDiv.style.display = 'block';
                 });
@@ -127,13 +130,15 @@ export class AddJobActionFactory implements ActionFactory {
                             ReactDOM.unmountComponentAtNode(formDiv);
                         }
 
+                        // Todo we need a separate Div for Add job.
                         const formDiv = definedOrError(document.getElementById('ojForm'), "No form div.");
 
-                        ReactDOM.render(
+                        const root = createRoot(formDiv);
+
+                        root.render(
                             <AddJobForm options={possibleChildren}
                                 launchDesignForm={launchDesignForm}
-                                hideForm={hide} />,
-                            formDiv);
+                                hideForm={hide} />);
 
                         formDiv.style.display = 'block';
                     });

@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Test Render Some Key Property 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>
@@ -174,7 +174,7 @@ Object {
 `;
 
 exports[`Test Render Some Key Property 2`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>
@@ -385,7 +385,7 @@ Object {
 `;
 
 exports[`Test Render Some Key Property 3`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>
@@ -596,7 +596,7 @@ Object {
 `;
 
 exports[`Test Render Some Property 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>
@@ -747,7 +747,7 @@ Object {
 `;
 
 exports[`Test Render Some Property 2`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>
@@ -936,7 +936,7 @@ Object {
 `;
 
 exports[`Test Render Some Property 3`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>

@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import React, { ReactNode, useState } from 'react'
 import { render, fireEvent, within, getByText } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'

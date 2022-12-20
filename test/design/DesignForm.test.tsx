@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import React from 'react'
 import { render, fireEvent, waitFor, Matcher } from '@testing-library/react'
 
@@ -12,6 +16,7 @@ const notesDesigns = require('./data/NotesDesigns.json');
 const notesConfiguration = require('./data/NotesConfiguration.json');
 
 import { LocalDataSource } from './LocalDataSource';
+
 
 test('Test Render Text Field', () => {
    
