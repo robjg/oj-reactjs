@@ -12,11 +12,11 @@
             overflow: hidden;
         }
     </style>
-    <link rel="stylesheet" href="../../src/css/main.css">
-    <link rel="stylesheet" href="../../src/css/tree.css">
-    <link rel="stylesheet" href="../../src/css/global.css">
-    <link rel="stylesheet" href="../../src/css/form.css">
-    <link rel="stylesheet" href="../../src/css/menu.css">
+    <link rel="stylesheet" type="text/css" href="../../src/css/main.css">
+    <link rel="stylesheet" type="text/css" href="../../src/css/tree.css">
+    <link rel="stylesheet" type="text/css" href="../../src/css/global.css">
+    <link rel="stylesheet" type="text/css" href="../../src/css/form.css">
+    <link rel="stylesheet" type="text/css" href="../../src/css/menu.css">
 
 </head>
 
@@ -24,33 +24,7 @@
     <div id="ojForm" class="form-box"></div>
     <div id='ojNodeRoot' class='tree global-font'></div>
 
-    <script src="../../node_modules/requirejs/require.js"></script>
-    <script>
-        requirejs.config({
-            paths: {
-                'react': "../../node_modules/react/umd/react.development",
-                'react-dom': "../../node_modules/react-dom/umd/react-dom.development",
-                'src/remote/remote': "./main",
-                'test/pocs/src/ojtree': "./main",
-                'src/logging': "./main"
-            }
-        });
-
-        requirejs(['react', 'react-dom', 'src/remote/remote', 'test/pocs/src/ojtree', 'src/logging'],
-            function (React, ReactDOM, remote, tree, logging) {
-
-                logging.LoggerFactory.config
-                    .setLogger("RemoteNotifier", { level: 0 })
-                    .setLogger("RemoteInvoker", { level: 0 });
-
-                remote.RemoteConnection.fromHost('localhost:8080')
-                    .then(remote => ReactDOM.render(
-                    React.createElement(tree.OjRoot,
-                        { remote: remote }, null),
-                    document.getElementById('ojNodeRoot')));
-            });
-
-    </script>
+    <script src="bundle.js"></script>
 
 </body>
 

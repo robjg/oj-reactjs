@@ -3,5 +3,5 @@ package-lock.json
 /dist
 /build
 /.vscode
-test/pocs/main.js
-test/pocs/main.js.map
+/test/pocs/js
+bundle.js

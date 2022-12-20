@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { NavigatorClipboard } from '../../../src/clipboard';
 import { TreeSelectionEvent, TreeSelectionModel } from '../../../src/main/ojTreeModel';
 import { ojActions } from '../../../src/menu/ojactions';
@@ -7,6 +8,7 @@ import { RemoteConnection, RemoteSession } from '../../../src/remote/remote';
 import { TreeSelectionBridge } from '../../../src/tree/bridge';
 import { NodeFactory, SessionNodeFactory } from '../../../src/tree/model';
 import { TreeRoot } from '../../../src/tree/view';
+import { LoggerFactory } from '../../../src//logging';
 
 type OjRootState = {
     messages: string[]
@@ -63,4 +65,14 @@ export class OjRoot extends React.Component<OjRootProps, OjRootState> {
                 </>;
     }
 }
+
+LoggerFactory.config
+.setLogger("RemoteNotifier", { level: 0 })
+.setLogger("RemoteInvoker", { level: 0 });
+
+RemoteConnection.fromHost('localhost:8080')
+.then(remote => ReactDOM.render(
+React.createElement(OjRoot,
+    { remote: remote }, null),
+document.getElementById('ojNodeRoot')));
 

@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
-        "outFile": "main.js",
+        "outDir": "js",
         "target": "ES5",
         "jsx": "react",
         "sourceMap": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
-        "module": "amd",
+        "module": "commonjs",
         "lib": [
             "ES2016",
             "DOM"
