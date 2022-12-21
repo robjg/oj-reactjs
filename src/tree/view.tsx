@@ -4,7 +4,7 @@ import { JobMenu } from '../menu/menu';
 import { ImageData, ojRemoteSession } from '../remote/ojremotes';
 import { ChildrenChangedEvent, NodeFactory, NodeIconListener, NodeModelController, NodeSelectionListener, NodeStructureListener, ProxyNodeModelController, SessionNodeFactory } from './model';
 import { NodeState, InitialNodeState, SelectedState } from './nodestate';
-
+import { FeatureControl } from '../feature';
 
 const emptyImageStyle = {
     display: 'inline-block',
@@ -182,7 +182,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
     }
 
     private dropBeforeMaybe(andAlso?: DragEventHandler<Element>): DragEventHandler<Element> | undefined {
-        if (this.actions.isDropBeforeTarget) {
+        if (FeatureControl.dndEnabled && this.actions.isDropBeforeTarget) {
             return (event) => {
                 const isData = event.dataTransfer.types.includes("text/plain");
                 if (isData) {
@@ -282,14 +282,20 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
 
     private renderConextMenu(): ReactNode {
 
-        switch (this.state.nodeState.selectedState) {
-            case SelectedState.MENU:
-                return <JobMenu actions={this.actions.actions} onMenuSelected={this.menuOff} />
-            case SelectedState.SELECTED:
-            case SelectedState.DRAGGABLE:
-                return <button className="threeDots" onClick={this.showMenu}>...</button>
-            default:
-                return <></>
+        const enabled: boolean = FeatureControl.contextMenuEnabled;
+        if (enabled) {
+            switch (this.state.nodeState.selectedState) {
+                case SelectedState.MENU:
+                    return <JobMenu actions={this.actions.actions} onMenuSelected={this.menuOff} />
+                case SelectedState.SELECTED:
+                case SelectedState.DRAGGABLE:
+                    return <button className="threeDots" onClick={this.showMenu}>...</button>
+                default:
+                    return <></>
+            }    
+        }
+        else {
+            return <></>
         }
     }
 
@@ -307,7 +313,7 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
         }
     }
 
-    render() {
+    private renderDnd(): ReactNode {
 
         return (
             <li>
@@ -343,6 +349,36 @@ export class ProxyTree extends React.Component<ProxyTreeProps, ProxyTreeState> {
             </li>
         );
 
+    }
+
+    private renderNoDnd(): ReactNode {
+        
+        return (
+            <li>
+                <div style={{padding: "1px" }}>
+                    {this.renderToggleImage()}
+                    {this.state.icon}
+                    <span className={this.labelClasses()}>
+                        <a onMouseUp={this.state.nodeState.toggleSelect}>{this.nodename}</a>
+                    </span>
+                    {this.renderConextMenu()}
+                </div>
+                {this.state.toggle == Toggle.EXPANDED ?
+                    <ul>{this.state.children.map(e => <ProxyTree key={e.uniqueId} model={e} />)}</ul> :
+                    <></>}
+            </li>
+        );
+
+    }
+
+    render() {
+
+        if (FeatureControl.dndEnabled) {
+            return this.renderDnd();
+        }
+        else {
+            return this.renderNoDnd();
+        }
     }
 }
 
