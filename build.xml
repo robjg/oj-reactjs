@@ -76,7 +76,7 @@
           description="Compiles the source code">
 
 		<!-- Run Webpack -->
-	    <nodejs module="webpack" dir="." failonerror="true"/>
+	    <nodejs module="npm run build" dir="." failonerror="true"/>
 		
 	</target>
 
@@ -98,7 +98,7 @@
 	<target name="all-tests" description="Perform Jest Tests">
 
 		<!-- Run Jest -->
-	    <nodejs module="jest" dir="." failonerror="true"/>
+	    <nodejs module="npm run test" dir="." failonerror="true"/>
 
 	</target>
 
@@ -117,10 +117,33 @@
 	<!-- =================================================================== -->
 	<!-- Prepares the source distribution                                    -->
 	<!-- =================================================================== -->
-	<target name="dist-src" 
+	<target name="dist-src" depends="init"
           description="Prepares the source distribution">
 
-		<!-- Here for Oddjob app build -->
+		<property name="to.dir" value="${dist.src.dir}/${name}"/>
+			
+		<copy todir="${to.dir}/src" filtering="off">
+			<fileset dir="./src"/>
+		</copy>
+
+		<copy todir="${to.dir}/test" filtering="off">
+			<fileset dir="./test">
+				<exclude name="pocs/js/"/>
+				<exclude name="pocs/bundle.js"/>
+			</fileset>
+		</copy>
+
+		<copy todir="${to.dir}">
+			<fileset dir=".">
+				<include name="README.md"/>
+				<include name="build.xml"/>
+                <include name="ivy.xml"/>
+			    <include name="package.json"/>
+                <include name="tsconfig.json"/>
+                <include name="jest.config.js"/>
+                <include name="webpack.config.js"/>
+			</fileset>
+		</copy>
 
 	</target>
 
