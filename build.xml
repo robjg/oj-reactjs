@@ -108,7 +108,7 @@
 	<!-- =================================================================== -->
 	<target name="install" depends="jar" description="Install Jar in Ivy Repo">
 
-		<ivy:publish resolver="local" pubrevision="${build.version}" overwrite="true">
+		<ivy:publish resolver="local-m2-publish" pubrevision="${build.version}" overwrite="true">
 			<artifacts pattern="${build.dir}/[artifact]-[revision].[ext]" />
 		</ivy:publish>
 
@@ -157,22 +157,7 @@
 
 	</target>
 	
-	<!-- =================================================================== -->
-	<!-- Maven Targets			                                     -->
-	<!-- =================================================================== -->
-		
-	<target name="maven-install"
-			description="Not implemented">
-	</target>
-	
-    <target name="maven-deploy" 
-    	description="Not implemented">
-    </target>
-	
-	<target name="maven-stage" 
-		description="Not implemented">
-	</target>
-	
+
 	<!-- =================================================================== -->
 	<!-- Clean targets                                                       -->
 	<!-- =================================================================== -->
