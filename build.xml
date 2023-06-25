@@ -118,7 +118,8 @@
 	<!-- Prepares the source distribution                                    -->
 	<!-- =================================================================== -->
 	<target name="dist-src" depends="init"
-          description="Prepares the source distribution">
+            description="Prepares the source distribution"
+			if="dist.src.dir">
 
 		<property name="to.dir" value="${dist.src.dir}/${name}"/>
 			
@@ -138,6 +139,8 @@
 				<include name="README.md"/>
 				<include name="build.xml"/>
                 <include name="ivy.xml"/>
+				<include name="ivysettings.xml"/>
+				<include name="oj-assemble.xml"/>
 			    <include name="package.json"/>
                 <include name="tsconfig.json"/>
                 <include name="jest.config.js"/>
@@ -153,7 +156,10 @@
 	<target name="dist-bin" 
 			description="Not Implemented">
 		
-		<!-- Here for Oddjob app build -->
+		<!-- The binary distribution happens as art of the oj-web
+			Oddball. -->
+
+		<echo message="Nothing to do."/>
 
 	</target>
 	
