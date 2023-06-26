@@ -66,6 +66,8 @@
 
 		<mkdir dir="${build.dir}"/>
 
+		<nodejs module="npm install" dir="." failonerror="true"/>
+
 	</target>
 
 	<!-- =================================================================== -->
