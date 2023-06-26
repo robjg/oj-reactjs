@@ -1,8 +1,0 @@
-<ivysettings>
-    <properties file="${ivy.settings.dir}/ivysettings-file.properties"/>
-    <resolvers>
-        <filesystem name="local-m2-publish" m2compatible="true">
-            <artifact pattern="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"/>
-        </filesystem>
-    </resolvers>
-</ivysettings>

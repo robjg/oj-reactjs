@@ -1,9 +1,4 @@
-<project xmlns:ivy="antlib:org.apache.ivy.ant"
-		default="jar" basedir="." name="OJ React">
-	
-	<taskdef resource="org/apache/ivy/ant/antlib.xml"
-	                 uri="antlib:org.apache.ivy.ant" 
-		classpath="../oj-assembly/antlibs/ivy-2.5.0.jar"/>
+<project basedir="." name="OJ React">
 
 	<!-- From https://gist.github.com/waghcwb/5833ab5534c912683eabfeadd1ca999f -->
 	<macrodef name="nodejs">
@@ -43,16 +38,13 @@
 		<property name="build.version"  value="${project.version}"/>
 
 		<echo message="--------------------------------------------------------------"/>
-		<echo message="            ${Name} ${build.version}                                "/>
+		<echo message="            ${Name} ${build.version}                          "/>
 		<echo message="--------------------------------------------------------------"/>
-		<echo message="Building with ${ant.version}"/>
-		<echo message="using build file ${ant.file}"/>
+		<echo message="Building with ${ant.version}                                  "/>
+		<echo message="using build file ${ant.file}                                  "/>
 		<echo message="--------------------------------------------------------------"/>
 		
-		<property name="build.dir"       	value="./build"/>
 		<property name="dist.dir"       	value="./dist"/>
-
-		<property name="jar.name"        	value="${name}-${build.version}.jar"/>
 
 	</target>
 
@@ -62,57 +54,20 @@
 	<!-- =================================================================== -->
 	<target name="prepare" depends="init">
 
-		<ivy:resolve/>
-
-		<mkdir dir="${build.dir}"/>
-
 		<nodejs module="npm install" dir="." failonerror="true"/>
 
 	</target>
 
 	<!-- =================================================================== -->
-	<!-- Compiles the source directory                                       -->
-	<!-- =================================================================== -->
-
-	<target name="compile" depends="prepare"
-          description="Compiles the source code">
-
-		<!-- Run Webpack -->
-	    <nodejs module="npm run build" dir="." failonerror="true"/>
-		
-	</target>
-
-	<!-- =================================================================== -->
-	<!-- Creates the jar file                                                -->
-	<!-- =================================================================== -->
-	<target name="jar"  depends="compile" description="Generates the jar packages">
-
-		<zip destfile="${build.dir}/${jar.name}">
-			<zipfileset dir="${dist.dir}" prefix="dist"/>
-		</zip>
-
-	</target>
-
-	<!-- =================================================================== -->
-	<!-- Run Tests                                                           -->
-	<!-- =================================================================== -->
-	
-	<target name="all-tests" description="Perform Jest Tests">
-
-		<!-- Run Jest -->
-	    <nodejs module="npm run test" dir="." failonerror="true"/>
-
-	</target>
-
-	
-	<!-- =================================================================== -->
 	<!-- Publish the jars in local ivy                                       -->
 	<!-- =================================================================== -->
-	<target name="install" depends="jar" description="Install Jar in Ivy Repo">
+	<target name="install" description="Install Jar in Ivy Repo">
 
-		<ivy:publish resolver="local-m2-publish" pubrevision="${build.version}" overwrite="true">
-			<artifacts pattern="${build.dir}/[artifact]-[revision].[ext]" />
-		</ivy:publish>
+		<!-- Run Webpack -->
+		<nodejs module="npm run build" dir="." failonerror="true"/>
+
+		<!-- Run Jest -->
+		<nodejs module="npm run test" dir="." failonerror="true"/>
 
 	</target>
 		
@@ -171,7 +126,6 @@
 	<!-- =================================================================== -->
 	
 	<target name="clean" depends="init" description="Cleans the build directories">
-		<delete dir="${build.dir}"/>
 		<delete dir="${dist.dir}"/>
 	</target>
 
