@@ -95,8 +95,6 @@
 			<fileset dir=".">
 				<include name="README.md"/>
 				<include name="build.xml"/>
-                <include name="ivy.xml"/>
-				<include name="ivysettings.xml"/>
 				<include name="oj-assemble.xml"/>
 			    <include name="package.json"/>
                 <include name="tsconfig.json"/>
