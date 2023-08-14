@@ -48,20 +48,28 @@
 
 	</target>
 
+	<!-- =================================================================== -->
+	<!-- Prepare for the build                                               -->
+	<!-- =================================================================== -->
+	<target name="check" depends="init">
+
+		<available property="install.done" dir="./node_modules"/>
+
+	</target>
 
 	<!-- =================================================================== -->
 	<!-- Prepare for the build                                               -->
 	<!-- =================================================================== -->
-	<target name="prepare" depends="init">
+	<target name="prepare" depends="check" unlesss="install.done">
 
 		<nodejs module="npm install" dir="." failonerror="true"/>
 
 	</target>
 
 	<!-- =================================================================== -->
-	<!-- Publish the jars in local ivy                                       -->
+	<!-- Runs the build				                                         -->
 	<!-- =================================================================== -->
-	<target name="install" description="Install Jar in Ivy Repo">
+	<target name="install" depends="prepare" description="Run the NPM Build">
 
 		<!-- Run Webpack -->
 		<nodejs module="npm run build" dir="." failonerror="true"/>
