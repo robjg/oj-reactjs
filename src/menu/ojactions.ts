@@ -1,7 +1,13 @@
+/**
+ * @fileoverview Implementations of {@link ActionFactory}s for Oddjob.
+ */
+
 import { AddJobActionFactory, DesignActionFactory } from "../design/designAction";
-import { ConfigurationOwner, ConfigPoint, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
-import { Implementation } from "../remote/remote";
-import { Action, ActionContext, ActionFactory, contextSearch, DragAction, DropAction, DropBeforeAction } from "./actions";
+import { ConfigPoint, Resettable, Runnable, Stoppable } from "../remote/ojremotes";
+import { Action, ActionContext, ActionFactory, DragAction, DropAction, DropBeforeAction } from "./actions";
+
+const JOB_GROUP: string = "Job";
+const EDIT_GROUP: string = "Edit";
 
 export class RunActionFactory implements ActionFactory {
 
@@ -14,7 +20,10 @@ export class RunActionFactory implements ActionFactory {
             const runnable = proxy.as(Runnable);
 
             return {
+
                 name: "Start",
+
+                group: JOB_GROUP,
 
                 isEnabled: true,
 
@@ -40,6 +49,8 @@ export class SoftResetActionFactory implements ActionFactory {
             return {
                 name: "Soft Reset",
 
+                group: JOB_GROUP,
+
                 isEnabled: true,
 
                 perform: (): void => resettable.softReset()
@@ -63,6 +74,8 @@ export class HardResetActionFactory implements ActionFactory {
 
             return {
                 name: "Hard Reset",
+
+                group: JOB_GROUP,
 
                 isEnabled: true,
 
@@ -88,6 +101,8 @@ export class StopActionFactory implements ActionFactory {
             return {
                 name: "Stop",
 
+                group: JOB_GROUP,
+
                 isEnabled: true,
 
                 perform: (): void => stoppable.stop()
@@ -112,6 +127,8 @@ export class CutActionFactory implements ActionFactory {
         class Impl implements DragAction {
 
             readonly name: string = "Cut";
+
+            readonly group = EDIT_GROUP; 
 
             get isEnabled(): boolean {
                 return dragPoint.isCutSupported;
@@ -150,7 +167,10 @@ export class CopyActionFactory implements ActionFactory {
         const dragPoint: ConfigPoint = actionContext.proxy.as(ConfigPoint);
 
         return {
+
             name: "Copy",
+
+            group: EDIT_GROUP,
 
             isEnabled: true,
 
@@ -174,7 +194,9 @@ export class PasteActionFactory implements ActionFactory {
 
         class Impl implements DropAction {
 
-            readonly name: string = "Paste";
+            readonly name = "Paste";
+
+            readonly group = EDIT_GROUP;
 
             get isEnabled(): boolean {
                 return dragPoint.isPasteSupported;
@@ -222,6 +244,8 @@ export class PasteBeforeActionFactory implements ActionFactory {
         class Impl implements DropBeforeAction {
 
             readonly name: string = "Paste Before";
+
+            readonly group = EDIT_GROUP;
 
             get isEnabled(): boolean {
                 return parentDragPoint.isPasteSupported;
@@ -271,7 +295,9 @@ export class DeleteActionFactory implements ActionFactory {
 
         class Impl implements Action {
 
-            name: string = "Delete";
+            readonly name: string = "Delete";
+
+            readonly group = EDIT_GROUP;
 
             get isEnabled(): boolean {
                 return dragPoint.isCutSupported;

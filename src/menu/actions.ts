@@ -3,24 +3,35 @@ import { RemoteProxy } from '../remote/remote'
 import { Clipboard } from '../clipboard';
 
 /**
- * The context in which an ActionFactory may or may not create an Action.
+ * The context in which an ActionFactory may or may not create an Action. There is
+ * an instance of this class per node in a job tree.
  */
 export interface ActionContext {
 
+    /** The parent context or null if this is the root. */
     parent: ActionContext | null;
 
+    /** The proxy to the remote node. */
     proxy: RemoteProxy;
 
+    /** Access to the clipboard abstraction. */
     clipboard: Clipboard;
 
+    /** Provide the index of a child. Used for dropping config before a node. */
     indexOf(child: ActionContext): number | undefined;
 }
 
 /**
  * Creates an Action or not given then ActionContext.
  */
-export type ActionFactory = {
+export interface ActionFactory {
 
+    /**
+     * Possibly creates an {@link Action} for the given context.
+     * 
+     * @param actionContext A context to provide information for creating the action.
+     * @returns An action or null if the factory can't provide one for the given context.
+     */
     createAction(actionContext: ActionContext): Action | null;
 }
 
@@ -30,30 +41,47 @@ export type ActionFactory = {
  */
 export interface Action {
 
-    name: string;
+    /** The name of the action. Used as the title in menus. */
+    readonly name: string;
 
-    isEnabled: boolean;
+    /** An optional group. To be used to group menu items. */
+    readonly group?: string;
 
-    perform: () => void;
+    /** Is the action currently enabled. */
+    readonly isEnabled: boolean;
+
+    /** Perform the action. */
+    readonly perform: () => void;
 
 }
 
+/** 
+ * Implemented by an Action for a node that can be dragged. 
+ */
 export interface DragAction extends Action {
 
+    /** Is the node draggable. */
     isDraggable: boolean;
 
+    /** Get the config for the drag node. */
     dragData(): Promise<string>;
 
+    /** Called when the drag is complete. */
     dragComplete(): void;
 }
 
 export class DragAction {
 
+    /** Type Guard for {@link DragAction} */
     static isDragAction(action: Action): action is DragAction {
         return typeof (action as DragAction).isDraggable === 'boolean';
     }
 }
 
+/**
+ * Implementated by an Action for a node that can have config dropped on to it. 
+ * This will be a Structural job such as Sequential, Parallel or Folder.
+ */
 export interface DropAction extends Action {
 
     isDropTarget: boolean;
@@ -63,11 +91,16 @@ export interface DropAction extends Action {
 
 export class DropAction {
 
+    /** Type Guard for {@link DropAction} */
     static isDropAction(action: Action): action is DropAction {
         return typeof (action as DropAction).isDropTarget === 'boolean';
     }
 }
 
+/**
+ * Implemented by an Action foor a node that can have config dropped before it. 
+ * This will be a node that is the child of a Structural job such as a Folder.
+ */
 export interface DropBeforeAction extends Action {
 
     isDropBeforeTarget: boolean;
@@ -83,6 +116,9 @@ export class DropBeforeAction {
 }
 
 
+/** 
+ * Collects Actions.
+ */
 export interface ActionSet {
 
     readonly actions: Action[];
@@ -102,6 +138,9 @@ export interface ActionSet {
     dragComplete(): void;
 }
 
+/**
+ * Creates an {@link ActionSet} for a given {@link ActionContext}.
+ */
 export class ActionFactories {
 
     constructor(private readonly actionFactories: ActionFactory[]) { }
