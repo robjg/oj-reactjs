@@ -1,5 +1,5 @@
 import React from 'react';
-import { RemoteInvoker, InvokeRequest, OperationType } from '../../../src/remote/invoke';
+import { RemoteInvoker, InvokeRequest, OperationType } from '../remote/invoke';
 
 type InvokeState = {
 
@@ -20,13 +20,16 @@ type InvokeState = {
 
 type InvokeProps = {
 
-    invoker: RemoteInvoker;
+    url: string;
 }
 
 export class InvokeForm extends React.Component<InvokeProps, InvokeState> {
 
+    readonly invoker: RemoteInvoker
+
     constructor(props: InvokeProps) {
         super(props);
+        this.invoker = new RemoteInvoker('http://localhost:8080/invoke')
         this.state = {
             remoteId: '',
             method: '',
@@ -111,7 +114,7 @@ export class InvokeForm extends React.Component<InvokeProps, InvokeState> {
 
         const remoteId = parseInt(this.state.remoteId);
 
-        if (remoteId == NaN) {
+        if (Number.isNaN(remoteId)) {
             alert(`Remote Id ${this.state.remoteId} is not a number`);
             return;
         }
@@ -164,7 +167,7 @@ export class InvokeForm extends React.Component<InvokeProps, InvokeState> {
             request.argTypes = argTypes;
         }
 
-        this.props.invoker.invoke(request)
+        this.invoker.invoke(request)
             .then(invokeResponse => {
 
                 const json = JSON.stringify(invokeResponse);

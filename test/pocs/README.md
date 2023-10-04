@@ -27,3 +27,5 @@ $ browserify -p [ tsify ] -d -o bundle.js
 TypeScript error: c:/users/rob/projects/oj-reactjs/test/pocs/src/invokeform.tsx(114,13): Error TS2845: This condition will always return 'false'.
 
 TODO: Work out a simple way to work with a rapid feedback cycle in this project!
+
+UPDATE: I'm now moving all these POCs to Stroybook.

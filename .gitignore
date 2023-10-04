@@ -5,3 +5,4 @@ package-lock.json
 /.vscode
 /test/pocs/js
 bundle.js
+storybook.log
